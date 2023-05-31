@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 
 public record TransactionHistoryRequest(
         @NonNull
+        String accountNumber,
+        @NonNull
         @JsonFormat(shape=JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
         LocalDateTime startDateTime,
 

@@ -10,8 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class TransactionStatusResponse {
-    private String responseCode;
-    private String responseMessage;
+    private TransactionResponse response;
     private String coreBankingRefNo;
     private Integer transactionId;
 }

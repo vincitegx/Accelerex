@@ -1,6 +1,6 @@
 package com.neptunesoftware.Accelerex.transaction.request;
 
-import com.neptunesoftware.Accelerex.transaction.response.TransactionType;
+import com.neptunesoftware.Accelerex.transaction.TransactionType;
 
 import java.math.BigDecimal;
 

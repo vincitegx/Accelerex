@@ -8,11 +8,11 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
-    boolean existsByReferenceNum(String referenceNumber);
-    Transaction findByReferenceNum(String referenceNumber);
-    Transaction findByClientIdAndReferenceNum(String clientId, String referenceNumber);
-    Page<Transaction> findAllByStatusAndCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
-            TransactionStatus status,LocalDateTime startDate,LocalDateTime endDate, String senderAccountNumber, String receiverAccountNumber, Pageable pageable
+    boolean existsByReferenceNo(String referenceNo);
+    Transaction findByReferenceNo(String referenceNo);
+    Transaction findByClientIdAndReferenceNo(String clientId, String referenceNo);
+    Page<Transaction> findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
+            LocalDateTime startDate,LocalDateTime endDate, String senderAccountNumber, String receiverAccountNumber, Pageable pageable
     );
 
     List<Transaction> findAllByStatusAndCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(

@@ -1,5 +1,6 @@
 package com.neptunesoftware.Accelerex.transaction.response;
 
+import com.neptunesoftware.Accelerex.transaction.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

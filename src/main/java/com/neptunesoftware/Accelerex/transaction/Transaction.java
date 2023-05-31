@@ -1,12 +1,20 @@
 package com.neptunesoftware.Accelerex.transaction;
 
-import com.neptunesoftware.Accelerex.transaction.response.TransactionType;
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.NonNull;
+import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "transactions")
@@ -23,8 +31,8 @@ public class Transaction {
             generator = "transaction_id_sequence"
     )
     private Integer id;
-
-    private String clientId;
+    @NonNull
+    private Integer clientId;
     @NonNull
     private String senderAccountNumber;
     @NonNull
@@ -33,36 +41,55 @@ public class Transaction {
     private String senderName;
     @NonNull
     private String receiverName;
+    @Column(unique = true, nullable = false)
+    private String referenceNo;
     @NonNull
     private BigDecimal amount;
-    @Column(unique = true, nullable = false)
-    private String referenceNum;
     @NonNull
-    private String description;
+    private String currencyCode;
+    private BigDecimal charge;
+    @NonNull
+    private String narration;
+
     @Enumerated(EnumType.STRING)
     @NonNull
     private TransactionStatus status;
-    private BigDecimal transactionFee;
-    @NonNull
-    private String currencyCode;
+
     @Enumerated(EnumType.STRING)
     @NonNull
     private TransactionType transactionType;
 
-    public Transaction(String senderAccountNumber, String receiverAccountNumber,
-                       BigDecimal amount, String referenceNum, String currencyCode,
-                       TransactionType transactionType, BigDecimal transactionFee,
-                       String description, TransactionStatus status, String senderName, String receiverName) {
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+    public Transaction(Integer clientId, String senderAccountNumber, String receiverAccountNumber,
+                       BigDecimal amount, String referenceNo, String currencyCode, BigDecimal charge,
+                       String narration, String senderName, String receiverName, TransactionStatus status, TransactionType transactionType) {
+        this.clientId = clientId;
         this.senderAccountNumber = senderAccountNumber;
         this.receiverAccountNumber = receiverAccountNumber;
         this.amount = amount;
-        this.referenceNum = referenceNum;
-        this.status = status;
-        this.description = description;
+        this.referenceNo = referenceNo;
+        this.narration = narration;
         this.senderName = senderName;
         this.receiverName = receiverName;
-        this.transactionType = transactionType;
-        this.transactionFee = transactionFee;
+        this.charge = charge;
         this.currencyCode = currencyCode;
+        this.status = status;
+        this.transactionType = transactionType;
+        this.createdAt = LocalDateTime.parse(
+                DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+                DATE_TIME_FORMATTER);
+        this.updatedAt = createdAt;
+    }
+
+    public Transaction(){
+        this.createdAt = LocalDateTime.parse(
+                DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+                DATE_TIME_FORMATTER);
+        this.updatedAt = createdAt;
     }
 }
