@@ -43,4 +43,5 @@ public class Account {
 
         this.updatedAt = new Date();
     }
+
 }
