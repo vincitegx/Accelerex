@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 public class LinkBankAccountRequest {
-    private String  accountNo;
+    private String accountNo;
     private String accountName;
     private String mobileNo;
     private String email;

@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@AllArgsConstructor
-//@NoArgsConstructor
 @Getter
 @Setter
 public class Account {

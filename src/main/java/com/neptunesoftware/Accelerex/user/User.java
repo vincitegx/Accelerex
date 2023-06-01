@@ -1,5 +1,6 @@
 package com.neptunesoftware.Accelerex.user;
 
+import com.neptunesoftware.Accelerex.account.Account;
 import jakarta.persistence.*;
 import lombok.*;
 

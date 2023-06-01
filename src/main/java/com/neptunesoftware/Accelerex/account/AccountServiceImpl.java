@@ -26,11 +26,6 @@ public class AccountServiceImpl implements AccountServices {
     @Override
     public ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request) {
 
-        LinkBankAccountResponse response = new LinkBankAccountResponse();
-        response.setAccountNo(request.getAccountNo());
-        response.setMobileNo(request.getMobileNo());
-        response.setEmail(request.getEmail());
-
         boolean isAccountValid = validateBankAccount(request.getMobileNo());
 
         String otp;
@@ -44,6 +39,14 @@ public class AccountServiceImpl implements AccountServices {
                 throw new ValidationException("Invalid Otp");
             }
             linkBankAccountToWallet(request.getAccountNo(), request.getAccountName(), request.getMobileNo(), request.getEmail());
+            User user = userRepository.findByMobileNumber(request.getMobileNo()).get();
+            Account account = accountRepository.findByUserId(user.getUserId());
+
+            LinkBankAccountResponse response = new LinkBankAccountResponse();
+            response.setAccountName(account.getAccountName());
+            response.setMobileNo(user.getMobileNumber());
+            response.setEmail(user.getEmail());
+
             return new ApiResponse<>("Success", "Bank account linked successfully.", response);
         }
             return new ApiResponse<>("Failed", "Failed to link Bank Account", null);
@@ -68,17 +71,16 @@ public class AccountServiceImpl implements AccountServices {
         userRepository.save(user);
         
         Account account = new Account();
-         String newAccountNo= generateAccountNumber();
+         account.setAccountNumber("556788998767");
         account.setAccountName(bankAccountRequest.getAccountName());
-        account.setAccountNumber(newAccountNo);
         account.setUserId(user.getUserId());
         accountRepository.save(account);
 
         CreateBankAccountResponse response = new CreateBankAccountResponse();
-        response.setAccountName(bankAccountRequest.getAccountName());
-        response.setEmail(bankAccountRequest.getEmail());
-        response.setMobileNo(bankAccountRequest.getMobileNo());
-        response.setAccountNumber(newAccountNo);
+        response.setAccountName(account.getAccountName());
+        response.setEmail(user.getEmail());
+        response.setMobileNo(user.getMobileNumber());
+        response.setAccountNumber(account.getAccountNumber());
 
         return new ApiResponse<>("Success", "Account created successfully", response);
     }
@@ -105,7 +107,7 @@ public class AccountServiceImpl implements AccountServices {
     private void linkBankAccountToWallet(String accountNumber, String accountName, String mobileNo, String email) {
         User user = userRepository.findByMobileNumber(mobileNo).get();
         Account account = accountRepository.findByUserId(user.getUserId());
-        System.out.println("Account :" + account.toString());
+
         if (account==null) {
             throw new ValidationException("Something went wrong");
         }
