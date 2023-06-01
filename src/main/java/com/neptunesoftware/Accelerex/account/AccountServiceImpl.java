@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -38,14 +37,15 @@ public class AccountServiceImpl implements AccountServices {
 
                 throw new ValidationException("Invalid Otp");
             }
-            linkBankAccountToWallet(request.getAccountNo(), request.getAccountName(), request.getMobileNo(), request.getEmail());
-            User user = userRepository.findByMobileNumber(request.getMobileNo()).get();
-            Account account = accountRepository.findByUserId(user.getUserId());
+            linkBankAccountToWallet(request.getMobileNo());
+            User user = userRepository.findByPhoneNumber(request.getMobileNo()).get();
+            Account account = accountRepository.findByUserId(user.getId());
 
             LinkBankAccountResponse response = new LinkBankAccountResponse();
-            response.setAccountName(account.getAccountName());
-            response.setMobileNo(user.getMobileNumber());
-            response.setEmail(user.getEmail());
+            response.setAccountNo(account.getAccountNumber());
+            response.setMobileNo(user.getPhoneNumber());
+            response.setEmail(user.getEmailAddress());
+            response.setAccountName(user.getFullName());
 
             return new ApiResponse<>("Success", "Bank account linked successfully.", response);
         }
@@ -56,37 +56,36 @@ public class AccountServiceImpl implements AccountServices {
     public ApiResponse<CreateBankAccountResponse> createBankAccount(CreateBankAccountRequest bankAccountRequest) {
 
 
-        if ( userRepository.findByEmail(bankAccountRequest.getEmail()).isPresent())
+        if ( userRepository.findByEmailAddress(bankAccountRequest.getEmail()).isPresent())
             throw new ValidationException("User with Email already exist");
-        if (userRepository.findByMobileNumber(bankAccountRequest.getMobileNo()).isPresent())
+        if (userRepository.findByPhoneNumber(bankAccountRequest.getMobileNo()).isPresent())
             throw new ValidationException("User with Phone number Already exist");
 
         User user = new User();
-
-
-        user.setEmail(bankAccountRequest.getEmail());
-        user.setMobileNumber(bankAccountRequest.getMobileNo());
+        user.setFullName(bankAccountRequest.getAccountName());
+        user.setEmailAddress(bankAccountRequest.getEmail());
+        user.setPhoneNumber(bankAccountRequest.getMobileNo());
         user.setPassword(bankAccountRequest.getPassword());
-        user.setSmsToken(generateOTP());
         userRepository.save(user);
         
         Account account = new Account();
-         account.setAccountNumber("556788998767");
-        account.setAccountName(bankAccountRequest.getAccountName());
-        account.setUserId(user.getUserId());
+        account.setAccountNumber(generateAccountNumber());
+        account.setAccountStatus(AccountStatus.PENDING);
+        account.setTierLevel(Tier.LEVEL1);
+        account.setUser(user);
         accountRepository.save(account);
 
         CreateBankAccountResponse response = new CreateBankAccountResponse();
-        response.setAccountName(account.getAccountName());
-        response.setEmail(user.getEmail());
-        response.setMobileNo(user.getMobileNumber());
+        response.setAccountName(user.getFullName());
+        response.setEmail(user.getEmailAddress());
+        response.setMobileNo(user.getPhoneNumber());
         response.setAccountNumber(account.getAccountNumber());
 
         return new ApiResponse<>("Success", "Account created successfully", response);
     }
 
     private boolean validateBankAccount(String mobileNo) {
-        return userRepository.findByMobileNumber(mobileNo).isPresent();
+        return userRepository.findByPhoneNumber(mobileNo).isPresent();
     }
 
     public String generateOTP() {
@@ -104,27 +103,24 @@ public class AccountServiceImpl implements AccountServices {
         return true;
     }
 
-    private void linkBankAccountToWallet(String accountNumber, String accountName, String mobileNo, String email) {
-        User user = userRepository.findByMobileNumber(mobileNo).get();
-        Account account = accountRepository.findByUserId(user.getUserId());
+    private void linkBankAccountToWallet(String mobileNo) {
+        User user = userRepository.findByPhoneNumber(mobileNo).get();
+        Account account = accountRepository.findByUserId(user.getId());
 
         if (account==null) {
             throw new ValidationException("Something went wrong");
         }
-        account.setUserId(user.getUserId());
-        log.info("User found from DB {}",account.getUserId());
-        account.setAccountName(accountName);
-        account.setAccountNumber(accountNumber);
+        account.setUser(user);
         accountRepository.save(account);
     }
 
     //   Todo: I will create an API to validate the Otp {  verifySmsToken() }
     public String verifySmsToken(String smsToken) {
-        User user = userRepository.findBySmsToken(smsToken).get();
-        if (user.getSmsToken().equals(smsToken)) {
-            user.setVerified(true);
-            userRepository.save(user);
-        }
+//        User user = userRepository.findBySmsToken(smsToken).get();
+//        if (user.getSmsToken().equals(smsToken)) {
+//            user.setVerified(true);
+//            userRepository.save(user);
+//        }
         return "Successful";
     }
     public String generateAccountNumber() {

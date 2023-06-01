@@ -2,46 +2,70 @@ package com.neptunesoftware.Accelerex.account;
 
 import com.neptunesoftware.Accelerex.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
-@Getter
-@Setter
+@Table(name = "accounts")
+@Data
+@AllArgsConstructor
 public class Account {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+
+    @jakarta.persistence.Id
+    @SequenceGenerator(
+            name = "account_id_sequence",
+            sequenceName = "account_id_sequence"
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "account_id_sequence"
+    )
     private Integer id;
-    private Integer userId;
-    private String accountNumber;
-    private String accountName;
+    @ManyToOne
+    private User user;
     private BigDecimal accountBalance;
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
+    private String accountNumber;
+    @Enumerated(EnumType.STRING)
+    private Tier tierLevel;
+    private String transactionPin;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "createdAt")
-    private Date createdAt;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "last_updated")
-    private Date updatedAt;
-
-    public Account() {
-        accountBalance = new BigDecimal("0.0");
+    public Account(User user){
+        this.setUser(user);
+        this.createdAt = LocalDateTime.parse(
+                DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+                DATE_TIME_FORMATTER);
+        this.updatedAt = createdAt;
+        this.setAccountBalance(new BigDecimal(0));
+    }
+    public Account(){
+        this.createdAt = LocalDateTime.parse(
+                DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+                DATE_TIME_FORMATTER);
+        this.updatedAt = createdAt;
+        this.setAccountBalance(new BigDecimal(0));
     }
 
-    @PrePersist
-    public void createdAt() {
-
-        this.createdAt = new Date();
+    public Account(User user, BigDecimal accountBalance, AccountStatus accountStatus, String accountNumber, Tier tierLevel, String transactionPin) {
+        this.user = user;
+        this.accountBalance = accountBalance;
+        this.accountStatus = accountStatus;
+        this.accountNumber = accountNumber;
+        this.tierLevel = tierLevel;
+        this.transactionPin = transactionPin;
+        this.createdAt = LocalDateTime.parse(
+                DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+                DATE_TIME_FORMATTER);
+        this.updatedAt = createdAt;
     }
-
-    @PreUpdate
-    public void updatedAt() {
-
-        this.updatedAt = new Date();
-    }
-
 }

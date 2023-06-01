@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class CreateBankAccountRequest {
-    private String AccountName;
-    private String MobileNo;
+    private String accountName;
+    private String mobileNo;
     private String Email;
     private String password;
 }
