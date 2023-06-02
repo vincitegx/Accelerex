@@ -6,17 +6,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+import java.util.Map;
+
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "VirtualAccount_tbl")
-public class VirtualAccount{
+public class VirtualAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Integer id;
-    private Integer userId;
+    private Integer userId; //ANP agentId or clientId
+    private String virtualAccountId;
     private String accountHolder;
     private double balance;
 }

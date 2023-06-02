@@ -1,9 +1,12 @@
 package com.neptunesoftware.Accelerex.account;
 
 import com.neptunesoftware.Accelerex.account.request.CreateBankAccountRequest;
+import com.neptunesoftware.Accelerex.account.request.FetchAccountBalanceRequest;
 import com.neptunesoftware.Accelerex.account.request.LinkBankAccountRequest;
+import com.neptunesoftware.Accelerex.account.request.VirtualAccountRequest;
 import com.neptunesoftware.Accelerex.account.response.CreateBankAccountResponse;
 import com.neptunesoftware.Accelerex.account.response.LinkBankAccountResponse;
+import com.neptunesoftware.Accelerex.account.response.VerifyTokenResponse;
 import com.neptunesoftware.Accelerex.exception.ValidationException;
 import com.neptunesoftware.Accelerex.user.User;
 import com.neptunesoftware.Accelerex.user.UserRepository;
@@ -67,7 +70,7 @@ public class AccountServiceImpl implements AccountServices {
         user.setPhoneNumber(bankAccountRequest.getMobileNo());
         user.setPassword(bankAccountRequest.getPassword());
         userRepository.save(user);
-        
+
         Account account = new Account();
         account.setAccountNumber(generateAccountNumber());
         account.setAccountStatus(AccountStatus.PENDING);
@@ -75,13 +78,25 @@ public class AccountServiceImpl implements AccountServices {
         account.setUser(user);
         accountRepository.save(account);
 
+
         CreateBankAccountResponse response = new CreateBankAccountResponse();
         response.setAccountName(user.getFullName());
         response.setEmail(user.getEmailAddress());
         response.setMobileNo(user.getPhoneNumber());
         response.setAccountNumber(account.getAccountNumber());
+        response.setAccountNumber(account.getAccountNumber());
 
         return new ApiResponse<>("Success", "Account created successfully", response);
+    }
+
+    @Override
+    public ApiResponse<VerifyTokenResponse> createVirtualAccount(VirtualAccountRequest request) {
+        return null;
+    }
+
+    @Override
+    public ApiResponse<FetchAccountBalanceRequest> fetchAccountBalance(FetchAccountBalanceRequest request) {
+        return null;
     }
 
     private boolean validateBankAccount(String mobileNo) {
@@ -98,8 +113,16 @@ public class AccountServiceImpl implements AccountServices {
     }
 
     private boolean sendOTP(String mobileNumber, String otp) {
+        User user = userRepository.findByPhoneNumber(mobileNumber).get();
+
         //Todo: Implementation of SMS seb
-        // Send: the OTP to the provided mobile number
+        // Send: The OTP to the provided mobile number and call verify token API =>verifyToken()
+//        if (verifySmsToken(otp).getMobileNo().equals(user.getPhoneNumber())) {
+//            user.setVerified(true);
+//            userRepository.save(user);
+//            return true;
+//        }
+//        throw new ValidationException("Invalid Token");
         return true;
     }
 
@@ -114,14 +137,14 @@ public class AccountServiceImpl implements AccountServices {
         accountRepository.save(account);
     }
 
-    //   Todo: I will create an API to validate the Otp {  verifySmsToken() }
-    public String verifySmsToken(String smsToken) {
-//        User user = userRepository.findBySmsToken(smsToken).get();
-//        if (user.getSmsToken().equals(smsToken)) {
-//            user.setVerified(true);
-//            userRepository.save(user);
-//        }
-        return "Successful";
+
+    public VerifyTokenResponse verifySmsToken(String smsToken) {
+        User user = userRepository.findBySmsToken(smsToken).get();
+        VerifyTokenResponse response = new VerifyTokenResponse();
+        response.setAccountName(user.getFullName());
+        response.setAccountNo(user.getPhoneNumber());
+        response.setEmail(user.getEmailAddress());
+      return response;  
     }
     public String generateAccountNumber() {
         Random random = new Random();

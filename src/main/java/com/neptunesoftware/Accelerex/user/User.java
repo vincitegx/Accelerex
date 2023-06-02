@@ -35,8 +35,10 @@ public class User implements UserDetails {
     private String password;
     @Column(nullable = false)
     private String phoneNumber;
+    private String smsToken;
     @Column(nullable = false)
     private boolean isNotBlocked;
+    private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
