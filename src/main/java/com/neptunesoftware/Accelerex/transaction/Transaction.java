@@ -1,5 +1,6 @@
 package com.neptunesoftware.Accelerex.transaction;
 
+import com.neptunesoftware.Accelerex.user.User;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -32,7 +33,7 @@ public class Transaction {
     )
     private Integer id;
     @NonNull
-    private Integer clientId;
+    private User user;
     @NonNull
     private String senderAccountNumber;
     @NonNull
@@ -60,15 +61,14 @@ public class Transaction {
     private TransactionType transactionType;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
-    public Transaction(Integer clientId, String senderAccountNumber, String receiverAccountNumber,
+    public Transaction(User user, String senderAccountNumber, String receiverAccountNumber,
                        BigDecimal amount, String referenceNo, String currencyCode, BigDecimal charge,
                        String narration, String senderName, String receiverName, TransactionStatus status, TransactionType transactionType) {
-        this.clientId = clientId;
+        this.user = user;
         this.senderAccountNumber = senderAccountNumber;
         this.receiverAccountNumber = receiverAccountNumber;
         this.amount = amount;
@@ -83,13 +83,11 @@ public class Transaction {
         this.createdAt = LocalDateTime.parse(
                 DATE_TIME_FORMATTER.format(LocalDateTime.now()),
                 DATE_TIME_FORMATTER);
-        this.updatedAt = createdAt;
     }
 
     public Transaction(){
         this.createdAt = LocalDateTime.parse(
                 DATE_TIME_FORMATTER.format(LocalDateTime.now()),
                 DATE_TIME_FORMATTER);
-        this.updatedAt = createdAt;
     }
 }

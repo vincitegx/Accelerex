@@ -6,6 +6,9 @@ import com.neptunesoftware.Accelerex.exception.AccountNotActivatedException;
 import com.neptunesoftware.Accelerex.exception.AccountNotClearedException;
 import com.neptunesoftware.Accelerex.exception.InsufficientBalanceException;
 import com.neptunesoftware.Accelerex.exception.ResourceNotFoundException;
+import com.neptunesoftware.Accelerex.user.User;
+import com.neptunesoftware.Accelerex.user.UserRepository;
+import com.neptunesoftware.Accelerex.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,11 +23,14 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+
+    private final UserService userService;
     private static final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, UserService userService) {
         this.accountRepository = accountRepository;
+        this.userService = userService;
     }
 
     @Async
@@ -51,7 +57,8 @@ public class AccountService {
     }
 
     public Account getAccountByUserId(Integer userId) {
-        Optional<Account> account = accountRepository.findAccountByUserId(userId);
+        User user = userService.getUserById(userId);
+        Optional<Account> account = accountRepository.findAccountByUser(user);
         if(account.isEmpty()){
             throw new ResourceNotFoundException("account not found");
         }

@@ -1,22 +1,16 @@
 package com.neptunesoftware.Accelerex.transaction.response;
 
-public enum TransactionResponse {
-    SUCCESS("SUCCESS", 00),
-    FAIL("FAIL", -1);
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    private final String description;
-    private final int code;
-
-    TransactionResponse(String description, int code) {
-        this.description = description;
-        this.code = code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getCode() {
-        return code;
-    }
+@NoArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
+public class TransactionResponse {
+    private TransactionResponseStatus response;
+    private String coreBankingRefNo;
+    private Integer transactionId;
 }

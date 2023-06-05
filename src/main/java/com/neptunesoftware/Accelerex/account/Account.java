@@ -1,5 +1,6 @@
 package com.neptunesoftware.Accelerex.account;
 
+import com.neptunesoftware.Accelerex.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,8 +23,9 @@ public class Account {
             strategy = GenerationType.SEQUENCE,
             generator = "account_id_sequence"
     )
-    private Integer Id;
-    private Integer userId;
+    private Integer id;
+    @ManyToOne
+    private User user;
     private BigDecimal accountBalance;
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
@@ -37,8 +39,8 @@ public class Account {
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
-    public Account(Integer userId){
-        this.setUserId(userId);
+    public Account(User user){
+        this.setUser(user);
         this.createdAt = LocalDateTime.parse(
                 DATE_TIME_FORMATTER.format(LocalDateTime.now()),
                 DATE_TIME_FORMATTER);
@@ -53,8 +55,8 @@ public class Account {
         this.setAccountBalance(new BigDecimal(0));
     }
 
-    public Account(Integer userId, BigDecimal accountBalance, AccountStatus accountStatus, String accountNumber, Tier tierLevel, String transactionPin) {
-        this.userId = userId;
+    public Account(User user, BigDecimal accountBalance, AccountStatus accountStatus, String accountNumber, Tier tierLevel, String transactionPin) {
+        this.user = user;
         this.accountBalance = accountBalance;
         this.accountStatus = accountStatus;
         this.accountNumber = accountNumber;

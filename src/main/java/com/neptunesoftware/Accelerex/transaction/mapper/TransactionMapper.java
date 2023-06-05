@@ -2,24 +2,24 @@ package com.neptunesoftware.Accelerex.transaction.mapper;
 
 import com.neptunesoftware.Accelerex.transaction.Transaction;
 import com.neptunesoftware.Accelerex.transaction.TransactionStatus;
+import com.neptunesoftware.Accelerex.transaction.response.TransactionResponseStatus;
 import com.neptunesoftware.Accelerex.transaction.response.TransactionResponse;
-import com.neptunesoftware.Accelerex.transaction.response.TransactionStatusResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Function;
 
 @Service
-public class TransactionMapper implements Function<Transaction, TransactionStatusResponse> {
+public class TransactionMapper implements Function<Transaction, TransactionResponse> {
     @Override
-    public TransactionStatusResponse apply(Transaction transaction) {
-        TransactionResponse transactionResponse;
+    public TransactionResponse apply(Transaction transaction) {
+        TransactionResponseStatus transactionResponseStatuse;
         if(transaction.getStatus() == TransactionStatus.SUCCESS){
-            transactionResponse = TransactionResponse.SUCCESS;
+            transactionResponseStatuse = TransactionResponseStatus.SUCCESS;
         } else{
-            transactionResponse = TransactionResponse.FAIL;
+            transactionResponseStatuse = TransactionResponseStatus.FAIL;
         }
-        return new TransactionStatusResponse(
-                transactionResponse, transaction.getReferenceNo(), transaction.getId()
+        return new TransactionResponse(
+                transactionResponseStatuse, transaction.getReferenceNo(), transaction.getId()
         );
     }
 }

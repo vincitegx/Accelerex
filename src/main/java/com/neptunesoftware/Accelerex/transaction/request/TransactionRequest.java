@@ -25,8 +25,6 @@ public record TransactionRequest(
         BigDecimal charge,
         @NonNull
         TransactionType transactionType,
-//        @NonNull
-//        String transactionPin,
         @NonNull
         String narration
 ) {

@@ -55,8 +55,8 @@ public class UserService {
                 true,
                 userRegistrationRequest.phoneNumber());
 
-        userRepository.save(newUser);
-        accountService.createAccount(new Account(newUser.getId()));
+        newUser = userRepository.save(newUser);
+        accountService.createAccount(new Account(newUser));
     }
 
     public boolean passwordMatches(String rawPassword, String encodedPassword){
@@ -76,7 +76,7 @@ public class UserService {
     }
 
     public void changeUserPassword(ChangePasswordRequest request, Integer userId){
-        User existingUser = getUserByUserId(userId);
+        User existingUser = getUserById(userId);
 
         if(!bCryptPasswordEncoder.matches(request.oldPassword(),existingUser.getPassword())){
             throw new ValueMismatchException("old password does not match");
@@ -88,7 +88,7 @@ public class UserService {
 
     }
 
-    public User getUserByUserId(int userId){
+    public User getUserById(int userId){
         Optional<User> existingUser = userRepository.findById(userId);
         if(existingUser.isEmpty()){
             throw new ResourceNotFoundException("user not found");
