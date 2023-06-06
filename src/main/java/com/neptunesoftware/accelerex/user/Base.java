@@ -23,8 +23,4 @@ public class Base implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_updated")
     private Date updatedAt;
-
-
-
-
 }

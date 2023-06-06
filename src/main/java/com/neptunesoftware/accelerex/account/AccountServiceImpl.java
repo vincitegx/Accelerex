@@ -117,14 +117,13 @@ public class AccountServiceImpl implements AccountServices {
     }
 
     public boolean authenticate(String clientId, String secretKey) {
+            if (userRepository.findByEmailAddress(clientId).isPresent()) {
+                if (jwtService.extractUsername(secretKey) == clientId) {
 
-         if (jwtService.extractUsername(secretKey) != null) {
-             if (jwtService.extractUserIdFromToken(clientId) != null) {
-
-                 apiCredentials = new HashMap<>();
-                 apiCredentials.put(clientId, secretKey);
-             }
-         }
+                    apiCredentials = new HashMap<>();
+                    apiCredentials.put(clientId, secretKey);
+                }
+            }
         return apiCredentials.containsKey(clientId) && apiCredentials.get(clientId).equals(secretKey);
     }
 

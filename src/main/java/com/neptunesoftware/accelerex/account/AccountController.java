@@ -1,6 +1,7 @@
 package com.neptunesoftware.accelerex.account;
 
 import com.neptunesoftware.accelerex.account.request.CreateBankAccountRequest;
+import com.neptunesoftware.accelerex.account.request.FetchAccountBalanceRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.request.VirtualAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
@@ -35,8 +36,8 @@ public class AccountController {
        }
 
     @GetMapping("/accountBalance")
-    public ResponseEntity<FetchAccountBalanceResponse> getAccountBalance(@RequestParam("clientId") String clientId, @RequestParam("secretKey") String secretKey, @RequestParam("bankCode") String bankCode, @RequestParam("accountNo") String accountNo) {
-        return null;
+    public ResponseEntity<ApiResponse<FetchAccountBalanceResponse>> getAccountBalance(@RequestBody FetchAccountBalanceRequest request) {
+        return ResponseEntity.ok(accountServices.fetchAccountBalance(request));
     }
     @GetMapping("/nameInquiry")
     public ResponseEntity<String> nameInquiry(@RequestParam("clientId") String clientId, @RequestParam("secretKey") String secretKey, @RequestParam("bankCode") String bankCode, @RequestParam("accountNo") String accountNo) {
