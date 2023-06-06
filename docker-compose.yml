@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  jenkins:
+    image: jenkins/jenkins:latest
+    container_name: jenkins
+    volumes:
+      - ./jenkins:/var/jenkins_home
+    environment:
+      JENKINS_HOST_HOME: "/jenkins"
+    ports:
+      - '8000:8080'
+      - '50000:50000'
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    restart: unless-stopped
+    environment:
+      - SONARQUBE_JDBC_USERNAME=hasallive
+      - SONARQUBE_JDBC_PASSWORD=hasallive
+      - SONARQUBE_JDBC_URL=oracle:thin:@10.152.2.161:1521/ORCL
+    ports:
+      - "9000:9000"
