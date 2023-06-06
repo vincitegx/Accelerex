@@ -2,7 +2,8 @@ package com.neptunesoftware.accelerex.account;
 
 import com.neptunesoftware.accelerex.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class Account {
     private BigDecimal accountBalance;
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
+    private String currencyCode;
     private String accountNumber;
     @Enumerated(EnumType.STRING)
     private Tier tierLevel;

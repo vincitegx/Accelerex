@@ -29,14 +29,16 @@ public class User implements UserDetails {
     private Integer id;
     @Column(nullable = false)
     private String fullName;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String emailAddress;
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     private String phoneNumber;
+    private String smsToken;
     @Column(nullable = false)
     private boolean isNotBlocked;
+    private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

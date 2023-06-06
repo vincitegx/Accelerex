@@ -61,8 +61,8 @@ class TransactionServiceTest {
                 TransactionType.CREDIT,
                 "test transfer");
         User user = new User(1, "David", "david@gmail.com", "david", false);
-        Account senderAccount = new Account(user,new BigDecimal(200), AccountStatus.ACTIVATED,"986562737", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
-        Account receiverAccount = new Account(user,new BigDecimal(0), AccountStatus.ACTIVATED,"165568799", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
+        Account senderAccount = new Account(user,new BigDecimal(200), AccountStatus.ACTIVE,"986562737", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
+        Account receiverAccount = new Account(user,new BigDecimal(0), AccountStatus.ACTIVE,"165568799", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
 
         User senderUser = new User(1, "test Name 1", "test1@mail.com", userService.encodePassword("12345"), true);
         User reveiverUser = new User(2, "test Name 2", "test2@mail.com", userService.encodePassword("12345"), true);
@@ -139,7 +139,7 @@ class TransactionServiceTest {
     void can_generate_transaction_history_when_all_params_are_valid() {
         // Given
         User user = new User(1, "test Name 1", "test1@mail.com", userService.encodePassword("12345"), true);
-        Account senderAccount = new Account(user, new BigDecimal(200), AccountStatus.ACTIVATED, "986562737", Tier.LEVEL1, "$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
+        Account senderAccount = new Account(user, new BigDecimal(200), AccountStatus.ACTIVE, "986562737", Tier.LEVEL1, "$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
 
         // Create some sample transactions
         Transaction transaction1 = new Transaction(user, senderAccount.getAccountNumber(), senderAccount.getAccountNumber(), new BigDecimal(50), "REF123", "USD", new BigDecimal(2), "Transaction 1", "Test Sender","Test Receiver", TransactionStatus.SUCCESS, TransactionType.CREDIT);
@@ -161,7 +161,7 @@ class TransactionServiceTest {
     void can_Generate_Transaction_History_Between_Dates_by_userId(){
         int userId = 1;
         User user = new User(1, "test Name 1", "test1@mail.com", userService.encodePassword("12345"), true);
-        Account userAccount = new Account(user,new BigDecimal(200), AccountStatus.ACTIVATED,"986562737", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
+        Account userAccount = new Account(user,new BigDecimal(200), AccountStatus.ACTIVE,"986562737", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
         Page<Transaction> transactions =
                 new PageImpl<>(List.of(new Transaction(user,"878676790", "765362789", new BigDecimal("500"), "testRefNum", "testTransaction", new BigDecimal("500"), "testSender", "testReceiver", "testReceiver", TransactionStatus.SUCCESS, TransactionType.CREDIT)));
 
@@ -183,7 +183,7 @@ class TransactionServiceTest {
         //given
         int userId = 1;
         User user = new User(1, "test Name 1", "test1@mail.com", userService.encodePassword("12345"), true);
-        Account userAccount = new Account(user,new BigDecimal(200), AccountStatus.ACTIVATED,"986562737", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
+        Account userAccount = new Account(user,new BigDecimal(200), AccountStatus.ACTIVE,"986562737", Tier.LEVEL1,"$2a$10$j4ogRjGJWnPUrmdE82Mq5ueybC9SxGTCgQkvzzE7uSbYXoKqIMKxa");
         Page<Transaction> transactions = new PageImpl<>(List.of());
 
         TransactionHistoryRequest request = new TransactionHistoryRequest("2348499900",LocalDateTime.now(),LocalDateTime.now().plusHours(2L));

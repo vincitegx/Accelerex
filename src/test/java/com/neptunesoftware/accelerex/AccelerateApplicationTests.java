@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class AccelerateApplicationTests extends AbstractTestcontainers {
+class AccelerexApplicationTests extends AbstractTestcontainers {
 	@Test
 	void contextLoads() {
 		assertThat(oracleContainer.isRunning()).isTrue();
