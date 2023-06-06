@@ -4,6 +4,7 @@ import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
 import com.neptunesoftware.accelerex.user.UserRepository;
 import com.neptunesoftware.accelerex.user.UserService;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +18,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
-
-import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionControllerTest {
@@ -58,7 +57,7 @@ class TransactionControllerTest {
         //when
         ResponseEntity<TransactionResponse> responseEntity = transactionController.transferFunds(transactionRequest);
         //then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test

@@ -28,11 +28,10 @@ import java.util.Optional;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(initializers = {AbstractTestcontainers.Initializer.class})
 class TransactionRepositoryTest {
-
     @Autowired
-    private TransactionRepository transactionRepository;
+    private TransactionRepository transactionRepository; //TSONAR
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository userRepository; //TSONAR
     protected static final Faker FAKER = new Faker();
     private static final String REFERENCE_NO = FAKER.random().toString();
     private static final String SENDER_ACCOUNT_NO = FAKER.finance().iban("NGN");
@@ -46,17 +45,14 @@ class TransactionRepositoryTest {
                 FAKER.bool().bool(),
                 FAKER.phoneNumber().phoneNumber());
         userRepository.save(user);
-        String referenceNo = REFERENCE_NO;
-        String senderAccountNo = FAKER.finance().iban("NGN");
-        String receiverAccountNo = FAKER.finance().iban("NGN");
         BigDecimal amount = BigDecimal.valueOf(FAKER.number().randomNumber(3, true));
         String currencyCode = FAKER.currency().code();
         BigDecimal fee = BigDecimal.valueOf(FAKER.number().randomNumber(3, true));
         String description = FAKER.lorem().characters(10);
         String senderName = FAKER.name().fullName();
         String receiverName = user.getFullName();
-        Transaction transaction = new Transaction(user, senderAccountNo, receiverAccountNo, amount,
-                referenceNo, currencyCode, fee, description, senderName, receiverName, TransactionStatus.SUCCESS, TransactionType.CREDIT);
+        Transaction transaction = new Transaction(user, SENDER_ACCOUNT_NO, RECEIVER_ACCOUNT_NO, amount,
+                REFERENCE_NO, currencyCode, fee, description, senderName, receiverName, TransactionStatus.SUCCESS, TransactionType.CREDIT);
         transactionRepository.save(transaction);
     }
     @AfterEach
@@ -66,17 +62,14 @@ class TransactionRepositoryTest {
     }
     private Transaction createTransaction(User user, TransactionStatus status, TransactionType type) {
         String referenceNo = FAKER.random().toString();
-        String senderAccountNo = FAKER.finance().iban("NGN");
-        String receiverAccountNo = FAKER.finance().iban("NGN");
         BigDecimal amount = BigDecimal.valueOf(FAKER.number().randomNumber(3, true));
         String currencyCode = FAKER.currency().code();
         BigDecimal fee = BigDecimal.valueOf(FAKER.number().randomNumber(3, true));
         String description = FAKER.lorem().characters(10);
         String senderName = FAKER.name().fullName();
         String receiverName = user.getFullName();
-        Transaction transaction = new Transaction(user, senderAccountNo, receiverAccountNo, amount,
+        return new Transaction(user, SENDER_ACCOUNT_NO, RECEIVER_ACCOUNT_NO, amount,
                 referenceNo, currencyCode, fee, description, senderName, receiverName, status, type);
-        return transaction;
     }
     @Test
     void existsByReferenceNo_shouldReturnTrueIfTransactionExistsWithReferenceNo() {
@@ -98,18 +91,18 @@ class TransactionRepositoryTest {
     }
     @Test
     void testFindAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber() {
-//        User user = new User(FAKER.name().fullName(),
-//                FAKER.internet().safeEmailAddress(),
-//                FAKER.internet().password(),
-//                FAKER.bool().bool(),
-//                FAKER.phoneNumber().phoneNumber());
-//        userRepository.save(user);
-//        Transaction creditTransactionSuccessful = createTransaction(user, TransactionStatus.SUCCESS, TransactionType.CREDIT);
-//        Transaction debitTransactionSuccessful = createTransaction(user, TransactionStatus.SUCCESS, TransactionType.DEBIT);
-//        Transaction creditTransactionFailed = createTransaction(user, TransactionStatus.FAIL, TransactionType.CREDIT);
-//        Transaction debitTransactionFailed = createTransaction(user, TransactionStatus.FAIL, TransactionType.DEBIT);
-//        transactionRepository.saveAll(Arrays.asList(creditTransactionSuccessful, debitTransactionSuccessful,
-//                creditTransactionFailed, debitTransactionFailed));
+        User user = new User(FAKER.name().fullName(),
+                FAKER.internet().safeEmailAddress(),
+                FAKER.internet().password(),
+                FAKER.bool().bool(),
+                FAKER.phoneNumber().phoneNumber());
+        userRepository.save(user);
+        Transaction creditTransactionSuccessful = createTransaction(user, TransactionStatus.SUCCESS, TransactionType.CREDIT);
+        Transaction debitTransactionSuccessful = createTransaction(user, TransactionStatus.SUCCESS, TransactionType.DEBIT);
+        Transaction creditTransactionFailed = createTransaction(user, TransactionStatus.FAIL, TransactionType.CREDIT);
+        Transaction debitTransactionFailed = createTransaction(user, TransactionStatus.FAIL, TransactionType.DEBIT);
+        transactionRepository.saveAll(Arrays.asList(creditTransactionSuccessful, debitTransactionSuccessful,
+                creditTransactionFailed, debitTransactionFailed));
 
         LocalDateTime startDate = LocalDateTime.of(2022, 1, 1, 0, 0);
 //        LocalDateTime endDate = LocalDateTime.of(2022, 12, 31, 23, 59);
@@ -117,8 +110,8 @@ class TransactionRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Transaction> foundTransactions = transactionRepository
                 .findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
-                        startDate, endDate, REFERENCE_NO, REFERENCE_NO, pageable);
-        Assertions.assertEquals(1, foundTransactions.getTotalElements());
+                        startDate, endDate, RECEIVER_ACCOUNT_NO, RECEIVER_ACCOUNT_NO, pageable);
+        Assertions.assertEquals(4, foundTransactions.getTotalElements());
         List<String> senderAccountNumbers = foundTransactions.stream()
                 .map(Transaction::getSenderAccountNumber)
                 .toList();

@@ -1,6 +1,5 @@
 package com.neptunesoftware.accelerex.exception;
 
-import com.itextpdf.text.DocumentException;
 import com.neptunesoftware.accelerex.universal.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,9 +42,5 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ValueMismatchException.class)
     public final ResponseEntity<ApiResponse> handleValueMismatchException(ValueMismatchException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-    @ExceptionHandler(DocumentException.class)
-    public final ResponseEntity<ApiResponse> handleDocumentException(ValueMismatchException exception){
-        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

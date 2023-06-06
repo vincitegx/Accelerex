@@ -76,6 +76,7 @@ public class TransactionService {
         accountService.debitAccount(receiverAccount, transaction.getAmount());
         accountService.creditAccount(senderAccount, transaction.getAmount());
         transaction.setStatus(TransactionStatus.SUCCESS);
+        transaction.setReversal('Y');
         transactionRepository.saveAndFlush(transaction);
     }
 

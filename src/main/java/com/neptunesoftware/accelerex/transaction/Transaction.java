@@ -60,6 +60,8 @@ public class Transaction {
     @NonNull
     private TransactionType transactionType;
 
+    private char reversal = 'N';
+
     private LocalDateTime createdAt;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
