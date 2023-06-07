@@ -5,6 +5,7 @@ import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.config.JWTService;
 import com.neptunesoftware.accelerex.exception.ValidationException;
 import com.neptunesoftware.accelerex.general.ClientRepo;
+import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.user.User;
 import com.neptunesoftware.accelerex.user.UserRepository;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
@@ -44,7 +45,7 @@ public class AccountServiceImpl implements AccountServices {
             }
             linkBankAccountToWallet(request.getMobileNo());
             User user = userRepository.findByPhoneNumber(request.getMobileNo()).get();
-            Account account = accountRepository.findByUserId(user.getId());
+            Account account = accountRepository.findAccountByUser(user).get();
 
             LinkBankAccountResponse response = new LinkBankAccountResponse();
             response.setAccountNo(account.getAccountNumber());
@@ -76,7 +77,7 @@ public class AccountServiceImpl implements AccountServices {
         Account account = new Account();
         account.setAccountNumber(generateAccountNumber());
 
-        while(accountRepository.findByAccountNumber(account.getAccountNumber()).isPresent()) {
+        while(accountRepository.findAccountByAccountNumber(account.getAccountNumber()).isPresent()) {
               generateAccountNumber();
 
         }
@@ -104,7 +105,7 @@ public class AccountServiceImpl implements AccountServices {
     public ApiResponse<FetchAccountBalanceResponse> fetchAccountBalance(FetchAccountBalanceRequest request) {
 
         if (authenticate(request.getClientId(), request.getSecretKey())) {
-            Account account = accountRepository.findByAccountNumber(request.getAccountNo()).get();
+            Account account = accountRepository.findAccountByAccountNumber(request.getAccountNo()).get();
             FetchAccountBalanceResponse response = new FetchAccountBalanceResponse();
             response.setAccountName(account.getAccountNumber());
             response.setCurrencyCode(account.getCurrencyCode());
@@ -129,7 +130,7 @@ public class AccountServiceImpl implements AccountServices {
     }
 
     @Override
-    public ApiResponse<NameInquiryResponse> nameInquiry(NameInquiryRequest nameInquiryRequest) {
+    public NameInquiryResponse nameInquiry(String accountNumber) {
         return null;
     }
 
@@ -162,7 +163,7 @@ public class AccountServiceImpl implements AccountServices {
 
     private void linkBankAccountToWallet(String mobileNo) {
         User user = userRepository.findByPhoneNumber(mobileNo).get();
-        Account account = accountRepository.findByUserId(user.getId());
+        Account account = accountRepository.findAccountByUserId(user.getId()).get();
 
         if (account==null) {
             throw new ValidationException("No such account associated with user");
@@ -189,5 +190,22 @@ public class AccountServiceImpl implements AccountServices {
         return otp.toString();
     }
 
-    
+    public void saveTransaction(TransactionRequest details, String transactionMethod) {
+        accountRepository.updateTransactionHistory(TransactionRequest.builder()
+                .senderAccountNumber(details.getSenderAccountNumber())
+                .senderName(details.getSenderName())
+                .referenceNo(details.getReferenceNo())
+                .narration(details.getNarration())
+                .amount(details.getAmount())
+                .receiverAccountNumber(details.getReceiverAccountNumber())
+                .receiverName(details.getReceiverName())
+                .isReversal('N')
+                .transactionType(details.getTransactionType())
+                .build());
+    }
+
+    @Override
+    public Account accountExistsAndIsActivated(String senderAccountNumber) {
+        return null;
+    }
 }

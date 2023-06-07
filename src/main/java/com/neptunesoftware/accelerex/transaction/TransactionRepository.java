@@ -1,14 +1,11 @@
 package com.neptunesoftware.accelerex.transaction;
 import com.neptunesoftware.accelerex.user.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
-public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
+public interface TransactionRepository {
     boolean existsByReferenceNo(String referenceNo);
     Optional<Transaction> findByReferenceNo(String referenceNo);
     Transaction findByUserAndReferenceNo(User user, String referenceNo);

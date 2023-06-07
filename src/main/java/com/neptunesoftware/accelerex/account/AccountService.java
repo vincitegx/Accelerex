@@ -36,7 +36,7 @@ public class AccountService {
     public void createAccount(Account account) {
         account.setAccountNumber(generateUniqueAccountNumber());
         account.setTierLevel(Tier.LEVEL1);
-        account.setAccountStatus(AccountStatus.ACTIVATED);
+        account.setAccountStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
     }
 
@@ -99,7 +99,7 @@ public class AccountService {
         if(!noPendingOrAvailableFundInTheAccount(userAccount)) {
             throw new AccountNotClearedException("confirm there is no pending or available balance in the account");
         }
-        userAccount.setAccountStatus(AccountStatus.CLOSED);
+//        userAccount.setAccountStatus(AccountStatus.CLOSED);
         updateAccount(userAccount);
     }
 
@@ -129,7 +129,7 @@ public class AccountService {
     public Account accountExistsAndIsActivated(String accountNumber){
         Optional<Account> exitingAccount = accountRepository.findAccountByAccountNumber(accountNumber);
         if(exitingAccount.isPresent()){
-            if(exitingAccount.get().getAccountStatus().equals(AccountStatus.ACTIVATED)){
+            if(exitingAccount.get().getAccountStatus().equals(AccountStatus.ACTIVE)){
                 return exitingAccount.get();
             }
             throw new AccountNotActivatedException("Account not activated");
@@ -144,4 +144,5 @@ public class AccountService {
         senderAccount.setAccountBalance(senderAccount.getAccountBalance().subtract(amount));
         updateAccount(senderAccount);
     }
+
 }

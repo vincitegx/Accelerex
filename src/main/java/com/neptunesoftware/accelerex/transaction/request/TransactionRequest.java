@@ -1,31 +1,36 @@
 package com.neptunesoftware.accelerex.transaction.request;
 
 import com.neptunesoftware.accelerex.transaction.TransactionType;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 
-public record TransactionRequest(
+@Data
+@Builder
+public class TransactionRequest{
         @NonNull
-        Integer clientId,
+        private Integer clientId;
         @NonNull
-        String senderAccountNumber,
+        private String senderAccountNumber;
         @NonNull
-        String senderName,
+        private String senderName;
         @NonNull
-        String receiverAccountNumber,
+        private String receiverAccountNumber;
         @NonNull
-        String receiverName,
+        private String receiverName;
         @NonNull
-        String referenceNo,
+        private String referenceNo;
         @NonNull
-        BigDecimal amount,
+        private BigDecimal amount;
         @NonNull
-        String currencyCode,
-        BigDecimal charge,
+        private String currencyCode;
+        private BigDecimal charge;
         @NonNull
-        TransactionType transactionType,
+        private TransactionType transactionType;
         @NonNull
-        String narration
-) {
+        private String narration;
+
+        private char isReversal;
 }
