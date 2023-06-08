@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class TransactionHistoryResponse {
-    LocalDateTime transactionDateTime;
-    BigDecimal amount;
-    TransactionType transactionType;
+    String transactionDateTime;
+    String amount;
+    String transactionType;
     String senderName;
     String receiverName;
     String description;

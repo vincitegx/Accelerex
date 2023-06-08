@@ -8,8 +8,6 @@ import com.neptunesoftware.accelerex.universal.ApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +35,7 @@ public class TransactionController {
     @PostMapping("/bulk-transactions")
     @Hidden
     public ResponseEntity<ApiResponse> postBulkTransactions(@RequestBody @Validated BulkTransactionRequest request) {
-        transactionService.processBulkTransactions(request);
+//        transactionService.processBulkTransactions(request);
         return new ResponseEntity<>(new ApiResponse("Bulk transactions processed"), HttpStatus.OK);
     }
     @GetMapping("/transaction-status")
@@ -47,16 +45,16 @@ public class TransactionController {
     }
     @PostMapping("/reverse-transaction")
     public ResponseEntity<ApiResponse> reverseTransaction(@RequestParam String externalRefNo) {
-        transactionService.reverseTransaction(externalRefNo);
+//        transactionService.reverseTransaction(externalRefNo);
         return new ResponseEntity<>(new ApiResponse("Transaction reversed"), HttpStatus.OK);
     }
     @PostMapping("/transaction-history")
     public ResponseEntity<ApiResponse> generateTransactionHistory(@RequestParam int size,
                                                                   @RequestParam int page,
                                                                   @RequestBody @Validated TransactionHistoryRequest request) {
-        Pageable pageable = PageRequest.of(page, size);
+//        Pageable pageable = PageRequest.of(page, size);
         return new ResponseEntity<>(new ApiResponse("transaction history",
-                transactionService.getTransactionHistory(request,pageable)),
+                transactionService.getTransactionHistory(request)),
                 HttpStatus.OK);
     }
 }

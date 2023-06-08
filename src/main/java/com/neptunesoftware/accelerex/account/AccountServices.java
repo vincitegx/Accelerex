@@ -7,18 +7,18 @@ import com.neptunesoftware.accelerex.utils.ApiResponse;
 
 public interface AccountServices {
 
-    ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request);
+//    ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request);
 
     NameInquiryResponse nameInquiry(String accountNumber);
 
     VerifyTokenResponse verifySmsToken(String smsToken);
-    ApiResponse<CreateBankAccountResponse> createBankAccount(CreateBankAccountRequest createBankAccountRequest);
+//    ApiResponse<CreateBankAccountResponse> createBankAccount(CreateBankAccountRequest createBankAccountRequest);
 
    ApiResponse<VerifyTokenResponse> createVirtualAccount(VirtualAccountRequest request);
 
-    ApiResponse<FetchAccountBalanceResponse> fetchAccountBalance(FetchAccountBalanceRequest request);
+//    ApiResponse<FetchAccountBalanceResponse> fetchAccountBalance(FetchAccountBalanceRequest request);
 
     void saveTransaction(TransactionRequest details, String tranMethod);
 
-    Account accountExistsAndIsActivated(String senderAccountNumber)
+    boolean accountExistsAndIsActivated(String senderAccountNumber);
 }

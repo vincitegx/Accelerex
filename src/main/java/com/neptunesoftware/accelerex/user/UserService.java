@@ -1,6 +1,5 @@
 package com.neptunesoftware.accelerex.user;
 
-import com.neptunesoftware.accelerex.account.Account;
 import com.neptunesoftware.accelerex.account.AccountService;
 import com.neptunesoftware.accelerex.config.JWTService;
 import com.neptunesoftware.accelerex.exception.InvalidAuthenticationException;

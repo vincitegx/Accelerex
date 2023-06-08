@@ -8,9 +8,9 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository {
-    Optional<Account> findAccountByUser(User user);
-    Optional<Account> findAccountByAccountNumber(String accountNumber);
-    Optional<Account> findAccountByUserId(Integer user_id);
+//    Optional<Account> findAccountByUser(User user);
+//    Optional<Account> findAccountByAccountNumber(String accountNumber);
+//    Optional<Account> findAccountByUserId(Integer user_id);
     boolean existsByAccountNumber(String accountNumber);
     void updateTransactionHistory(TransactionRequest details);
 }
