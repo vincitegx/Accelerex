@@ -1,15 +1,7 @@
 package com.neptunesoftware.accelerex.transaction;
 
 import com.neptunesoftware.accelerex.user.User;
-import jakarta.persistence.Id;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.NonNull;
 import lombok.Data;
 
@@ -33,6 +25,7 @@ public class Transaction {
     )
     private Integer id;
     @NonNull
+    @ManyToOne
     private User user;
     @NonNull
     private String senderAccountNumber;

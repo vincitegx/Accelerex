@@ -1,20 +1,32 @@
 package com.neptunesoftware.accelerex.account;
 
-import com.neptunesoftware.accelerex.account.request.*;
+import com.neptunesoftware.accelerex.account.request.CreateBankAccountRequest;
+import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
-import com.neptunesoftware.accelerex.config.JWTService;
+import com.neptunesoftware.accelerex.config.AccelerexCredentials;
+import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
+import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
+import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
+import com.neptunesoftware.accelerex.exception.AccountNotExistException;
+import com.neptunesoftware.accelerex.exception.AccountServiceException;
+import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
 import com.neptunesoftware.accelerex.exception.ValidationException;
-import com.neptunesoftware.accelerex.general.ClientRepo;
 import com.neptunesoftware.accelerex.user.User;
 import com.neptunesoftware.accelerex.user.UserRepository;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
+import com.neptunesoftware.accelerex.utils.AppUtils;
+import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
+import org.springframework.ws.client.core.WebServiceTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import static com.neptunesoftware.accelerex.utils.Cypher.deCypher;
 
 @Service
 @RequiredArgsConstructor
@@ -23,45 +35,32 @@ public class AccountServiceImpl implements AccountServices {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
-    private final ClientRepo clientRepo;
-    private static Map<String, String> apiCredentials;
-    private final JWTService jwtService;
-    
+    private final AccelerexCredentials ACCELEREX_CREDENTIALS ;
+    @Value("${package.packageToScan}")
+    private  String PACKAGE_TO_SCAN;
+    @Value("${endpoint.accountWebservice}")
+    private String ACCOUNT_WEB_SERVICE_END_POINT_PORT;
+    private final AppUtils appUtils;
 
     @Override
     public ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request) {
-        boolean isAccountValid = validateBankAccount(request.getMobileNo());
 
-        String otp;
-
-        if (isAccountValid) {
-            otp = generateOTP();
-            boolean isOtpValid = sendOTP(request.getMobileNo(), otp);
-
-            if (!isOtpValid) {
-
-                throw new ValidationException("Invalid Otp");
+        boolean isAccountValid = validateBankAccount(request.getAccountNo());
+        String opt = generateOTP();
+        if (isAccountValid){
+            sendOTP(request.getMobileNo(),opt);
+          boolean isOtpVerified =  verifyToken(request.getAccountNo(),opt);
+            if (isOtpVerified) {
+                String agentId = accountRepository.findUserIdByAccountNumber(request.getAccountNo());
             }
-            linkBankAccountToWallet(request.getMobileNo());
-            User user = userRepository.findByPhoneNumber(request.getMobileNo()).get();
-            Account account = accountRepository.findByUserId(user.getId());
-
-            LinkBankAccountResponse response = new LinkBankAccountResponse();
-            response.setAccountNo(account.getAccountNumber());
-            response.setMobileNo(user.getPhoneNumber());
-            response.setEmail(user.getEmailAddress());
-            response.setAccountName(user.getFullName());
-
-            return new ApiResponse<>("Success", "Bank account linked successfully.", response);
         }
-            return new ApiResponse<>("Failed", "Failed to link Bank Account", null);
+     return  null;
     }
 
 
     public ApiResponse<CreateBankAccountResponse> createBankAccount(CreateBankAccountRequest bankAccountRequest) {
 
-
-        if ( userRepository.findByEmailAddress(bankAccountRequest.getEmail()).isPresent())
+        if (userRepository.findByEmailAddress(bankAccountRequest.getEmail()).isPresent())
             throw new ValidationException("User with Email already exist");
         if (userRepository.findByPhoneNumber(bankAccountRequest.getMobileNo()).isPresent())
             throw new ValidationException("User with Phone number Already exist");
@@ -71,19 +70,15 @@ public class AccountServiceImpl implements AccountServices {
         user.setEmailAddress(bankAccountRequest.getEmail());
         user.setPhoneNumber(bankAccountRequest.getMobileNo());
         user.setPassword(bankAccountRequest.getPassword());
-        userRepository.save(user);
+//        userRepository.save(user);
 
         Account account = new Account();
-        account.setAccountNumber(generateAccountNumber());
+        account.setAccountNumber(appUtils.generateAccountNumber());
 
-        while(accountRepository.findByAccountNumber(account.getAccountNumber()).isPresent()) {
-              generateAccountNumber();
-
-        }
         account.setAccountStatus(AccountStatus.PENDING);
         account.setTierLevel(Tier.LEVEL1);
         account.setUser(user);
-        accountRepository.save(account);
+//        accountRepository.save(account);
 
         CreateBankAccountResponse response = new CreateBankAccountResponse();
         response.setAccountName(user.getFullName());
@@ -95,82 +90,59 @@ public class AccountServiceImpl implements AccountServices {
         return new ApiResponse<>("Success", "Account created successfully", response);
     }
 
-    @Override
-    public ApiResponse<VerifyTokenResponse> createVirtualAccount(VirtualAccountRequest request) {
-        return null;
-    }
 
     @Override
-    public ApiResponse<FetchAccountBalanceResponse> fetchAccountBalance(FetchAccountBalanceRequest request) {
+    public BalanceenquiryResponse fetchAccountBalance(String accountNumber) {
+        validateBankAccount(accountNumber);
+        WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
+        BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
 
-        if (authenticate(request.getClientId(), request.getSecretKey())) {
-            Account account = accountRepository.findByAccountNumber(request.getAccountNo()).get();
-            FetchAccountBalanceResponse response = new FetchAccountBalanceResponse();
-            response.setAccountName(account.getAccountNumber());
-            response.setCurrencyCode(account.getCurrencyCode());
-            response.setAvailableBalance(String.valueOf(account.getAccountBalance()));
-            response.setAccountStatus(account.getAccountStatus());
-
-            return new ApiResponse<>("Success","Your Account Balance is: "+ account.getAccountBalance(),response);
+        Balanceenquiry balanceenquiry = new Balanceenquiry();
+        balanceenquiry.setArg0(balEnqRequest);
+        JAXBElement response;
+        try {
+            response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
+                    ACCOUNT_WEB_SERVICE_END_POINT_PORT, balanceenquiry);
+        } catch (Exception e) {
+            throw new BalanceEnquiryException("An error occurred while querying the account balance "
+                    + " for account " + accountNumber);
         }
-        return new ApiResponse<>("Failed","Failed to retrieve Account details",null);
+        return (BalanceenquiryResponse) response.getValue();
     }
 
-    public boolean authenticate(String clientId, String secretKey) {
-
-         if (jwtService.extractUsername(secretKey) != null) {
-             if (jwtService.extractUserIdFromToken(clientId) != null) {
-
-                 apiCredentials = new HashMap<>();
-                 apiCredentials.put(clientId, secretKey);
-             }
-         }
-        return apiCredentials.containsKey(clientId) && apiCredentials.get(clientId).equals(secretKey);
-    }
 
     @Override
-    public ApiResponse<NameInquiryResponse> nameInquiry(NameInquiryRequest nameInquiryRequest) {
-        return null;
-    }
-
-    private boolean validateBankAccount(String mobileNo) {
-        return userRepository.findByPhoneNumber(mobileNo).isPresent();
+    public ApiResponse<NameEnquiryResponse> nameEnquiry(String accountNumber) {
+        String accountName = accountRepository.findNameByAccountNumber(accountNumber);
+        if (accountName.equals(Strings.EMPTY)) {
+            throw new AccountNotExistException("The specified account number does not exist " + accountNumber);
+        }
+        return new ApiResponse<>("Success", "The account name is: ", NameEnquiryResponse.builder()
+                .accountName(accountName).build());
     }
 
     public String generateOTP() {
-        Random random = new Random();
-        StringBuilder otp = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            otp.append(random.nextInt(10));
-        }
-        return otp.toString();
+        return RandomStringUtils.randomNumeric(4);
     }
 
-    private boolean sendOTP(String mobileNumber, String otp) {
-        User user = userRepository.findByPhoneNumber(mobileNumber).get();
-
-        //Todo: Implementation of SMS seb
-        // Send: The OTP to the provided mobile number and call verify token API =>verifyToken()
-//        if (verifySmsToken(otp).getMobileNo().equals(user.getPhoneNumber())) {
-//            user.setVerified(true);
-//            userRepository.save(user);
-//            return true;
-//        }
-//        throw new ValidationException("Invalid Token");
-        return true;
+    private void sendOTP(String mobileNumber, String otp) {
+        /**
+         *  Todo: Implementation of SMS sending API
+         *  Send_Token: The OTP sent to the provided mobile number, is store and call verify token API verifyToken()
+         */
+        accountRepository.updateOTP(mobileNumber,otp);
     }
 
     private void linkBankAccountToWallet(String mobileNo) {
         User user = userRepository.findByPhoneNumber(mobileNo).get();
-        Account account = accountRepository.findByUserId(user.getId());
+        Account account = accountRepository.findAccountByUser(user).get();
 
-        if (account==null) {
+        if (account.getUser().getPhoneNumber().equals(Strings.EMPTY)) {
             throw new ValidationException("No such account associated with user");
         }
         account.setUser(user);
-        accountRepository.save(account);
+//        accountRepository.save(account);
     }
-
 
     public VerifyTokenResponse verifySmsToken(String smsToken) {
         User user = userRepository.findBySmsToken(smsToken).get();
@@ -178,16 +150,43 @@ public class AccountServiceImpl implements AccountServices {
         response.setAccountName(user.getFullName());
         response.setAccountNo(user.getPhoneNumber());
         response.setEmail(user.getEmailAddress());
-      return response;
+        return response;
     }
-    public String generateAccountNumber() {
-        Random random = new Random();
-        StringBuilder otp = new StringBuilder();
-        for (int i = 0; i < 10; i++) {
-            otp.append(random.nextInt(4, 10));
-        }
-        return otp.toString();
+    
+
+    private Marshaller marshaller() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        /**
+         *  This package must match the package in the <generatePackage> specified in
+         *          pom.xml
+          */
+        marshaller.setPackagesToScan(PACKAGE_TO_SCAN);
+        return marshaller;
+    }
+    private BalanceEnquiryRequestData buildRequest(String accountNumber) {
+        BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
+        balEnqRequest.setSessionId(String.valueOf(System.currentTimeMillis()));
+        balEnqRequest.setDestinationInstitutionCode("");
+        balEnqRequest.setChannelCode(deCypher(ACCELEREX_CREDENTIALS.getChannelCode()));
+
+        balEnqRequest.setAuthorizationCode("");
+        balEnqRequest.setTargetAccountName("");
+        balEnqRequest.setTargetBankVerificationNumber("");
+        balEnqRequest.setTargetAccountNumber(accountNumber);
+        return balEnqRequest;
     }
 
-    
+    private boolean verifyToken(String accountNumber, String smsToken) {
+        String token = accountRepository.findTokenByAccountNumber(accountNumber);
+        if (!(token.equals(smsToken))) throw new AccountServiceException("Incorrect token" + " for account: " + accountNumber);
+        return true;
+    }
+
+    private boolean validateBankAccount(String accountNumber) {
+         String accountNum = accountRepository.findByAccountNumber(accountNumber);
+         if (!(accountNum.equals(accountNumber))) {
+             throw new AccountNotExistException("Account does not exist");
+         }
+        return true;
+    }
 }

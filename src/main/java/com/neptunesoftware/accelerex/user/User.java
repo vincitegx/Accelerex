@@ -35,6 +35,8 @@ public class User implements UserDetails {
     private String password;
     @Column(nullable = false)
     private String phoneNumber;
+    @Enumerated(EnumType.STRING)
+    private Role role;
     private String smsToken;
     @Column(nullable = false)
     private boolean isNotBlocked;

@@ -2,15 +2,15 @@ package com.neptunesoftware.accelerex.account;
 
 import com.neptunesoftware.accelerex.account.request.AccountTransactionPinUpdateModel;
 import com.neptunesoftware.accelerex.account.response.AccountOverviewResponse;
+import com.neptunesoftware.accelerex.config.PasswordEncoderConfig;
 import com.neptunesoftware.accelerex.exception.AccountNotActivatedException;
 import com.neptunesoftware.accelerex.exception.AccountNotClearedException;
 import com.neptunesoftware.accelerex.exception.InsufficientBalanceException;
 import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserService;
+import com.neptunesoftware.accelerex.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,21 +23,22 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
 
-    private final UserService userService;
-    private static final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final UserRepository userRepository;
+    private PasswordEncoderConfig passwordEncoderConfig;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, UserService userService) {
+    public AccountService(AccountRepository accountRepository, UserRepository userRepository, PasswordEncoderConfig passwordEncoderConfig) {
         this.accountRepository = accountRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
+        this.passwordEncoderConfig = passwordEncoderConfig;
     }
 
     @Async
     public void createAccount(Account account) {
         account.setAccountNumber(generateUniqueAccountNumber());
         account.setTierLevel(Tier.LEVEL1);
-        account.setAccountStatus(AccountStatus.ACTIVATED);
-        accountRepository.save(account);
+        account.setAccountStatus(AccountStatus.ACTIVE);
+//        accountRepository.save(account);
     }
 
     /**
@@ -56,7 +57,7 @@ public class AccountService {
     }
 
     public Account getAccountByUserId(Integer userId) {
-        User user = userService.getUserById(userId);
+        User user = userRepository.findById(userId).get();
         Optional<Account> account = accountRepository.findAccountByUser(user);
         if(account.isEmpty()){
             throw new ResourceNotFoundException("account not found");
@@ -87,7 +88,7 @@ public class AccountService {
 
     public void updateAccount(Account existingAccount) {
         existingAccount.setUpdatedAt(LocalDateTime.now());
-        accountRepository.save(existingAccount);
+//        accountRepository.save(existingAccount);
     }
 
     /**
@@ -119,7 +120,7 @@ public class AccountService {
         if(!pinConformsToStandard(pinUpdateModel.transactionPin())){
             throw new IllegalArgumentException("Bad transaction pin format");
         }
-        userAccount.setTransactionPin(bCryptPasswordEncoder.encode(pinUpdateModel.transactionPin()));
+        userAccount.setTransactionPin(passwordEncoderConfig.passwordEncoder().encode(pinUpdateModel.transactionPin()));
         updateAccount(userAccount);
     }
     public void creditAccount(Account receiverAccount,BigDecimal amount) {
@@ -129,7 +130,7 @@ public class AccountService {
     public Account accountExistsAndIsActivated(String accountNumber){
         Optional<Account> exitingAccount = accountRepository.findAccountByAccountNumber(accountNumber);
         if(exitingAccount.isPresent()){
-            if(exitingAccount.get().getAccountStatus().equals(AccountStatus.ACTIVATED)){
+            if(exitingAccount.get().getAccountStatus().equals(AccountStatus.ACTIVE)){
                 return exitingAccount.get();
             }
             throw new AccountNotActivatedException("Account not activated");
