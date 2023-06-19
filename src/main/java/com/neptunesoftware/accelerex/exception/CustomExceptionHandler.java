@@ -1,10 +1,6 @@
 package com.neptunesoftware.accelerex.exception;
 
-import com.neptunesoftware.accelerex.universal.ApiResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
@@ -14,10 +10,10 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 //    public final ResponseEntity<ApiResponse> handleResourceExistsException(ResourceExistsException exception){
 //        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.CONFLICT);
 //    }
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public final ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException exception){
-        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
-    }
+//    @ExceptionHandler(ResourceNotFoundException.class)
+//    public final ResponseEntity<ApiResponse<N>> handleResourceNotFoundException(ResourceNotFoundException exception){
+//        return new ResponseEntity<>(new ApiResponse<N>(exception.getMessage()), HttpStatus.NOT_FOUND);
+//    }
 
 //    @ExceptionHandler(AccountNotActivatedException.class)
 //    public final ResponseEntity<ApiResponse> handleAccountNotActivatedException(AccountNotActivatedException exception){
@@ -39,8 +35,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 //    public final ResponseEntity<ApiResponse> handleInvalidAuthorizationException(InvalidAuthorizationException exception){
 //        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.UNAUTHORIZED);
 //    }
-    @ExceptionHandler(ValueMismatchException.class)
-    public final ResponseEntity<ApiResponse> handleValueMismatchException(ValueMismatchException exception){
-        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(ValueMismatchException.class)
+//    public final ResponseEntity<ApiResponse<N>> handleValueMismatchException(ValueMismatchException exception){
+//        return new ResponseEntity<>(new ApiResponse<N>(exception.getMessage()), HttpStatus.BAD_REQUEST);
+//    }
 }

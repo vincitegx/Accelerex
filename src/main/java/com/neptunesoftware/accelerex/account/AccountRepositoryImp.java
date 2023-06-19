@@ -14,10 +14,11 @@ import java.util.Optional;
 
 import static com.neptunesoftware.accelerex.account.SqlQueries.*;
 
+
 @Repository
 @RequiredArgsConstructor
 @Log4j2
-public class AccountRepositoryImp implements AccountRepository{
+public class AccountRepositoryImp implements AccountRepository {
     
         private final JdbcTemplate jdbcTemplate;
 
@@ -60,7 +61,7 @@ public class AccountRepositoryImp implements AccountRepository{
     public boolean existsByAccountNumber(String accountNumber) {
         try {
             Integer count = jdbcTemplate.queryForObject(IS_ACCOUNT_EXISTING,Integer.class, accountNumber);
-            return count != null && count> 0;
+            return count != null && count > 0;
         }   catch (EmptyResultDataAccessException e) {
             return false;
         }
@@ -81,17 +82,23 @@ public class AccountRepositoryImp implements AccountRepository{
 
         jdbcTemplate.update(SAVE_OTP, phoneNumber, otp);
         String message = "Kindly use this OTP: " + otp + " to complete your mobile App setup.";
-
         jdbcTemplate.update(SAVE_SMS, message, phoneNumber, date);
     }
 
     @Override
     public String findUserIdByAccountNumber(String accountNumber) {
        try {
-           return jdbcTemplate.queryForObject(SELECT_CUSTOMER_ID,String.class, accountNumber);
+           return jdbcTemplate.query(SELECT_CUSTOMER_ID,(resultSet, i) -> resultSet.getString("acct_num")).toString();
        } catch (EmptyResultDataAccessException e) {
           return Strings.EMPTY;
        }
     }
-
+    @Override
+    public String findBvnByAccountNum(String accountNumber) {
+        try {
+            return jdbcTemplate.queryForObject(SELECT_BVN, String.class, accountNumber);
+        } catch (EmptyResultDataAccessException e) {
+            return Strings.EMPTY;
+        }
+    }
 }

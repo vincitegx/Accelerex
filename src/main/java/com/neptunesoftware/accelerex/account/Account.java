@@ -14,6 +14,9 @@ public class Account {
 
     private Integer id;
     private User user;
+    private String accountName;
+    private Integer mainBranchId;
+    private Integer customerId;
     private BigDecimal accountBalance;
     private AccountStatus accountStatus;
     private String currencyCode;

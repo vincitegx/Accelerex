@@ -1,6 +1,8 @@
 package com.neptunesoftware.accelerex.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
 import com.neptunesoftware.accelerex.exception.UserNotFoundException;
 import com.neptunesoftware.accelerex.user.User;
@@ -11,12 +13,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,6 +42,51 @@ public class AppUtils {
         if (delimitedString!=null)
             return  Arrays.stream(delimitedString.split(",")).collect(Collectors.toList());
         return null;
+    }
+
+    /**
+     * Deserialize JSON or XML data into an object of the specified target type.
+     *
+     * @param data        The JSON or XML data to be deserialized.
+     * @param targetType The class representing the target type.
+     * @param <T>         The type of the target object.
+     * @return The deserialized object of the specified target type.
+     */
+    public  <T> T JSONOrXMLToObject(String data, Class<T> targetType) {
+        T result = null;
+        try {
+            // Detect the data format (JSON or XML)
+            boolean isJSON = data.trim().startsWith("{");
+
+            // Initialize the appropriate object mapper
+            ObjectMapper mapper = isJSON ? new ObjectMapper() : new XmlMapper();
+
+            // Deserialize the data into the target type
+            result = mapper.readValue(data, targetType);
+        } catch (Exception e) {
+            // Handle any exceptions that occur during deserialization
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public  String convertDateFormatToString(String inputDate, String sourceFormat, String neededFormat) throws ParseException {
+
+        DateFormat originalFormat = new SimpleDateFormat(sourceFormat, Locale.ENGLISH);
+        DateFormat targetFormat = new SimpleDateFormat(neededFormat);
+        Date date = originalFormat.parse(inputDate);
+        return targetFormat.format(date);
+    }
+
+    public  String ObjectToJsonString(Object object) {
+        String jsonString = null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            jsonString = mapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return jsonString;
     }
 
 

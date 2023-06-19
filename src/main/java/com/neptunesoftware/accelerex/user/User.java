@@ -1,6 +1,5 @@
 package com.neptunesoftware.accelerex.user;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,34 +10,33 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Objects;
 
-@Entity
-@Table(name = "users")
+
 @Data
 @NoArgsConstructor
 public class User implements UserDetails {
 
-    @Id
-    @SequenceGenerator(
-            name = "user_id_sequence",
-            sequenceName = "user_id_sequence"
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "user_id_sequence"
-    )
+//    @Id
+//    @SequenceGenerator(
+//            name = "user_id_sequence",
+//            sequenceName = "user_id_sequence"
+//    )
+//    @GeneratedValue(
+//            strategy = GenerationType.SEQUENCE,
+//            generator = "user_id_sequence"
+//    )
     private Integer id;
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private String fullName;
-    @Column(nullable = true)
+//    @Column(nullable = true)
     private String emailAddress;
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private String password;
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private String phoneNumber;
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
     private Role role;
     private String smsToken;
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private boolean isNotBlocked;
     private boolean isVerified;
     private LocalDateTime createdAt;
