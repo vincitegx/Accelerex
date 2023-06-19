@@ -11,11 +11,9 @@ public class TransactionHistoryRowMapper implements RowMapper<TransactionHistory
     public TransactionHistoryResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
         return new TransactionHistoryResponse(
                 rs.getString("REC_TS"),
+                rs.getString("NARRATION"),
                 rs.getString("TRAN_AMT"),
-                rs.getString("SUB_TRAN_REF"),
-                rs.getString(""),
-                rs.getString(""),
-                rs.getString("NARRATION")
+                rs.getString("FROM_ACCT_NO")
         );
     }
 }

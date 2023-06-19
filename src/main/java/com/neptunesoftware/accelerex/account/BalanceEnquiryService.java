@@ -21,7 +21,7 @@ public class BalanceEnquiryService {
     private String ACCOUNT_WEB_SERVICE_END_POINT_PORT;
 
     public BalanceenquiryResponse balanceEnquiry(String accountNumber) {
-        validateAccount(accountNumber);
+//        validateAccount(accountNumber);
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
         BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
 
@@ -49,17 +49,17 @@ public class BalanceEnquiryService {
         balEnqRequest.setTargetAccountNumber(accountNumber);
         return balEnqRequest;
     }
-    public boolean isAccountSufficient(String sourceAccount, String amount) {
-        validateAccount(sourceAccount);
+    public boolean isAccountSufficient(String sourceAccount, BigDecimal amount) {
+//        validateAccount(sourceAccount);
         BalanceenquiryResponse response = balanceEnquiry(sourceAccount);
-        boolean b = response.getReturn().getAvailableBalance().compareTo(new BigDecimal(amount)) < 0;
-        if (b) throw new BalanceEnquiryException("Account has insufficient balance");
-        return false;
+        return response.getReturn().getAvailableBalance().compareTo(amount) >= 0;
+//        if (b) throw new BalanceEnquiryException("Account has insufficient balance");
+//        return false;
     }
 
-    private void validateAccount(String accountNumber) {
-        accountService.nameInquiry(accountNumber);
-    }
+//    private void validateAccount(String accountNumber) {
+//        accountService.nameInquiry(accountNumber);
+//    }
 
     private Marshaller marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();

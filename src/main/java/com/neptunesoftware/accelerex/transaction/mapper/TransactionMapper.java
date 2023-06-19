@@ -1,7 +1,6 @@
 package com.neptunesoftware.accelerex.transaction.mapper;
 
-import com.neptunesoftware.accelerex.transaction.TransactionStatus;
-import com.neptunesoftware.accelerex.transaction.response.CustomerToCustomerTransferResponse;
+import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransferResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,5 @@
 package com.neptunesoftware.accelerex.transaction.mapper;
 
-import com.neptunesoftware.accelerex.transaction.TransactionStatus;
-import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
 import org.springframework.jdbc.core.RowMapper;

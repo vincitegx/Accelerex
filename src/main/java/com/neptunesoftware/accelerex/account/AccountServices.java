@@ -18,7 +18,5 @@ public interface AccountServices {
 
 //    ApiResponse<FetchAccountBalanceResponse> fetchAccountBalance(FetchAccountBalanceRequest request);
 
-    void saveTransaction(TransactionRequest details, String tranMethod);
-
     boolean accountExistsAndIsActivated(String senderAccountNumber);
 }

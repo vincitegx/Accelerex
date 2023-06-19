@@ -1,7 +1,5 @@
 package com.neptunesoftware.accelerex.account;
 
-import com.neptunesoftware.accelerex.account.request.CreateBankAccountRequest;
-import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.request.VirtualAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
@@ -14,15 +12,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/vi/accountService")
 public class AccountController {
        private final AccountServices accountServices;
-    @PostMapping("/linkBankAccountToAgent")
-       public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
-           return ResponseEntity.ok(accountServices.linkBankAccountToAgent(request));
-       }
+//    @PostMapping("/linkBankAccountToAgent")
+//       public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
+//           return ResponseEntity.ok(accountServices.linkBankAccountToAgent(request));
+//       }
 
-    @PostMapping("/createBankAccount")
-    public ResponseEntity<ApiResponse<CreateBankAccountResponse>> createBankAccount(@RequestBody CreateBankAccountRequest request) {
-        return ResponseEntity.ok(accountServices.createBankAccount(request));
-    }
+//    @PostMapping("/createBankAccount")
+//    public ResponseEntity<ApiResponse<CreateBankAccountResponse>> createBankAccount(@RequestBody CreateBankAccountRequest request) {
+//        return ResponseEntity.ok(accountServices.createBankAccount(request));
+//    }
 
     @PostMapping("/verifySmsToken")
     public ResponseEntity<VerifyTokenResponse> verifySmsToken(String otp) {

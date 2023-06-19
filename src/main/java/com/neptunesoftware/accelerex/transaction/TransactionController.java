@@ -24,7 +24,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @PostMapping("/send-funds")
+    @PostMapping("/funds-transfer")
     public ResponseEntity<TransactionResponse> transferFunds(@RequestBody @Validated TransactionRequest request){
         TransactionResponse response = transactionService.transferFunds(request);
         HttpStatus status;

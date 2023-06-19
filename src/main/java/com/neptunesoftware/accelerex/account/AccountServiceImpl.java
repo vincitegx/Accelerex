@@ -5,6 +5,7 @@ import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.config.JWTService;
 import com.neptunesoftware.accelerex.exception.ValidationException;
 import com.neptunesoftware.accelerex.general.ClientRepo;
+import com.neptunesoftware.accelerex.transaction.TransactionRepository;
 import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.user.User;
 import com.neptunesoftware.accelerex.user.UserRepository;
@@ -188,20 +189,6 @@ public class AccountServiceImpl implements AccountServices {
             otp.append(random.nextInt(4, 10));
         }
         return otp.toString();
-    }
-
-    public void saveTransaction(TransactionRequest details, String transactionMethod) {
-        accountRepository.updateTransactionHistory(TransactionRequest.builder()
-                .senderAccountNumber(details.getSenderAccountNumber())
-                .senderName(details.getSenderName())
-                .referenceNo(details.getReferenceNo())
-                .narration(details.getNarration())
-                .amount(details.getAmount())
-                .receiverAccountNumber(details.getReceiverAccountNumber())
-                .receiverName(details.getReceiverName())
-                .isReversal('N')
-                .transactionType(details.getTransactionType())
-                .build());
     }
 
     @Override
