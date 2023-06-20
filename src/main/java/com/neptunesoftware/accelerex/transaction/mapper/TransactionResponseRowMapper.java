@@ -11,7 +11,7 @@ public class TransactionResponseRowMapper implements RowMapper<TransactionRespon
     @Override
     public TransactionResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
         TransactionResponseStatus transactionResponseStatus = TransactionResponseStatus.SUCCESS;
-        if(rs.getString("RESPONSE_CD") != "0"){
+        if(!rs.getString("RESPONSE_CD").equals("0")){
             transactionResponseStatus = TransactionResponseStatus.FAIL;
         }
         return new TransactionResponse(

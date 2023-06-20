@@ -13,7 +13,6 @@ import com.neptunesoftware.accelerex.transaction.request.*;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
-import com.neptunesoftware.accelerex.user.UserService;
 
 import jakarta.xml.bind.JAXBElement;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +21,16 @@ import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
+//import org.springframework.retry.annotation.Backoff;
+//import org.springframework.retry.annotation.Recover;
+//import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
-import java.util.ArrayList;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -38,7 +38,7 @@ import java.util.List;
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountServices accountService;
-    private final UserService userService;
+//    private final UserService userService;
     private final TransactionMapper transactionMapper;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private final BalanceEnquiryService balanceEnquiryService;
@@ -54,10 +54,9 @@ public class TransactionService {
 
     @Autowired
     public TransactionService(TransactionRepository transactionRepository, AccountServices accountService,
-                              UserService userService, TransactionMapper transactionMapper, BalanceEnquiryService balanceEnquiryService) {
+                              TransactionMapper transactionMapper, BalanceEnquiryService balanceEnquiryService) {
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
-        this.userService = userService;
         this.transactionMapper = transactionMapper;
         this.balanceEnquiryService = balanceEnquiryService;
     }
@@ -88,16 +87,19 @@ public class TransactionService {
                         request.getSenderAccountNumber(), request.getReceiverAccountNumber());
                 return new TransactionResponse(TransactionResponseStatus.SUCCESS, request.getReferenceNo());
             } else {
-                try {
-                    saveTransactionWithRetry(responseValue.getReturn(), "InternalFundTransfer", request);
-                    log.info("Internal funds transfer of amount: {} and reference: {} from source: {} to destination: {} was successfully saved after retry", request.getAmount(), request.getReferenceNo(),
-                            request.getSenderAccountNumber(), request.getReceiverAccountNumber());
-                    return new TransactionResponse(TransactionResponseStatus.SUCCESS, request.getReferenceNo());
-                } catch (Exception e) {
-                    log.error("Internal funds transfer of amount: {} and reference: {} from source: {} to destination: {} failed to save after retry", request.getAmount(), request.getReferenceNo(),
-                            request.getSenderAccountNumber(), request.getReceiverAccountNumber());
-                    return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
-                }
+                log.error("Internal funds transfer of amount: {} and reference: {} from source: {} to destination: {} failed to save after retry", request.getAmount(), request.getReferenceNo(),
+                        request.getSenderAccountNumber(), request.getReceiverAccountNumber());
+                return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
+//                try {
+//                    saveTransactionWithRetry(responseValue.getReturn(), "InternalFundTransfer", request);
+//                    log.info("Internal funds transfer of amount: {} and reference: {} from source: {} to destination: {} was successfully saved after retry", request.getAmount(), request.getReferenceNo(),
+//                            request.getSenderAccountNumber(), request.getReceiverAccountNumber());
+//                    return new TransactionResponse(TransactionResponseStatus.SUCCESS, request.getReferenceNo());
+//                } catch (Exception e) {
+//                    log.error("Internal funds transfer of amount: {} and reference: {} from source: {} to destination: {} failed to save after retry", request.getAmount(), request.getReferenceNo(),
+//                            request.getSenderAccountNumber(), request.getReceiverAccountNumber());
+//                    return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
+//                }
             }
         } catch (FundTransferException e) {
             log.error(e.getMessage());
@@ -105,17 +107,17 @@ public class TransactionService {
         }
     }
 
-    @Retryable(value = { FundTransferException.class }, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    private int saveTransactionWithRetry(FundsTransferOutputData fundsTransferOutputData, String subTranRef, TransactionRequest request) {
-        return saveTransaction(fundsTransferOutputData, subTranRef, request);
-    }
+//    @Retryable(value = { FundTransferException.class }, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+//    private int saveTransactionWithRetry(FundsTransferOutputData fundsTransferOutputData, String subTranRef, TransactionRequest request) {
+//        return saveTransaction(fundsTransferOutputData, subTranRef, request);
+//    }
 
-    @Recover
-    private TransactionResponse handleRetryExhaustion(Exception e, FundsTransferOutputData response, String type, TransactionRequest request) {
-        log.error("Internal funds transfer of Amount: {} and reference: {} from source: {} to destination: {} failed to save after retry", request.getAmount(), request.getReferenceNo(),
-                request.getSenderAccountNumber(), request.getReceiverAccountNumber());
-        return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
-    }
+//    @Recover
+//    private TransactionResponse handleRetryExhaustion(Exception e, FundsTransferOutputData response, String type, TransactionRequest request) {
+//        log.error("Internal funds transfer of Amount: {} and reference: {} from source: {} to destination: {} failed to save after retry", request.getAmount(), request.getReferenceNo(),
+//                request.getSenderAccountNumber(), request.getReceiverAccountNumber());
+//        return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
+//    }
     private boolean isValidationChecksPassed(TransactionRequest request){
         BigDecimal amount = request.getAmount();
         String senderAccountNumber = request.getSenderAccountNumber();
@@ -185,9 +187,9 @@ public class TransactionService {
 //    }
 
     private boolean isValidAccountNumber(String accountNumber) {
-        return accountService.accountExistsAndIsActivated(accountNumber);
+        return true;
+//        return accountService.accountExistsAndIsActivated(accountNumber);
     }
-//
 //    private void saveTransactionEntry(TransactionEntry entry) {
 //        Transaction transaction = new Transaction();
 //        if(entry.transactionType() == TransactionType.CREDIT){
@@ -200,7 +202,7 @@ public class TransactionService {
 //        transactionRepository.save(transaction);
 //    }
 
-    private Boolean existsByReferenceNo(String referenceNo){
+    private boolean existsByReferenceNo(String referenceNo){
         return transactionRepository.existsByReferenceNo(referenceNo);
     }
 
@@ -214,36 +216,19 @@ public class TransactionService {
         if(responses.isEmpty()){
             throw new ResourceNotFoundException("no transactions");
         }
-//        return responses;
-        return formatTransactions(responses, request);
+        return responses;
     }
 
-    private List<TransactionHistoryResponse> formatTransactions(List <TransactionHistoryResponse> responses, TransactionHistoryRequest request){
-        List<TransactionHistoryResponse> transactionHistoryResponses = new ArrayList<>();
-        responses.forEach(
-                response -> {
-                    TransactionHistoryResponse transactionHistoryResponse = new TransactionHistoryResponse();
-                    transactionHistoryResponse.setAmount(response.getAmount());
-                    transactionHistoryResponse.setTransactionDate(response.getTransactionDate());
-                    transactionHistoryResponse.setNarration(response.getNarration());
-                    transactionHistoryResponse.setTransactionType(checkTransactionType(response.getSenderAccountNumber(), request.accountNumber()));
-                    transactionHistoryResponses.add(transactionHistoryResponse);
-                }
-        );
-        return transactionHistoryResponses;
-    }
-
-    public TransactionType checkTransactionType(String senderAccountNumber, String userAccountNumber){
-        if(senderAccountNumber.equals(userAccountNumber)){
-            return TransactionType.DEBIT;
-        }else {
-            return TransactionType.DEBIT;
-        }
-    }
 
     private FundsTransferRequestData buildRequestFrom(TransactionRequest details) {
         FundsTransferRequestData txnRequestData = new FundsTransferRequestData();
         txnRequestData.setCurrBUId(-99L);
+        txnRequestData.setChannelId(Long.valueOf(channelId));
+        txnRequestData.setChannelCode(channelCode);
+        txnRequestData.setXAPIServiceCode("FNT022");
+        txnRequestData.setLocalCcyId(732L);
+        txnRequestData.setTransmissionTime(System.currentTimeMillis());
+
         txnRequestData.setFromAccountNumber(details.getSenderAccountNumber());
         txnRequestData.setFromCurrencyCode(details.getCurrencyCode());
         txnRequestData.setToAccountNumber(details.getReceiverAccountNumber());
@@ -251,17 +236,19 @@ public class TransactionService {
         txnRequestData.setAmount(details.getAmount());
         txnRequestData.setTransactionAmount(details.getAmount());
         txnRequestData.setTxnDescription(details.getNarration());
-        txnRequestData.setUserAccessCode("proxy_user_role");
-        txnRequestData.setUserPassword("proxy_password");
+        txnRequestData.setTxnDate(Date.from(Instant.now()).toString());
         txnRequestData.setReference(details.getReferenceNo());
         txnRequestData.setRetrievalReferenceNumber(details.getReferenceNo());
-        txnRequestData.setChannelId(Long.valueOf(channelId));
-        txnRequestData.setChannelCode(channelCode);
+        txnRequestData.setReversalIndicator("N");
+        txnRequestData.setReversal(false);
+
+        txnRequestData.setUserAccessCode("proxy_user_role");
+        txnRequestData.setUserPassword("proxy_password");
         txnRequestData.setUserId(-99L);
         txnRequestData.setUserLoginId("SYSTEM");
         txnRequestData.setUserRoleId(-99L);
-        txnRequestData.setXAPIServiceCode("FNT022");
-        txnRequestData.setTransmissionTime(System.currentTimeMillis());
+        txnRequestData.setUserBusinessRoleId(-99L);
+        txnRequestData.setOriginatorUserId(-99L);
         return txnRequestData;
     }
 

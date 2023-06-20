@@ -4,13 +4,21 @@ import com.neptunesoftware.accelerex.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.ws.client.core.WebServiceTemplate;
+//import org.springframework.retry.annotation.EnableRetry;
 
+
+//@RequiredArgsConstructor
+//@EnableRetry
 @Configuration
-@RequiredArgsConstructor
-@EnableRetry
 public class ApplicationConfig {
-    private final UserRepository userRepository;
+
+    @Bean
+    public WebServiceTemplate webServiceTemplate() {
+        return new WebServiceTemplate();
+    }
+
+//    private final UserRepository userRepository;
 
 //    @Bean
 //    public UserDetailsService userDetailsService() {

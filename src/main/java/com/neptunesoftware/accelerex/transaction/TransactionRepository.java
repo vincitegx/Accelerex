@@ -6,6 +6,7 @@ import com.neptunesoftware.accelerex.transaction.mapper.TransactionHistoryRowMap
 import com.neptunesoftware.accelerex.transaction.mapper.TransactionResponseRowMapper;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
+import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -25,14 +26,16 @@ public class TransactionRepository {
             TransactionResponse transactionResponse = jdbcTemplate.query(SqlQueries.TRANSACTION_STATUS_QUERY, new TransactionResponseRowMapper(),clientId, referenceNo).stream().findFirst().get();
             return transactionResponse;
         } catch (Exception e) {
-            throw new TransactionNotFoundException("Unable to load transaction status");
+//            throw new TransactionNotFoundException("Unable to load transaction status");
+            return new TransactionResponse(TransactionResponseStatus.FAIL, referenceNo);
         }
     }
     List<TransactionHistoryResponse> findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
             LocalDateTime startDate,LocalDateTime endDate, String senderAccountNumber, String receiverAccountNumber
     ){
         try {
-            return jdbcTemplate.query(SqlQueries.TRANSACTION_HISTORY_QUERY, new TransactionHistoryRowMapper(), startDate, endDate, senderAccountNumber, receiverAccountNumber);
+            TransactionHistoryRowMapper rowMapper = new TransactionHistoryRowMapper(senderAccountNumber);
+            return jdbcTemplate.query(SqlQueries.TRANSACTION_HISTORY_QUERY, rowMapper, senderAccountNumber, receiverAccountNumber, startDate, endDate);
         } catch (Exception e) {
             throw new TransactionNotFoundException("Unable to load account history" + " for account ");
         }
@@ -50,7 +53,8 @@ public class TransactionRepository {
         }
     }
     public boolean existsByReferenceNo(String referenceNo) {
-        return jdbcTemplate.queryForObject(SqlQueries.REFERENCE_NO_QUERY, new Object[]{referenceNo}, Boolean.class);
+        int exists = jdbcTemplate.queryForObject(SqlQueries.REFERENCE_NO_QUERY, new Object[]{referenceNo}, Integer.class);
+        return exists == 1;
     }
 }
 

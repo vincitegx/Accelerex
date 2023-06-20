@@ -8,7 +8,7 @@ import com.neptunesoftware.accelerex.general.ClientRepo;
 import com.neptunesoftware.accelerex.transaction.TransactionRepository;
 import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserRepository;
+//import com.neptunesoftware.accelerex.user.UserRepository;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,11 +23,11 @@ import java.util.Random;
 @Log4j2
 public class AccountServiceImpl implements AccountServices {
 
-    private final UserRepository userRepository;
-    private final AccountRepository accountRepository;
-    private final ClientRepo clientRepo;
+//    private final UserRepository userRepository;
+//    private final AccountRepository accountRepository;
+//    private final ClientRepo clientRepo;
     private static Map<String, String> apiCredentials;
-    private final JWTService jwtService;
+//    private final JWTService jwtService;
     
 
 //    @Override
@@ -120,13 +120,13 @@ public class AccountServiceImpl implements AccountServices {
 
     public boolean authenticate(String clientId, String secretKey) {
 
-         if (jwtService.extractUsername(secretKey) != null) {
-             if (jwtService.extractUserIdFromToken(clientId) != null) {
-
-                 apiCredentials = new HashMap<>();
-                 apiCredentials.put(clientId, secretKey);
-             }
-         }
+//         if (jwtService.extractUsername(secretKey) != null) {
+//             if (jwtService.extractUserIdFromToken(clientId) != null) {
+//
+//                 apiCredentials = new HashMap<>();
+//                 apiCredentials.put(clientId, secretKey);
+//             }
+//         }
         return apiCredentials.containsKey(clientId) && apiCredentials.get(clientId).equals(secretKey);
     }
 
@@ -135,9 +135,9 @@ public class AccountServiceImpl implements AccountServices {
         return null;
     }
 
-    private boolean validateBankAccount(String mobileNo) {
-        return userRepository.findByPhoneNumber(mobileNo).isPresent();
-    }
+//    private boolean validateBankAccount(String mobileNo) {
+//        return userRepository.findByPhoneNumber(mobileNo).isPresent();
+//    }
 
     public String generateOTP() {
         Random random = new Random();
@@ -149,7 +149,7 @@ public class AccountServiceImpl implements AccountServices {
     }
 
     private boolean sendOTP(String mobileNumber, String otp) {
-        User user = userRepository.findByPhoneNumber(mobileNumber).get();
+//        User user = userRepository.findByPhoneNumber(mobileNumber).get();
 
         //Todo: Implementation of SMS seb
         // Send: The OTP to the provided mobile number and call verify token API =>verifyToken()
@@ -175,12 +175,13 @@ public class AccountServiceImpl implements AccountServices {
 
 
     public VerifyTokenResponse verifySmsToken(String smsToken) {
-        User user = userRepository.findBySmsToken(smsToken).get();
-        VerifyTokenResponse response = new VerifyTokenResponse();
-        response.setAccountName(user.getFullName());
-        response.setAccountNo(user.getPhoneNumber());
-        response.setEmail(user.getEmailAddress());
-      return response;
+//        User user = userRepository.findBySmsToken(smsToken).get();
+//        VerifyTokenResponse response = new VerifyTokenResponse();
+//        response.setAccountName(user.getFullName());
+//        response.setAccountNo(user.getPhoneNumber());
+//        response.setEmail(user.getEmailAddress());
+//      return response;
+        return null;
     }
     public String generateAccountNumber() {
         Random random = new Random();

@@ -5,15 +5,19 @@ import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
 import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
+import org.springframework.ws.WebServiceException;
+import org.springframework.ws.client.WebServiceIOException;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BalanceEnquiryService {
     private static final String PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.account";
     private final AccountServices accountService;
@@ -24,29 +28,31 @@ public class BalanceEnquiryService {
 //        validateAccount(accountNumber);
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
         BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-
         Balanceenquiry balanceenquiry = new Balanceenquiry();
         balanceenquiry.setArg0(balEnqRequest);
         JAXBElement response;
         try {
             response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
-                    ACCOUNT_WEB_SERVICE_END_POINT_PORT, balanceenquiry);
+                    "http://10.152.2.161:7001/supernovaws/AccountWebServiceEndPointPort?wsdl", balanceenquiry);
+            log.info(response.getValue().toString());
         } catch (Exception e) {
-            throw new BalanceEnquiryException("An error occurred while querying the account balance " + " for account " + accountNumber);
+            throw new BalanceEnquiryException("An error occurred while querying the account balance" + " for account " + accountNumber);
         }
         return (BalanceenquiryResponse) response.getValue();
     }
 
     private BalanceEnquiryRequestData buildRequest(String accountNumber) {
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
-        balEnqRequest.setSessionId(String.valueOf(System.currentTimeMillis()));
-        balEnqRequest.setDestinationInstitutionCode("");
-        balEnqRequest.setChannelCode("ATM");
-
-        balEnqRequest.setAuthorizationCode("");
-        balEnqRequest.setTargetAccountName("");
-        balEnqRequest.setTargetBankVerificationNumber("");
+//        balEnqRequest.setSessionId(String.valueOf(System.currentTimeMillis()));
+        balEnqRequest.setChannelCode("1");
         balEnqRequest.setTargetAccountNumber(accountNumber);
+
+//        balEnqRequest.setDestinationInstitutionCode("");
+//        balEnqRequest.setTargetBankVerificationNumber("");
+//        balEnqRequest.setAuthorizationCode("");
+//        balEnqRequest.setTargetAccountName("");
+//        balEnqRequest.setTargetBankVerificationNumber("");
+
         return balEnqRequest;
     }
     public boolean isAccountSufficient(String sourceAccount, BigDecimal amount) {
