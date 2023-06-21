@@ -1,10 +1,8 @@
 package com.neptunesoftware.accelerex.account;
 
-import com.neptunesoftware.accelerex.account.request.CreateAccountRequest;
+import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
-import com.neptunesoftware.accelerex.createNewCustomer.CreateCustomerAccountService;
-import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 public class AccountController {
        private final AccountServices accountServices;
-       private final CreateCustomerAccountService customerAccountService;
     @PostMapping("/linkBankAccountToAgent")
        public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
            return ResponseEntity.status(HttpStatus.OK).body(accountServices.linkBankAccountToAgent(request));
@@ -30,7 +27,7 @@ public class AccountController {
        }
 
     @GetMapping("/accountBalance/{accountNumber}")
-    public ResponseEntity<BalanceenquiryResponse> fetchAccountBalance(@PathVariable("accountNumber") final String accountNumber) {
+    public ResponseEntity<FetchAccountBalanceResponse> fetchAccountBalance(@PathVariable("accountNumber") final String accountNumber) {
         log.info("Account balance for account number of {}", accountNumber );
 
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.fetchAccountBalance(accountNumber));
@@ -51,9 +48,9 @@ public class AccountController {
     public ResponseEntity<String>  intraBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
           return ResponseEntity.status(HttpStatus.OK).body(accountServices.intraBankNameEnquiry(accountNumber));
     }
-
-    @PostMapping("createBankAccount")
-    public ResponseEntity<CreateAccountResponse> createBankAccount(CreateAccountRequest request) {
-        return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.creatNewCustomer(request));
+    @PostMapping("/interBankTransfer")
+    public ResponseEntity<InterBankTransferResponse> interBankTransfer(@RequestBody InterBankTransferRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
     }
+
 }
