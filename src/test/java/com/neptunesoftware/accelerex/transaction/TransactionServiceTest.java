@@ -9,7 +9,6 @@ import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

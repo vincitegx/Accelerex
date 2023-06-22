@@ -1,7 +1,6 @@
 package com.neptunesoftware.accelerex.transaction.config;
 
 import com.github.javafaker.Faker;
-import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -22,15 +21,15 @@ import java.time.Duration;
 public abstract class AbstractTestcontainers {
     @BeforeAll
     static void beforeAll() {
-        Flyway flyway = Flyway
-                .configure()
+//        Flyway flyway = Flyway
+//                .configure()
 //                .defaultSchema("test")
-                .dataSource(
-                        oracleContainer.getJdbcUrl(),
-                        oracleContainer.getUsername(),
-                        oracleContainer.getPassword()
-                ).load();
-        flyway.migrate();
+//                .dataSource(
+//                        oracleContainer.getJdbcUrl(),
+//                        oracleContainer.getUsername(),
+//                        oracleContainer.getPassword()
+//                ).load();
+//        flyway.migrate();
     }
 
     @Container

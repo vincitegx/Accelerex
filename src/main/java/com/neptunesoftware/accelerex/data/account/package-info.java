@@ -5,5 +5,5 @@
 // Generated on: 2023.06.08 at 11:33:52 AM WAT 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://account.server.ws.supernova.neptunesoftware.com/")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://account.server.ws.supernova.neptunesoftware.com/")
 package com.neptunesoftware.accelerex.data.account;

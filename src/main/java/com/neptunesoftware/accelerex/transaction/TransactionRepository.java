@@ -31,13 +31,13 @@ public class TransactionRepository {
         }
     }
     List<TransactionHistoryResponse> findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
-            LocalDateTime startDate,LocalDateTime endDate, String senderAccountNumber, String receiverAccountNumber
+            String startDate,String endDate, String senderAccountNumber, String receiverAccountNumber
     ){
         try {
             TransactionHistoryRowMapper rowMapper = new TransactionHistoryRowMapper(senderAccountNumber);
             return jdbcTemplate.query(SqlQueries.TRANSACTION_HISTORY_QUERY, rowMapper, senderAccountNumber, receiverAccountNumber, startDate, endDate);
         } catch (Exception e) {
-            throw new TransactionNotFoundException("Unable to load account history" + " for account ");
+            throw new TransactionNotFoundException(e.getMessage());
         }
     }
     public int saveTransaction(TransactionDetails details) {

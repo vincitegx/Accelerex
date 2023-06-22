@@ -8,9 +8,10 @@
 
 package com.neptunesoftware.accelerex.data.fundstransfer;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 
 /**
@@ -36,6 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "customerToCustomerTransfer", propOrder = {
     "arg0"
 })
+@XmlRootElement
 public class CustomerToCustomerTransfer {
 
     protected FundsTransferRequestData arg0;

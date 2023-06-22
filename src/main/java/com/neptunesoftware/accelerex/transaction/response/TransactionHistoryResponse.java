@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TransactionHistoryResponse {
     private String transactionDate;
-    private String narration;
+    private String tranRef;
     private String amount;
     private TransactionType transactionType;
 }

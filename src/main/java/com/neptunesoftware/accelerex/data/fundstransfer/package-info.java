@@ -5,5 +5,5 @@
 // Generated on: 2023.06.07 at 08:56:56 AM WAT 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://transfer.server.ws.supernova.neptunesoftware.com/")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://transfer.server.ws.supernova.neptunesoftware.com/")
 package com.neptunesoftware.accelerex.data.fundstransfer;

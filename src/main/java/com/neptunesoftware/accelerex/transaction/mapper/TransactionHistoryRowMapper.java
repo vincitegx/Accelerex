@@ -19,7 +19,7 @@ public class TransactionHistoryRowMapper implements RowMapper<TransactionHistory
                 ? TransactionType.DEBIT : TransactionType.CREDIT;
         return new TransactionHistoryResponse(
                 rs.getString("REC_TS"),
-                rs.getString("NARRATION"),
+                rs.getString("TRAN_REF"),
                 rs.getString("TRAN_AMT"),
                 transactionType
         );

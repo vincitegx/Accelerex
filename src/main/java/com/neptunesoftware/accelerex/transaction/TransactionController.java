@@ -9,6 +9,7 @@ import com.neptunesoftware.accelerex.universal.ApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +52,7 @@ public class TransactionController {
         return new ResponseEntity<>(new ApiResponse("Transaction reversed"), HttpStatus.OK);
     }
     @PostMapping("/transaction-history")
-    public ResponseEntity<List<TransactionHistoryResponse>> generateTransactionHistory(@RequestBody @Validated TransactionHistoryRequest request) {
+    public ResponseEntity<List<TransactionHistoryResponse>> generateTransactionHistory(@RequestBody @Valid TransactionHistoryRequest request) {
 //        Pageable pageable = PageRequest.of(page, size);
         return new ResponseEntity<>(transactionService.getTransactionHistory(request),
                 HttpStatus.OK);
