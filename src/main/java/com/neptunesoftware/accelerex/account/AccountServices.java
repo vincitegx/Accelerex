@@ -13,6 +13,4 @@ public interface AccountServices {
     InterBankTransferResponse interBankTransfer(InterBankTransferRequest request);
     String intraBankNameEnquiry(String accountNumber);
     ApiResponse<NameEnquiryResponse> nameEnquiry(String nameEnquiryRequest);
-    VerifyTokenResponse verifySmsToken(String smsToken);
-
 }

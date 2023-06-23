@@ -3,7 +3,7 @@ package com.neptunesoftware.accelerex.transaction;
 import com.github.javafaker.Faker;
 import com.neptunesoftware.accelerex.transaction.config.AbstractTestcontainers;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

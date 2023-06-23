@@ -20,11 +20,7 @@ public class AccountController {
        public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
            return ResponseEntity.status(HttpStatus.OK).body(accountServices.linkBankAccountToAgent(request));
        }
-
-    @PostMapping("/verifySmsToken")
-    public ResponseEntity<VerifyTokenResponse> verifySmsToken(String otp) {
-        return ResponseEntity.status(HttpStatus.OK).body(accountServices.verifySmsToken(otp));
-       }
+       
 
     @GetMapping("/accountBalance/{accountNumber}")
     public ResponseEntity<FetchAccountBalanceResponse> fetchAccountBalance(@PathVariable("accountNumber") final String accountNumber) {

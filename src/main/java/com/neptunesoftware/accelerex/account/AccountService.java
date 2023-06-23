@@ -8,7 +8,7 @@
 //import com.neptunesoftware.accelerex.exception.InsufficientBalanceException;
 //import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
 //import com.neptunesoftware.accelerex.user.User;
-//import com.neptunesoftware.accelerex.user.UserRepository;
+//import com.neptunesoftware.accelerex.user.repo.UserRepository;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.scheduling.annotation.Async;
 //import org.springframework.stereotype.Service;

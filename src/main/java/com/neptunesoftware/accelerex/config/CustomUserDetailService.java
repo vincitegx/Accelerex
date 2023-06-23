@@ -2,7 +2,7 @@ package com.neptunesoftware.accelerex.config;
 
 import com.neptunesoftware.accelerex.exception.UserNotFoundException;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

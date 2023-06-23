@@ -1,6 +1,6 @@
 package com.neptunesoftware.accelerex.config;
 
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

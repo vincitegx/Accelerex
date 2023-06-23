@@ -2,7 +2,7 @@ package com.neptunesoftware.accelerex.transaction;
 
 import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import com.neptunesoftware.accelerex.user.UserService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,13 +1,14 @@
 package com.neptunesoftware.accelerex.createCustomer;
 
 import com.neptunesoftware.accelerex.account.AccountRepositoryImp;
-import com.neptunesoftware.accelerex.account.request.CreateAccountRequest;
+import com.neptunesoftware.accelerex.account.request.NewCustomerAccountRequest;
 import com.neptunesoftware.accelerex.account.response.CreateAccountResponse;
-import data.account.*;
-import data.customer.CustomerOutputData;
 import com.neptunesoftware.accelerex.exception.ValidationException;
 import com.neptunesoftware.accelerex.utils.AppUtils;
 import com.neptunesoftware.accelerex.utils.ResponseConstants;
+import data.account.*;
+import data.customer.CreateCustomerResponse;
+import data.customer.CustomerOutputData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,11 +31,12 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
 
 
 
-    public CreateAccountResponse creatNewCustomer(CreateAccountRequest request) {
+    public CreateAccountResponse creatNewCustomer(NewCustomerAccountRequest request) {
         CustomerRequest customerRequest = new CustomerRequest();
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
 //        CreateCustomer createCustomer = new CreateCustomer();
         CreateAccountResponse output  = null;
+        CreateCustomerResponse createCustomerResponse;
 
         //Variables To Hold Response From Each Call
         String acctNumber= null;
@@ -329,5 +331,13 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
         // pom.xml
         marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.customer","com.neptunesoftware.accelerex.data.account");
         return marshaller;
+    }
+
+    private CustomerRequest mapNewCustomerRequestToCustomerRequest(NewCustomerAccountRequest request) {
+        CustomerRequest  customerRequest = new CustomerRequest();
+        customerRequest.setFirstName(request.getFirstName());
+        customerRequest.setMiddleName(request.getMiddleName());
+        customerRequest.setStrDateOfBirth(request.getDateOfBirth());
+        return customerRequest;
     }
 }

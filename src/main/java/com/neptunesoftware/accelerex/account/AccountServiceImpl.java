@@ -4,18 +4,17 @@ import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.config.AccelerexCredentials;
-import data.FundTransfer.*;
-import data.account.BalanceEnquiryRequestData;
-import data.account.Balanceenquiry;
-import data.account.BalanceenquiryResponse;
 import com.neptunesoftware.accelerex.exception.AccountNotExistException;
 import com.neptunesoftware.accelerex.exception.AccountServiceException;
 import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
 import com.neptunesoftware.accelerex.exception.FundTransferException;
-import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import com.neptunesoftware.accelerex.utils.ResponseConstants;
+import data.FundTransfer.*;
+import data.account.BalanceEnquiryRequestData;
+import data.account.Balanceenquiry;
+import data.account.BalanceenquiryResponse;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -236,15 +235,15 @@ public class AccountServiceImpl implements AccountServices {
                 .accountName(accountName).build());
     }
 
-    @Override
-    public VerifyTokenResponse verifySmsToken(String smsToken) {
-        User user = userRepository.findBySmsToken(smsToken).get();
-        VerifyTokenResponse response = new VerifyTokenResponse();
-        response.setAccountName(user.getFullName());
-        response.setAccountNo(user.getPhoneNumber());
-        response.setEmail(user.getEmailAddress());
-        return response;
-    }
+//    @Override
+//    public VerifyTokenResponse verifySmsToken(String smsToken) {
+//        User user = userRepository.findBySmsToken(smsToken).get();
+//        VerifyTokenResponse response = new VerifyTokenResponse();
+//        response.setAccountName(user.getFullName());
+//        response.setAccountNo(user.getPhoneNumber());
+//        response.setEmail(user.getEmailAddress());
+//        return response;
+//    }
     private boolean verifySmsToken(String accountNumber, String smsToken) {
         String token = accountRepository.findTokenByAccountNumber(accountNumber);
         if (!(token.equals(smsToken))) throw new AccountServiceException("Incorrect token" + " for account: " + accountNumber);

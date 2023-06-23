@@ -1,7 +1,7 @@
 package com.neptunesoftware.accelerex.user;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,31 +12,16 @@ import java.util.Objects;
 
 
 @Data
-@NoArgsConstructor
+@Builder
 public class User implements UserDetails {
 
-//    @Id
-//    @SequenceGenerator(
-//            name = "user_id_sequence",
-//            sequenceName = "user_id_sequence"
-//    )
-//    @GeneratedValue(
-//            strategy = GenerationType.SEQUENCE,
-//            generator = "user_id_sequence"
-//    )
     private Integer id;
-//    @Column(nullable = false)
     private String fullName;
-//    @Column(nullable = true)
     private String emailAddress;
-//    @Column(nullable = false)
     private String password;
-//    @Column(nullable = false)
     private String phoneNumber;
-//    @Enumerated(EnumType.STRING)
     private Role role;
     private String smsToken;
-//    @Column(nullable = false)
     private boolean isNotBlocked;
     private boolean isVerified;
     private LocalDateTime createdAt;

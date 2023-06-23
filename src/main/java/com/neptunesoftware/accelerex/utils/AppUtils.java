@@ -6,9 +6,9 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
 import com.neptunesoftware.accelerex.exception.UserNotFoundException;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -25,20 +25,17 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class AppUtils {
-    @Autowired
-    private UserRepository userRepository;
-
+    private final UserRepository userRepository;
 
     public User getLoggedInUser() throws ResourceNotFoundException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         return userRepository.findByEmailAddress(((UserDetails)principal).getUsername())
                 .orElseThrow(() -> new UserNotFoundException("Error getting logged in user"));
     }
 
     public List<String> splitStringIntoAList(String delimitedString){
-
         if (delimitedString!=null)
             return  Arrays.stream(delimitedString.split(",")).collect(Collectors.toList());
         return null;
@@ -71,7 +68,6 @@ public class AppUtils {
     }
 
     public  String convertDateFormatToString(String inputDate, String sourceFormat, String neededFormat) throws ParseException {
-
         DateFormat originalFormat = new SimpleDateFormat(sourceFormat, Locale.ENGLISH);
         DateFormat targetFormat = new SimpleDateFormat(neededFormat);
         Date date = originalFormat.parse(inputDate);
@@ -153,8 +149,7 @@ public class AppUtils {
 
     public Long generateRandomCode(){
         Random rnd = new Random();
-        Long number = (long) rnd.nextInt(999999);
-        return  number;
+        return (Long) (long) rnd.nextInt(999999);
     }
 
     public String  getStringFromObject(Object o){
