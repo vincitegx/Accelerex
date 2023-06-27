@@ -9,14 +9,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
-
-//    @ExceptionHandler(ResourceExistsException.class)
-//    public final ResponseEntity<ApiResponse> handleResourceExistsException(ResourceExistsException exception){
-//        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.CONFLICT);
-//    }
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public final ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException exception){
-        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
+    @ExceptionHandler(FundTransferException.class)
+    public final ResponseEntity<ApiResponse> handleFundTransferException(FundTransferException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public final ResponseEntity<ApiResponse> handleTransactionNotFoundException(TransactionNotFoundException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
 //    @ExceptionHandler(AccountNotActivatedException.class)

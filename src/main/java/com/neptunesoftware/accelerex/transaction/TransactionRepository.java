@@ -6,28 +6,24 @@ import com.neptunesoftware.accelerex.transaction.mapper.TransactionHistoryRowMap
 import com.neptunesoftware.accelerex.transaction.mapper.TransactionResponseRowMapper;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
-import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 @AllArgsConstructor
-@Slf4j
+@Log4j2
 public class TransactionRepository {
     private final JdbcTemplate jdbcTemplate;
 
     TransactionResponse findByClientIdAndReferenceNo(String clientId, String referenceNo){
         try {
-            TransactionResponse transactionResponse = jdbcTemplate.query(SqlQueries.TRANSACTION_STATUS_QUERY, new TransactionResponseRowMapper(),clientId, referenceNo).stream().findFirst().get();
-            return transactionResponse;
+            return jdbcTemplate.query(SqlQueries.TRANSACTION_STATUS_QUERY, new TransactionResponseRowMapper(),clientId, referenceNo).stream().findFirst().get();
         } catch (Exception e) {
-//            throw new TransactionNotFoundException("Unable to load transaction status");
-            return new TransactionResponse(TransactionResponseStatus.FAIL, referenceNo);
+            throw new TransactionNotFoundException("Unable to load transaction status");
         }
     }
     List<TransactionHistoryResponse> findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(

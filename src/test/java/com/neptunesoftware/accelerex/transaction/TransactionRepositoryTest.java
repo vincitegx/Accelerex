@@ -1,7 +1,6 @@
 package com.neptunesoftware.accelerex.transaction;
 
 import com.github.javafaker.Faker;
-import com.neptunesoftware.accelerex.transaction.config.AbstractTestcontainers;
 import com.neptunesoftware.accelerex.user.User;
 import com.neptunesoftware.accelerex.user.UserRepository;
 import org.junit.jupiter.api.*;
@@ -12,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 //import org.springframework.data.domain.PageRequest;
 //import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,10 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Disabled
-@DataJpaTest
-@Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(initializers = {AbstractTestcontainers.Initializer.class})
 class TransactionRepositoryTest {
 //    @Autowired
 //    private TransactionRepository transactionRepository; //TSONAR

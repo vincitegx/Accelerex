@@ -14,5 +14,6 @@ public class TransactionHistoryResponse {
     private String transactionDate;
     private String tranRef;
     private String amount;
+    private String narration;
     private TransactionType transactionType;
 }

@@ -21,6 +21,7 @@ public class TransactionHistoryRowMapper implements RowMapper<TransactionHistory
                 rs.getString("REC_TS"),
                 rs.getString("TRAN_REF"),
                 rs.getString("TRAN_AMT"),
+                rs.getString("NARRATION"),
                 transactionType
         );
     }

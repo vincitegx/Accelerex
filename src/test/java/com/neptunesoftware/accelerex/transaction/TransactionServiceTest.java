@@ -3,7 +3,6 @@ package com.neptunesoftware.accelerex.transaction;
 import com.neptunesoftware.accelerex.account.AccountService;
 import com.neptunesoftware.accelerex.account.AccountStatus;
 import com.neptunesoftware.accelerex.account.Tier;
-import com.neptunesoftware.accelerex.transaction.mapper.TransactionMapper;
 import com.neptunesoftware.accelerex.transaction.request.TransactionHistoryRequest;
 import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;

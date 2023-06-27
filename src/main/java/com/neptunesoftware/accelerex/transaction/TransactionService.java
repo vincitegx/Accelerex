@@ -2,20 +2,18 @@ package com.neptunesoftware.accelerex.transaction;
 
 import com.neptunesoftware.accelerex.account.AccountServices;
 import com.neptunesoftware.accelerex.account.BalanceEnquiryService;
+import com.neptunesoftware.accelerex.config.Credentials;
 import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransfer;
 import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransferResponse;
-import com.neptunesoftware.accelerex.data.fundstransfer.FundsTransferOutputData;
 import com.neptunesoftware.accelerex.data.fundstransfer.FundsTransferRequestData;
 import com.neptunesoftware.accelerex.exception.FundTransferException;
-import com.neptunesoftware.accelerex.transaction.mapper.TransactionMapper;
 import com.neptunesoftware.accelerex.transaction.request.*;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
 
 import jakarta.xml.bind.JAXBElement;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,62 +26,77 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@Slf4j
+@Log4j2
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountServices accountService;
-    private final TransactionMapper transactionMapper;
     private final BalanceEnquiryService balanceEnquiryService;
-    @Value("${endpoint.fundTransferWebservice}")
-    private String FUND_TRANSFER_WEB_SERVICE_END_POINT_PORT;
-
-    @Value("${rubikon.channelId}")
-    private String channelId;
-
-    @Value("${rubikon.channelCode}")
-    private String channelCode;
+    private final Credentials credentials;
+    private static final Long LONG_VALUE_99= -99L;
     public static final String PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.fundstransfer";
 
     @Autowired
     public TransactionService(TransactionRepository transactionRepository, AccountServices accountService,
-                              TransactionMapper transactionMapper, BalanceEnquiryService balanceEnquiryService) {
+                              BalanceEnquiryService balanceEnquiryService, Credentials credentials) {
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
-        this.transactionMapper = transactionMapper;
         this.balanceEnquiryService = balanceEnquiryService;
+        this.credentials = credentials;
     }
     public TransactionResponse transferFunds(TransactionRequest request){
+        TransactionResponse txnResponse = null;
         try{
-            if (!isValidationChecksPassed(request)) {
-                return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
+            if (isValidationChecksPassed(request)) {
+                WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
+                FundsTransferRequestData txnRequestData = buildRequestFrom(request);
+                CustomerToCustomerTransfer customerToCustomerTransfer = new CustomerToCustomerTransfer();
+                customerToCustomerTransfer.setArg0(txnRequestData);
+                log.info("Initiating internal funds transfer of Amount: {} and reference: {} from source: {} to destination: {}", request.getAmount(), request.getReferenceNo(),
+                        request.getSenderAccountNumber(), request.getReceiverAccountNumber());
+                JAXBElement response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
+                        this.credentials.getFundTransferWsdl(), customerToCustomerTransfer
+                );
+                CustomerToCustomerTransferResponse responseValue = (CustomerToCustomerTransferResponse) response.getValue();
+                log.info("Response Code: {}", responseValue.getReturn().getResponseCode());
+                if (!responseValue.getReturn().getResponseCode().equalsIgnoreCase("00")) {
+                    log.error("Transaction failed !!!");
+                    throw new FundTransferException("Transaction failed !!!");
+                }else{
+                    log.info("Transaction was successful !!!");
+                }
+                TransactionDetails details = TransactionDetails.builder()
+                        .tranRef(responseValue.getReturn().getTxnReference())
+                        .customerNo(request.getClientId().toString())
+                        .fromAccountNumber(responseValue.getReturn().getFromAccountNumber())
+                        .toAccountNumber(responseValue.getReturn().getToAccountNumber())
+                        .amount(responseValue.getReturn().getTransactionAmount().toString())
+                        .responseCode(responseValue.getReturn().getResponseCode())
+                        .subTranRef("InternalFundTransfer")
+                        .narration(request.getNarration())
+                        .build();
+                int transactionResponse = saveTransaction(details);
+                if (transactionResponse != 1) {
+                    log.error("Internal funds transfer of amount: "+
+                            request.getAmount()+" and reference: "+
+                            request.getReferenceNo()+" from source: "+
+                            request.getSenderAccountNumber()+" to destination: "+
+                            request.getReceiverAccountNumber()+" failed to save to database");
+                }else{
+                    log.info("Internal funds transfer of amount: "+
+                            request.getAmount()+" and reference: "+
+                            request.getReferenceNo()+" from source: "+
+                            request.getSenderAccountNumber()+" to destination: "+
+                            request.getReceiverAccountNumber()+" saved successfully to database");
+                }
+                txnResponse = new TransactionResponse(TransactionResponseStatus.SUCCESS, request.getReferenceNo());
+            }else {
+                txnResponse = new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
             }
-            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
-            FundsTransferRequestData txnRequestData = buildRequestFrom(request);
-            CustomerToCustomerTransfer customerToCustomerTransfer = new CustomerToCustomerTransfer();
-            customerToCustomerTransfer.setArg0(txnRequestData);
-            log.info("Initiating internal funds transfer of Amount: {} and reference: {} from source: {} to destination: {}", request.getAmount(), request.getReferenceNo(),
-                    request.getSenderAccountNumber(), request.getReceiverAccountNumber());
-            JAXBElement response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
-                    FUND_TRANSFER_WEB_SERVICE_END_POINT_PORT, customerToCustomerTransfer
-            );
-            CustomerToCustomerTransferResponse responseValue = (CustomerToCustomerTransferResponse) response.getValue();
-            log.info("Response Code: {}", responseValue.getReturn().getResponseCode());
-            if (!responseValue.getReturn().getResponseCode().equalsIgnoreCase("00")) {
-                throw new FundTransferException("Transaction failed");
-            }
-            int transactionResponse = saveTransaction(responseValue.getReturn(), "InternalFundTransfer", request);
-            if (transactionResponse != 1) {
-                throw new FundTransferException("Internal funds transfer of amount: "+
-                        request.getAmount()+" and reference: "+
-                        request.getReferenceNo()+" from source: "+
-                        request.getSenderAccountNumber()+" to destination: "+
-                        request.getReceiverAccountNumber()+" failed to save to database");
-            }
-            return new TransactionResponse(TransactionResponseStatus.SUCCESS, request.getReferenceNo());
         } catch (FundTransferException e) {
             log.error(e.getMessage());
-            return new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
+            throw new FundTransferException(e.getMessage());
         }
+        return txnResponse;
     }
     private boolean isValidationChecksPassed(TransactionRequest request){
         BigDecimal amount = request.getAmount();
@@ -111,11 +124,12 @@ public class TransactionService {
     }
     public TransactionResponse getTransactionStatus(String externalRefNo, String clientId) {
         try{
+            log.info(">>>>>>> Initiating Transaction Status For ClientId {}, and ReferenceNo {} >>>>>>>", clientId, externalRefNo);
             TransactionResponse transactionResponse = transactionRepository.findByClientIdAndReferenceNo(clientId, externalRefNo);
             return transactionResponse;
         }catch (Exception ex){
             log.error(ex.getMessage());
-            return new TransactionResponse(TransactionResponseStatus.FAIL, externalRefNo);
+            throw new FundTransferException(ex.getMessage());
         }
     }
 
@@ -137,21 +151,21 @@ public class TransactionService {
         return transactionRepository.existsByReferenceNo(referenceNo);
     }
     public List<TransactionHistoryResponse> getTransactionHistory(TransactionHistoryRequest request) {
-        List<TransactionHistoryResponse> responses = transactionRepository.findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
+        log.info(">>>>>>> Initiating Transaction History For account {}, between {} and {} >>>>>>>", request.accountNumber(), request.startDateTime(), request.endDateTime());
+        return transactionRepository.findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
                 request.startDateTime(),
                 request.endDateTime(),
                 request.accountNumber(),
                 request.accountNumber()
         );
-        return responses;
     }
 
     private FundsTransferRequestData buildRequestFrom(TransactionRequest details) {
         FundsTransferRequestData txnRequestData = new FundsTransferRequestData();
-        txnRequestData.setCurrBUId(-99L);
-        txnRequestData.setChannelId(Long.valueOf(channelId));
-        txnRequestData.setChannelCode(channelCode);
-        txnRequestData.setXAPIServiceCode("FNT022");
+        txnRequestData.setCurrBUId(LONG_VALUE_99);
+        txnRequestData.setChannelId(Long.valueOf(this.credentials.getChannelId()));
+        txnRequestData.setChannelCode(this.credentials.getChannelCode());
+        txnRequestData.setXAPIServiceCode(this.credentials.getXapiServiceCode());
         txnRequestData.setLocalCcyId(732L);
         txnRequestData.setTransmissionTime(System.currentTimeMillis());
         txnRequestData.setFromAccountNumber(details.getSenderAccountNumber());
@@ -166,27 +180,16 @@ public class TransactionService {
         txnRequestData.setRetrievalReferenceNumber(details.getReferenceNo());
         txnRequestData.setReversalIndicator("N");
         txnRequestData.setReversal(false);
-        txnRequestData.setUserAccessCode("proxy_user_role");
-        txnRequestData.setUserPassword("proxy_password");
-        txnRequestData.setUserId(-99L);
-        txnRequestData.setUserLoginId("SYSTEM");
-        txnRequestData.setUserRoleId(-99L);
-        txnRequestData.setUserBusinessRoleId(-99L);
-        txnRequestData.setOriginatorUserId(-99L);
+        txnRequestData.setUserAccessCode(this.credentials.getUserAccessCode());
+        txnRequestData.setUserPassword(this.credentials.getUserPassword());
+        txnRequestData.setUserId(LONG_VALUE_99);
+        txnRequestData.setUserLoginId(this.credentials.getUserLoginId());
+        txnRequestData.setUserRoleId(LONG_VALUE_99);
+        txnRequestData.setUserBusinessRoleId(LONG_VALUE_99);
+        txnRequestData.setOriginatorUserId(LONG_VALUE_99);
         return txnRequestData;
     }
-
-    public int saveTransaction(FundsTransferOutputData fundsTransferOutputData, String subTranRef, TransactionRequest request) {
-        TransactionDetails details = TransactionDetails.builder()
-                .tranRef(fundsTransferOutputData.getTxnReference())
-                .customerNo(request.getClientId().toString())
-                .fromAccountNumber(fundsTransferOutputData.getFromAccountNumber())
-                .toAccountNumber(fundsTransferOutputData.getToAccountNumber())
-                .amount(fundsTransferOutputData.getTransactionAmount().toString())
-                .responseCode(fundsTransferOutputData.getResponseCode())
-                .subTranRef(subTranRef)
-                .narration(request.getNarration())
-                .build();
+    public int saveTransaction(TransactionDetails details) {
         return transactionRepository.saveTransaction(details);
     }
     private Marshaller marshaller() {

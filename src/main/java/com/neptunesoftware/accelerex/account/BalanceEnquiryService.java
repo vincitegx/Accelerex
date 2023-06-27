@@ -5,7 +5,7 @@ import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
 import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -17,7 +17,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Log4j2
 public class BalanceEnquiryService {
     private static final String PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.account";
     private final AccountServices accountService;

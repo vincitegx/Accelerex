@@ -32,7 +32,7 @@ public class TransactionController {
         TransactionResponse response = transactionService.transferFunds(request);
         HttpStatus status;
         if(Objects.equals(response.getResponse().getDescription(), "SUCCESS")) status = HttpStatus.OK;
-        else status = HttpStatus.EXPECTATION_FAILED;
+        else status = HttpStatus.INTERNAL_SERVER_ERROR;
         return new ResponseEntity<>(response, status);
     }
     @PostMapping("/bulk-transactions")
@@ -47,13 +47,13 @@ public class TransactionController {
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
     @PostMapping("/reverse-transaction")
+    @Hidden
     public ResponseEntity<ApiResponse> reverseTransaction(@RequestParam String externalRefNo) {
 //        transactionService.reverseTransaction(externalRefNo);
         return new ResponseEntity<>(new ApiResponse("Transaction reversed"), HttpStatus.OK);
     }
     @PostMapping("/transaction-history")
     public ResponseEntity<List<TransactionHistoryResponse>> generateTransactionHistory(@RequestBody @Valid TransactionHistoryRequest request) {
-//        Pageable pageable = PageRequest.of(page, size);
         return new ResponseEntity<>(transactionService.getTransactionHistory(request),
                 HttpStatus.OK);
     }
