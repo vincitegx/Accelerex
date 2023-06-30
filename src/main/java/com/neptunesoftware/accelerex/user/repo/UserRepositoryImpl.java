@@ -38,7 +38,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByEmailAddress(String email) {
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_PHONE_NUMBER, new UserRowMapper(), email));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_EMAIL, new UserRowMapper(), email));
         } catch (Exception e) {
             throw new RuntimeException("");
         }

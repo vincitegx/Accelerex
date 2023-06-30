@@ -1,343 +1,341 @@
 package com.neptunesoftware.accelerex.createCustomer;
 
 import com.neptunesoftware.accelerex.account.AccountRepositoryImp;
-import com.neptunesoftware.accelerex.account.request.NewCustomerAccountRequest;
-import com.neptunesoftware.accelerex.account.response.CreateAccountResponse;
-import com.neptunesoftware.accelerex.exception.ValidationException;
 import com.neptunesoftware.accelerex.utils.AppUtils;
 import com.neptunesoftware.accelerex.utils.ResponseConstants;
-import data.account.*;
-import data.customer.CreateCustomerResponse;
+import data.account.CreateDepositAccount;
+import data.account.DepositAccountOutputData;
+import data.account.DepositAccountRequestData;
+import data.customer.CreateCustomer;
+import data.customer.CustomerIdentificationInformation;
 import data.customer.CustomerOutputData;
+import data.customer.CustomerRequest;
+import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
+
 @Log4j2
 @RequiredArgsConstructor
 @Service
-public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountService {
-
+public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountService{
     private final AppUtils utils;
+    private final String PackageToScan= "com.neptunesoftware.accelerex.data.customer, com.neptunesoftware.accelerex.data.account";
     private final AccountRepositoryImp accountRepositoryImp;
     @Value("${endpoint.accountWebservice}")
     private String ACCOUNT_WEBSERVICE;
     @Value("${endpoint.customerWebService}")
     private String CUSTOMER_WEBSERVICE;
 
+    public CreateAccountResponse createCustomer(CreateCustomerRequest request) throws ParseException {
 
+        CustomerOutputData customerResponseData;
 
-    public CreateAccountResponse creatNewCustomer(NewCustomerAccountRequest request) {
-        CustomerRequest customerRequest = new CustomerRequest();
-        WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
-//        CreateCustomer createCustomer = new CreateCustomer();
-        CreateAccountResponse output  = null;
-        CreateCustomerResponse createCustomerResponse;
+        CreateAccountResponse response = new CreateAccountResponse();
 
-        //Variables To Hold Response From Each Call
-        String acctNumber= null;
-        String custNumber= null;
-        String custExist;
-        Long custId;
+        CustomerRequest customerRequestData = new CustomerRequest();
+
+        String customerName;
+        String customerNumber;
+        String customerId;
+        String accountNumber = null;
+        String accountId = null;
+
+        if (request.getMiddleName() != null) {
+            customerName = request.getFirstName() + " " + request.getMiddleName() + " " + request.getLastName();
+        } else {
+            customerName = request.getFirstName() + " " + request.getLastName();
+        }
+
+        customerRequestData.setXapiServiceCode("STC029");
+        customerRequestData.setChannelCode("AGENT");
+        customerRequestData.setChannelId(14L);
+        customerRequestData.setCurrBUId(-99L);
+        customerRequestData.setLocalCcyId(732L);
+        customerRequestData.setOriginatorUserId(-100L);
+        customerRequestData.setResponse(0);
+        customerRequestData.setTransmissionTime(12345678L);
+        customerRequestData.setUserId(-100L);
+        customerRequestData.setUserLoginId("EXTUSER");
+        customerRequestData.setUserRoleId(-100L);
+        customerRequestData.setValidXapiRequest(true);
+        customerRequestData.setAddressCity(request.getCity());
+        customerRequestData.setAddressCountryId(682L);
+        customerRequestData.setAddressLine1(request.getHomeAddress());
+        customerRequestData.setCustomerName(customerName);
+        customerRequestData.setAddressLine2("");
+        customerRequestData.setAddressPropertyTypeId(422L);
+        customerRequestData.setAddressState(request.getState());
+        customerRequestData.setAddressTypeCd("AT105");
+        customerRequestData.setAddressTypeId(121L);
+        customerRequestData.setBusinessUnitCodeId(-99L);
+
+        /*
+         * // Contact List<CustomerContactInformation> contacts = new
+         * ArrayList<CustomerContactInformation>(); CustomerContactInformation
+         * custContact = new CustomerContactInformation();
+         *
+         * custContact.setContactDetails(request.getPhone());
+         * custContact.setContactMode("CM100");
+         * custContact.setContactModeCategoryCode("CM100");
+         * custContact.setContactModeTypeId(206L);
+         * custContact.setCustomerShortName(request.getFirstName());
+         * custContact.setStatus("A"); contacts.add(custContact);
+         *
+         * if (!request.getEmail().isEmpty()) {
+         * custContact.setCustomerShortName(request.getFirstName());
+         * custContact.setContactDetails(request.getEmail());
+         * custContact.setContactMode("CM101");
+         * custContact.setContactModeCategoryCode("CM101");
+         * custContact.setContactModeTypeId(201L); custContact.setStatus("A");
+         *
+         * contacts.add(custContact); }
+         * customerRequestData.getContacts().addAll(contacts);
+         */
+
+        customerRequestData.setCountryId(682L);
+        customerRequestData.setCountryOfBirthCd("NGA");
+        customerRequestData.setCountryOfBirthId(682L);
+        customerRequestData.setCountryOfResidenceId(682L);
+        customerRequestData.setCustCountryCd("NGA");
+        customerRequestData.setCustShortName(request.getFirstName());
+        customerRequestData.setCustomerCategory("PER");
+        customerRequestData.setCustomerSegmentCd("CS107");
+        customerRequestData.setCustomerSegmentId(424L);
+        customerRequestData.setCustomerType(721L);
+        customerRequestData.setCustomerTypeCd("CT100");
+        customerRequestData.setEmploymentFlag(false);
+        customerRequestData.setFirstName(request.getFirstName());
+        customerRequestData.setGender(request.getGender());
+
+        // Identification
+        List<CustomerIdentificationInformation> identifications = new ArrayList<CustomerIdentificationInformation>();
+        CustomerIdentificationInformation custIdInfo = new CustomerIdentificationInformation();
+
+        if (!request.getBvn().isEmpty()) {
+            custIdInfo.setIdentityType("IT127");
+            custIdInfo.setIdentityTypeId(512L);
+            custIdInfo.setIdentityNumber(request.getBvn());
+            custIdInfo.setCountryOfIssue("NGA");
+            custIdInfo.setCountryOfIssueId(682L);
+            custIdInfo.setVerifiedFlag(false);
+
+            identifications.add(custIdInfo);
+        }
+        customerRequestData.getIdentifications().addAll(identifications);
+
+        customerRequestData.setIndustryCd("SIC052");
+        customerRequestData.setIndustryId(776L);
+        customerRequestData.setLastName(request.getLastName());
+        customerRequestData.setLocale("en_US");
+        customerRequestData.setMainBusinessUnitCd("001");
+        customerRequestData.setMainBusinessUnitId(-99L);
+        customerRequestData.setMaritalStatus("S");
+        customerRequestData.setMarketingCampaignCd("MC112");
+        customerRequestData.setMarketingCampaignId(369L);
+        customerRequestData.setMiddleName(request.getMiddleName());
+        customerRequestData.setNationalityCd("N101");
+        customerRequestData.setNationalityId(532L);
+        customerRequestData.setNoOfDependents(0L);
+        customerRequestData.setOpeningReasonCode("CC002");
+        customerRequestData.setOpeningReasonId(702L);
+        customerRequestData.setOperationCurrencyCd("NGA");
+        customerRequestData.setOperationCurrencyId(732l);
+        customerRequestData.setPreferredName(request.getFirstName());
+        customerRequestData.setPrimaryAddress(true);
+//        customerRequestData.setPrimaryRelationshipOfficerCd(relatnshpMgr);// <primaryRelationshipOfficerCd>HSL1424-13</primaryRelationshipOfficerCd>
+        customerRequestData.setPrimaryRelationshipOfficerId(1059L);
+        customerRequestData.setPrivacyLevel(3L);
+        customerRequestData.setPrivacyLevelId(13l);
+        customerRequestData.setPropertyTypeCd("PT107");
+        //customerRequestData.setRelationshipOfficerOneId(value);(relatnshpMgr);// <relationshipOfficerOneId>1059</relationshipOfficerOneId>
+        customerRequestData.setResidentCountryCd("NGA");
+        customerRequestData.setResidentFlag(true);
+        customerRequestData.setRiskCode("CUST105");
+        customerRequestData.setRiskCountryCd("NGA");
+        customerRequestData.setRiskId(745L);
+        customerRequestData.setServiceLevel(400L);
+        customerRequestData.setServiceLevelId(14L);
+        customerRequestData.setSourceOfFundCd("SF014");
+        customerRequestData.setSourceOfFundId(430L);
+        customerRequestData.setStatus("A");
+//        customerRequestData.setStrDate(newDate);
+//        customerRequestData.setStrFromDate(newDate);
+        // <startDateMm>09</startDateMm>
+        // <startDateYyyy>2021</startDateYyyy>
+        customerRequestData.setStrDateOfBirth(utils.convertDateFormatToString(request.getDateOfBirth(), "yyyy-MM-dd", "dd/MM/yyyy"));
+        customerRequestData.setSubmitFlag(true);
+        customerRequestData.setTaxGroupCd("CTG105");
+        customerRequestData.setTaxGroupId(442L);
+        customerRequestData.setTitleCd("T114");
+        customerRequestData.setTitleId(347L);
+
+        /*
+         * List<CustomerImageInformation> images = new
+         * ArrayList<CustomerImageInformation>(); CustomerImageInformation custImage =
+         * new CustomerImageInformation(); if (!request.getImage().isEmpty()) {
+         *
+         * byte[] image = Base64.encode(request.getImage());
+         * custImage.setBinaryImage(image); custImage.setImageTypeCode("PHO");
+         *
+         * images.add(custImage); }
+         *
+         * if (!request.getImage().isEmpty()) {
+         *
+         * byte[] image = Base64.encode(request.getSignature());
+         * custImage.setBinaryImage(image); custImage.setImageTypeCode("SIG");
+         *
+         * images.add(custImage); } customerRequestData.getImages().addAll(images);
+         */
+
+        System.out.println("*********** REQUEST DATA ****************************");
+        //CommonMethods.logContent("*****Request Parameter****** " + CommonMethods.objectToXml(customerRequestData));
+
+        CreateCustomer createCustomer = new CreateCustomer();
+
+        createCustomer.setArg0(customerRequestData);
+
+        WebServiceTemplate customerWebservice = new WebServiceTemplate(marshaller());
+
+        JAXBElement webServiceResponse;
 
         try {
-            System.out.println("***************** IN CREATE DEPOSIT ACCOUNT SERVICE  **********************");
-            log.info("***************** CREATE DEPOSIT ACCOUNT SERVICE STARTS HERE  **********************");
+             webServiceResponse = (JAXBElement) customerWebservice.marshalSendAndReceive(CUSTOMER_WEBSERVICE, createCustomer);
 
-            log.info("*******************************Request Parameter**************************************");
-             log.info("Request Parameter {}", utils.ObjectToJsonString(request));
+             customerResponseData = (CustomerOutputData) webServiceResponse.getValue();
+             customerNumber = customerResponseData.getCustomerNumber();
+             customerId = String.valueOf(customerResponseData.getCustomerId());
 
-
-            //When BVN is Supplied Check To See If Customer Exist
-            if (request.getBvn() != null) {
-                custId = validateBVN(request.getBvn());
-                if (custId > 0){
-                    output = new CreateAccountResponse(ResponseConstants.BVN_EXIST_CODE,
-                            ResponseConstants.BVN_EXIST_MESSAGE, null, null);
-                    log.info("*********** Deposit Account Creation Successful **********");
-                    log.info("Success Response: "+ utils.ObjectToJsonString(output));
-                      return output;
-                }
-            }
-
-            //Check if customer Exist Using Phone Number And D.O.B
-                custExist = checkCustomerPhoneNumber(request.getPhone(), request.getFirstName(), request.getDateOfBirth());
-
-            if (!custExist.isEmpty()) {
-                output = new CreateAccountResponse(ResponseConstants.CUSTOMER_EXIST_CODE,
-                        ResponseConstants.CUSTOMER_EXIST_MESSAGE, null, null);
-
-                log.info("Response : "+ utils.ObjectToJsonString(output));
-                log.info("***************** CREATE DEPOSIT ACCOUNT SERVICE ENDS HERE  **********************");
-                return  output;
-            }
-
-            //CHECK SUPPLIED PARAMETERS
-            if (!(request.getImageType().equalsIgnoreCase("JPEG") || request.getImageType().equalsIgnoreCase("JPG") || request.getSignatureType().equalsIgnoreCase("JPEG") || request.getSignatureType().equalsIgnoreCase("JPG"))) {
-                output = new CreateAccountResponse(ResponseConstants.WRONG_IMAGE_CODE, ResponseConstants.WRONG_IMAGE_MESSAGE, null, null);
-                log.info("Wrong Image Type!.: "+ request.getSignatureType());
-                log.info("***************** CREATE DEPOSIT ACCOUNT SERVICE ENDS HERE  **********************");
-                 return output;
-            }
-
-            if (request.getImage().length() < 20  || request.getSignature().length() < 20 ) {
-                output = new CreateAccountResponse(ResponseConstants.WRONG_IMAGE_CODE,
-                        ResponseConstants.WRONG_IMAGE_MESSAGE, null, null);
-                log.info("Wrong Image !.: "+ request.getImage());
-                log.info("***************** CREATE DEPOSIT ACCOUNT SERVICE ENDS HERE  **********************");
-                return output;
-            }
-
-            if(request.getCity() == null || request.getDateOfBirth() == null || request.getEmail() == null || request.getFirstName() == null || request.getGender() == null || request.getHomeAddress() == null || request.getLastName() == null ||  request.getPhone() == null || request.getState() == null) {
-                output = new CreateAccountResponse(ResponseConstants.MANDATORY_CODE, ResponseConstants.MANDATORY_MESSAGE, null, null);
-                log.info("Incomplete Parameter Passed.: "+ utils.ObjectToJsonString(output));
-                log.info("***************** CREATE DEPOSIT ACCOUNT SERVICE ENDS HERE  **********************");
-                return output;
-            }
-
-            try {
-
-//              customerRequest = (CustomerRequest) getCommonRequest(customerRequest);
-                getCommonRequest(customerRequest);
-
-                String customerName = request.getLastName() + " " + request.getFirstName();
-                if (request.getMiddleName() != null)
-                    customerName = request.getLastName() + " " + request.getMiddleName() + " " + request.getFirstName();
-
-
-                //Customer Creation
-                customerRequest.setCustomerId(25618L);    //Get value to be used here
-                customerRequest.setCustomerType(816L);    //Get value to be used here
-                customerRequest.setCustomerCategory("PER");
-                customerRequest.setCustomerType(721L);    //Get value to be used here
-                customerRequest.setResidentFlag(true);
-                customerRequest.setIndustryId(776L);    //Get value to be used here
-                customerRequest.setTaxGroupId(351L);    //Get value to be used here
-
-                customerRequest.setCustomerName(customerName);
-                customerRequest.setStrDateOfBirth(request.getDateOfBirth());
-                customerRequest.setGender(request.getGender());
-                customerRequest.setFirstName(request.getFirstName());
-                customerRequest.setLastName(request.getLastName());
-                customerRequest.setMiddleName(request.getMiddleName());
-                customerRequest.setCustShortName(customerName.substring(0,6));
-                customerRequest.setCountryOfResidenceId(682L);
-                customerRequest.setRiskId(745L);
-                customerRequest.setAddressLine1(request.getHomeAddress());
-
-                customerRequest.setContactModeId(201L);    //Get value to be used here
-                customerRequest.setCustContactModeId(201L);    //Get value to be used here
-
-                customerRequest.setChannelCode("AGENCY");
-                customerRequest.setChannelId(14L);    //Get value to be used here
-                customerRequest.setTransmissionTime(123L);    //Get value to be used here
-                customerRequest.setUserId(-99L);    //Get value to be used here
-                customerRequest.setUserLoginId("EXTUSER");
-                customerRequest.setUserRoleId(-99L);    //Get value to be used here
-
-
-                log.info("******************** REQUEST DATA ************************************");
-                log.info("REQUEST DATA {}",utils.ObjectToJsonString(customerRequest));
-                System.out.println("**************************************************************");
-//                createCustomer.setArg0(customerRequest);
-
-                CustomerOutputData customerResponse = (CustomerOutputData) webServiceTemplate
-                        .marshalSendAndReceive(CUSTOMER_WEBSERVICE, customerRequest);
-
-                //Create Deposit Account Application (custreq);
-                log.info("********************** RESPONSE DATA *************************************");
-                log.info("RESPONSE DATA {} ", customerResponse);
-                System.out.println("***************************************");
-
-                if (!(customerResponse.getCustomerNumber().equals(null))) {
-                    custNumber = customerResponse.getCustomerNumber();
-
-                    DepositAcctApplicationRequestData depositAccountAppl = new DepositAcctApplicationRequestData ();
-                    depositAccountAppl = (DepositAcctApplicationRequestData) getCommonRequest(depositAccountAppl);
-
-                    ApplicationAddressRequestData addressData = new ApplicationAddressRequestData();
-                    getCommonRequest(addressData);
-
-                    ApplicationContactInfoRequestData contactData = new ApplicationContactInfoRequestData();
-                    contactData = (ApplicationContactInfoRequestData) getCommonRequest(contactData);
-
-                    ApplicationContactInfoRequestData contactData1 = new ApplicationContactInfoRequestData();
-                    contactData1 = (ApplicationContactInfoRequestData) getCommonRequest(contactData1);
-
-//                    ApplicationImageRequestData imageData = new ApplicationImageRequestData();
-//                    imageData = (ApplicationImageRequestData) getCommonRequest(imageData);
-
-                    depositAccountAppl.setNationality(267L);
-                    depositAccountAppl.setCustomerCategory("PER");
-                    depositAccountAppl.setCustomerType(721L);
-                    depositAccountAppl.setCustomerTypeCd("CT100");
-                    depositAccountAppl.setCrncyId(732L);
-                    depositAccountAppl.setResidentCountryCd("NGA");
-                    depositAccountAppl.setBirthDate(utils.convertDateFormatToString(request.getDateOfBirth(), "yyyy-MM-dd", "dd/MM/yyyy"));
-                    depositAccountAppl.setGender(request.getGender());
-                    depositAccountAppl.setFirstName(request.getFirstName().toUpperCase());
-                    depositAccountAppl.setSurName(request.getLastName().toUpperCase());
-                    depositAccountAppl.setMiddleName(request.getMiddleName());
-                    depositAccountAppl.setMaritalStatus("S");
-                    depositAccountAppl.setTitle(250L);
-
-                    depositAccountAppl.setChannelCode("AGENCY");
-                    depositAccountAppl.setXAPIServiceCode("STC029");
-                    depositAccountAppl.setChannelId(14L);
-                    depositAccountAppl.setTransmissionTime(12345L);
-                    depositAccountAppl.setUserId(-99L);
-                    depositAccountAppl.setUserLoginId("EXTUSER");
-                    depositAccountAppl.setUserRoleId(-99L);
-                    depositAccountAppl.isValidXapiRequest();
-
-                    //Address Information
-
-                    addressData.setCustCountry(667L);
-                    addressData.setAddressLine1(request.getHomeAddress());
-                    addressData.setAddressStatus("A");
-                    addressData.setAddressType(40L);
-                    addressData.setCustomerCity(request.getCity());
-                    addressData.setCustomerState(request.getState());
-                    addressData.setStrFromDate("");
-
-                    addressData.setChannelCode("AGENCY");
-                    addressData.setChannelId(14L);
-                    addressData.setTransmissionTime(123L);
-                    addressData.setUserId(-99L);
-                    addressData.setUserLoginId("EXTUSER");
-                    addressData.setUserRoleId(-99L);
-                    depositAccountAppl.setApplAddressData(addressData);
-
-                    //Phone Number
-                    contactData.setContactModeId(203L);
-                    contactData.setCustContactModeId(203L);
-                    contactData.setContactDetails(request.getPhone());
-
-                    contactData.setChannelCode("AGENCY");
-                    contactData.setChannelId(14L);
-                    contactData.setTransmissionTime(12345L);
-                    contactData.setUserId(-99L);
-                    contactData.setUserLoginId("EXTUSER");
-                    contactData.setUserRoleId(-99L);
-                    depositAccountAppl.setApplContactData(contactData);
-
-                    //Email
-                    contactData1.setContactModeId(201L);
-                    contactData1.setCustContactModeId(201L);
-                    contactData1.setContactDetails(request.getEmail());
-
-                    contactData1.setChannelCode("AGENCY");
-                    contactData1.setChannelId(14L);
-                    contactData1.setUserId(-99L);
-                    contactData1.setUserLoginId("EXTUSER");
-                    contactData1.setUserRoleId(-99L);
-                    depositAccountAppl.setApplContactData(contactData1);
-
-                    System.out.println("*********** REQUEST DATA ****************************");
-                    System.out.println(utils.ObjectToJsonString(depositAccountAppl));
-                    System.out.println("***************************************");
-
-                    DepositAcctApplicationOutputData depositresponse;
-                    try {
-                        depositresponse  = (DepositAcctApplicationOutputData) webServiceTemplate
-                                .marshalSendAndReceive(ACCOUNT_WEBSERVICE,depositAccountAppl);
-
-                        acctNumber = depositresponse.getAcctNumber();
-                        custNumber = customerResponse.getCustomerNumber();
-                        output = new CreateAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,ResponseConstants.SUCCESS_MESSAGE,custNumber,acctNumber);
-                        output.setAccountNumber(acctNumber);
-                        output.setCustNo(custNumber);
-
-
-                    } catch (Exception e) {
-                        output = new CreateAccountResponse(ResponseConstants.WEBSERVICE_UNAVAILABLE_CODE,
-                                ResponseConstants.WEBSERVICE_UNAVAILABLE_MESSAGE,
-                                null, null);
-                        log.info("Error  Response For Webservice call: {}", utils.ObjectToJsonString(output));
-                        return output;
-                    }
-
-                    System.out.println("*********** RESPONSE DATA ****************************");
-                    System.out.println(depositresponse);
-                    System.out.println("******************************************************");
-
-
-                    log.info("*****************Response After successful Account creation of Account ********************************");
-                    log.info("Customer number {}", custNumber);
-                    log.info("Customer Account Number {}", acctNumber);
-                }
-
-                if (acctNumber != null && custNumber != null) {
-                    output = new CreateAccountResponse(ResponseConstants.SUCCESS_CODE,
-                            ResponseConstants.SUCCESS_MESSAGE,
-                            custNumber, acctNumber);
-                }
-
-            }catch(Exception Ex) {
-                output = new CreateAccountResponse(ResponseConstants.WEBSERVICE_UNAVAILABLE_CODE,
-                        ResponseConstants.WEBSERVICE_UNAVAILABLE_MESSAGE,
-                        null, null);
-                log.info("Error  Response For Db: "+ utils.ObjectToJsonString(output));
-                return output;
-            }
-
-        }catch(Exception Ex) {
-             output = new CreateAccountResponse(ResponseConstants.EXCEPTION_CODE,
-                    ResponseConstants.EXCEPTION_MESSAGE,
-                    null, null);
-            log.info("Error  Response For Db: "+ utils.ObjectToJsonString(output));
-            return output;
+        } catch (Exception e) {
+            log.info("Error in creating customer info {}", utils.ObjectToJsonString(customerRequestData));
+            log.info("Error in creating customer info {}", HttpStatus.valueOf(401));
+            return new CreateAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,
+                    ResponseConstants.WEBSERVICE_UNAVAILABLE_MESSAGE,
+                    null,null,null,null);
         }
-        return output;
-    }
 
-    private String checkCustomerPhoneNumber(String phone, String firstName, String dateOfBirth) {
-        //Todo: API call will be made, not validating against database as the data are domicile with the webservice
-        String account =accountRepositoryImp.findAccountByPhoneNumber(phone);
-        if (account != null){
-            return account;
+        System.out.println("*********** RESPONSE DATA ***********************************");
+        log.info("********************* Response Parameter********************************");
+        log.info("Rubikon Response Parameter Create Customer: {}", utils.ObjectToJsonString(customerResponseData));
+        System.out.println("****************************************************************");
+
+
+        if (customerResponseData.getCustomerId() != null && customerResponseData.getCustomerNumber() != null) {
+
+             accountNumber = createDepositAccountForCustomer(customerResponseData.getCustomerName(),
+                    String.valueOf(customerResponseData.getCustomerId())
+                    , customerResponseData.getCustomerNumber()).getAccountNumber();
+
+            accountId = createDepositAccountForCustomer(customerResponseData.getCustomerName(),
+                    String.valueOf(customerResponseData.getCustomerId())
+                    , customerResponseData.getCustomerNumber()).getAccountNumber();
         }
-        throw new ValidationException("");
+
+        log.info("SUCCESS {}", HttpStatus.valueOf(200));
+
+        response.setAccountId(accountId);
+        response.setAccountNumber(accountNumber);
+        response.setAccountId(customerId);
+        response.setCustomerNo(customerNumber);
+        response.setResponseCode(ResponseConstants.SUCCESS_CODE);
+        response.setResponseMessage(SUCCESS_MESSAGE);
+
+        return response;
     }
 
-    private static XAPIRequestBaseObject getCommonRequest(XAPIRequestBaseObject requestData) {
-        requestData.setCardNumber("");
-        requestData.setChannelId(17L);
-        requestData.setChannelCode("AGENT");
-        requestData.setResponse("00");
+    private CreateAccountResponse createDepositAccountForCustomer(String custName, String custId, String custNo) {
+            DepositAccountRequestData depositRequest = new DepositAccountRequestData();
+            depositRequest.setAmount(new BigDecimal(0));
+            depositRequest.setAccountTitle(custName);
+            depositRequest.setPrimaryCustomerId(Long.parseLong(custId));
+            depositRequest.setPrimaryCustomerNumber(custNo);
 
-        requestData.setTransmissionTime(System.currentTimeMillis());
-        requestData.setReference("");
-        requestData.setTerminalNumber("123");
-        requestData.setOriginatorUserId(-99L);
+            depositRequest.setXAPIServiceCode("STA060");
+            depositRequest.setChannelCode("MAPP");
+            depositRequest.setChannelId(121L);
 
-        requestData.setUserLoginId("NEPTUNE");
-        requestData.setUserId(-99L);
-        return requestData;
-    }
+            depositRequest.setOriginatorUserId(-100L);
+            depositRequest.setUserId(-100L);
+            depositRequest.setUserLoginId("EXTUSER");
+            depositRequest.setUserRoleId(-100L);
 
-    public Long validateBVN(String bvn) {
-        //Todo:
-       return 1L;
+            depositRequest.setCurrBUId(-99L);
+            depositRequest.setLocalCcyId(732L);
+            depositRequest.setTransmissionTime(123456789L);
+            depositRequest.setValidXapiRequest(true);
+            depositRequest.setCampaignRefCode("MC112");
+            depositRequest.setCampaignRefId(369l);
+            depositRequest.setCountryId(687L);
+            depositRequest.setOpeningReasonCode("CC002");
+            depositRequest.setOpenningReasonId(702L);
+            depositRequest.setProductCode("205");
+            depositRequest.setProductId(15L);
+//            depositRequest.setRelationshipOfficerCode(relatnshpMgr);
+            //DepositRequest.setRelationshipOfficerId(1058L);
+
+            depositRequest.setRiskClassCd("RC110");
+            depositRequest.setRiskClassId(744L);
+            depositRequest.setSourceOfFundCode("SF014");
+            depositRequest.setSourceOfFundId(430L);
+//          depositRequest.setStrOpeningDate(utils.convertDateFormatToString(dbConn.getProcessingDate(), "dd-MM-yyyy", "dd/MM/yyyy"));
+
+            CreateDepositAccount createDepositAccount = new CreateDepositAccount();
+            createDepositAccount.setArg0(depositRequest);
+
+            JAXBElement webServiceResponse;
+            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
+            DepositAccountOutputData depAcctResponseData;
+            String generateAccountNumber = null;
+            String accountId = null;
+
+             try {
+
+                 webServiceResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(ACCOUNT_WEBSERVICE,createDepositAccount);
+
+                 depAcctResponseData = (DepositAccountOutputData) webServiceResponse.getValue();
+
+             } catch (Exception e) {
+                 return new CreateAccountResponse(ResponseConstants.WEBSERVICE_UNAVAILABLE_CODE,
+                         ResponseConstants.WEBSERVICE_UNAVAILABLE_MESSAGE,
+                         custNo,custId,null,null);
+             }
+
+             if (!(depAcctResponseData.getPrimaryAccountNumber() == null)){
+                 generateAccountNumber=  depAcctResponseData.getPrimaryAccountNumber();
+                 accountId = String.valueOf(depAcctResponseData.getAccountId());
+             }
+
+            System.out.println("*********** REQUEST DATA ****************************");
+            log.info("********************* Request Parameter *************************");
+            log.info("Rubikon Request Parameter Create Account: " + utils.ObjectToJsonString(depositRequest));
+
+            System.out.println("*********** RESPONSE DATA ****************************");
+            log.info("**********************Response Parameter************************");
+            log.info("Rubikon Response Parameter Create Account: {}", utils.ObjectToJsonString(depAcctResponseData));
+            System.out.println("*******************************************************");
+
+
+            return new CreateAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,SUCCESS_MESSAGE,
+                    custNo, custId,accountId,generateAccountNumber);
     }
 
     private Marshaller marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         // this package must match the package in the <generatePackage> specified in
         // pom.xml
-        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.customer","com.neptunesoftware.accelerex.data.account");
+        marshaller.setPackagesToScan(PackageToScan);
         return marshaller;
-    }
-
-    private CustomerRequest mapNewCustomerRequestToCustomerRequest(NewCustomerAccountRequest request) {
-        CustomerRequest  customerRequest = new CustomerRequest();
-        customerRequest.setFirstName(request.getFirstName());
-        customerRequest.setMiddleName(request.getMiddleName());
-        customerRequest.setStrDateOfBirth(request.getDateOfBirth());
-        return customerRequest;
     }
 }

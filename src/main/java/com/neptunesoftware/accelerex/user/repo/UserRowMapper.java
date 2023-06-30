@@ -17,7 +17,7 @@ public class UserRowMapper implements RowMapper<User> {
                 .password(rs.getString("password"))
                 .phoneNumber(rs.getString("phone_number"))
                 .role(Role.valueOf(rs.getString("role")))
-                .smsToken(rs.getString("sms_token"))
+//                .smsToken(rs.getString("sms_token"))
                 .isNotBlocked(rs.getBoolean("is_not_blocked"))
                 .isVerified(rs.getBoolean("is_verified"))
                 .createdAt(rs.getTimestamp("created_at").toLocalDateTime())

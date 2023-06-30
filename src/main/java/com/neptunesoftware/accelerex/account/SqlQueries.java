@@ -3,9 +3,8 @@ package com.neptunesoftware.accelerex.account;
 final class SqlQueries {
 
     public static final String NAME_ENQUIRY = """
-            
+            SELECT ACCT_NM FROM ACCOUNT WHERE ACCT_NM = ?       
             """;
-
     public static final String IS_ACCOUNT_EXISTING = """
           
            """;

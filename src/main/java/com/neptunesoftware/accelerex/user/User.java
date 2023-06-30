@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,18 +15,24 @@ import java.util.Objects;
 @Data
 @Builder
 public class User implements UserDetails {
-
+    @JsonIgnore
     private Integer id;
     private String fullName;
     private String emailAddress;
+    @JsonIgnore
     private String password;
     private String phoneNumber;
     private Role role;
-    private String smsToken;
     private boolean isNotBlocked;
     private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @JsonIgnore
+    private String authority;
+    private String bvn;
+    private String accountNumber;
+    
+
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");

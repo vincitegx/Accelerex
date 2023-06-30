@@ -23,10 +23,10 @@ public class AccountController {
        
 
     @GetMapping("/accountBalance/{accountNumber}")
-    public ResponseEntity<FetchAccountBalanceResponse> fetchAccountBalance(@PathVariable("accountNumber") final String accountNumber) {
+    public ResponseEntity<BalanceEnquiryResponse> BalanceEnquiry(@PathVariable("accountNumber") final String accountNumber) {
         log.info("Account balance for account number of {}", accountNumber );
 
-        return ResponseEntity.status(HttpStatus.OK).body(accountServices.fetchAccountBalance(accountNumber));
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.balanceEnquiry(accountNumber));
     }
 
     @GetMapping("/name/{accountNumber}")
@@ -48,5 +48,4 @@ public class AccountController {
     public ResponseEntity<InterBankTransferResponse> interBankTransfer(@RequestBody InterBankTransferRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
     }
-
 }

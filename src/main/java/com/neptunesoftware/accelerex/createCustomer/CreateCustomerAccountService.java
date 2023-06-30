@@ -1,8 +1,7 @@
 package com.neptunesoftware.accelerex.createCustomer;
 
-import com.neptunesoftware.accelerex.account.request.NewCustomerAccountRequest;
-import com.neptunesoftware.accelerex.account.response.CreateAccountResponse;
+import java.text.ParseException;
 
 public interface CreateCustomerAccountService {
-    CreateAccountResponse creatNewCustomer(NewCustomerAccountRequest request);
+    CreateAccountResponse createCustomer(CreateCustomerRequest request) throws ParseException;
 }

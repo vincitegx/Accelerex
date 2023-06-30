@@ -1,7 +1,6 @@
 package com.neptunesoftware.accelerex.transaction;
 
 import com.neptunesoftware.accelerex.account.Account;
-import com.neptunesoftware.accelerex.account.AccountService;
 import com.neptunesoftware.accelerex.account.AccountStatus;
 import com.neptunesoftware.accelerex.account.Tier;
 import com.neptunesoftware.accelerex.transaction.mapper.TransactionMapper;

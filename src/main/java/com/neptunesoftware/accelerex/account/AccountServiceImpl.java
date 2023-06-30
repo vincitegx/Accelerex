@@ -75,10 +75,10 @@ public class AccountServiceImpl implements AccountServices {
     }
     
     @Override
-    public FetchAccountBalanceResponse fetchAccountBalance(String accountNumber) {
+    public BalanceEnquiryResponse balanceEnquiry(String accountNumber) {
         validateAccount(accountNumber);
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
-        FetchAccountBalanceResponse accountBalanceResponse;
+        BalanceEnquiryResponse accountBalanceResponse;
         BalanceenquiryResponse balanceenquiryResponse;
         BalanceEnquiryRequestData balEnqRequest = buildRequestForBalanceInquiry(accountNumber);
         Balanceenquiry balanceenquiry = new Balanceenquiry();
@@ -99,10 +99,12 @@ public class AccountServiceImpl implements AccountServices {
 
     @Override
     public ExternalTransferNameEnquiryResponse interBankNameEnquiry(String accountNumber) {
+
         ExternalTransferNameEnquiryResponse  responseData;
         NameenquirysingleitemResponse responseFromWebServiceCall;
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
         NameInquiryRequestData requestData = buildRequestForNameInquiry(accountNumber);
+
         ExternalAccountNameInquiry nameEnquiryRequestData = new ExternalAccountNameInquiry();
         nameEnquiryRequestData.setArg0(requestData);
 
@@ -124,10 +126,11 @@ public class AccountServiceImpl implements AccountServices {
         InterBankTransferResponse interBankTransferResponse;
         validateAccount(request.getBeneficiaryAccountNo());
         isAccountSufficient(request.getSourceAccount(),request.getAmount());
-
         InterBankTransferByAccountResponse apiResponse;
+
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
         InterBankTransferByAcctRequestData requestData =  buildRequestDataForInterBankTransfer(request);
+
         InterBankTransferByAccount interBankTransferByAccount =  new InterBankTransferByAccount();
         interBankTransferByAccount.setArg0(requestData);
         JAXBElement response;
@@ -153,7 +156,6 @@ public class AccountServiceImpl implements AccountServices {
         //Todo:
         return null;
     }
-
 
     private BalanceEnquiryRequestData buildRequestForBalanceInquiry(String accountNumber) {
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
@@ -194,16 +196,18 @@ public class AccountServiceImpl implements AccountServices {
 
     public void isAccountSufficient(String sourceAccountNumber, String amount) {
         validateAccount(sourceAccountNumber);
-        FetchAccountBalanceResponse response = fetchAccountBalance(sourceAccountNumber);
+        BalanceEnquiryResponse response = balanceEnquiry(sourceAccountNumber);
         boolean balanceEnquiryResponse = response.getAvailableBalance().compareTo(new BigDecimal(amount)) < 0;
         if (balanceEnquiryResponse)
             throw new BalanceEnquiryException("Account has insufficient balance");
     }
-    private FetchAccountBalanceResponse mapAccountBalanceToBalanceEnquiryResponse (BalanceenquiryResponse response) {
-        FetchAccountBalanceResponse fetchAccountBalanceResponse = new FetchAccountBalanceResponse();
+    private BalanceEnquiryResponse mapAccountBalanceToBalanceEnquiryResponse (BalanceenquiryResponse response) {
+        BalanceEnquiryResponse fetchAccountBalanceResponse = new BalanceEnquiryResponse();
         fetchAccountBalanceResponse.setAvailableBalance(response.getReturn().getAvailableBalance());
         fetchAccountBalanceResponse.setAccountName(response.getReturn().getTargetAccountName());
         fetchAccountBalanceResponse.setAccountNo(response.getReturn().getTargetAccountNumber());
+//        fetchAccountBalanceResponse.setAccountStatus(AccountStatus.ACTIVE.name());
+//        fetchAccountBalanceResponse.setCurrencyCode("682");
         return fetchAccountBalanceResponse;
     }
 
@@ -221,7 +225,7 @@ public class AccountServiceImpl implements AccountServices {
         interBankTransferResponse.setResponseCode(response.getReturn().getResponseCode());
 //        interBankTransferResponse.setResponseMessage("");
         interBankTransferResponse.setCoreBankingRefNo(response.getReturn().getTxnReference());
-//        interBankTransferResponse.setNIBSS_SessionId("");
+        interBankTransferResponse.setNIBSS_SessionId(String.valueOf(System.currentTimeMillis()));
         return interBankTransferResponse;
     }
     
@@ -235,15 +239,6 @@ public class AccountServiceImpl implements AccountServices {
                 .accountName(accountName).build());
     }
 
-//    @Override
-//    public VerifyTokenResponse verifySmsToken(String smsToken) {
-//        User user = userRepository.findBySmsToken(smsToken).get();
-//        VerifyTokenResponse response = new VerifyTokenResponse();
-//        response.setAccountName(user.getFullName());
-//        response.setAccountNo(user.getPhoneNumber());
-//        response.setEmail(user.getEmailAddress());
-//        return response;
-//    }
     private boolean verifySmsToken(String accountNumber, String smsToken) {
         String token = accountRepository.findTokenByAccountNumber(accountNumber);
         if (!(token.equals(smsToken))) throw new AccountServiceException("Incorrect token" + " for account: " + accountNumber);

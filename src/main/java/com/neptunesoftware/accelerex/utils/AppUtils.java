@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -23,9 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Component
+
 @Slf4j
 @RequiredArgsConstructor
+@Service
 public class AppUtils {
     private final UserRepository userRepository;
 
@@ -195,4 +196,56 @@ public class AppUtils {
         // Return the first 10 characters
         return reference.substring(0, 10);
     }
+    public List<String> split(String delimitedString){
+        if (delimitedString!=null)
+            return  Arrays.stream(delimitedString.split(",")).collect(Collectors.toList());
+        return null;
+    }
+
+
+    public boolean validImage(String fileName)
+    {
+        String regex = "(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP|JPEG)$";
+        Pattern p = Pattern.compile(regex);
+        if (fileName == null) {
+            return false;
+        }
+        Matcher m = p.matcher(fileName);
+        return m.matches();
+    }
+
+    public boolean validEmail(String email) {
+        String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+        return email.matches(regex);
+    }
+
+
+    public Long generateOTP(){
+        Random rnd = new Random();
+        Long number = (long) rnd.nextInt(999999);
+        return  number;
+    }
+    public String  getString(Object o){
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(o);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    public  Object getObject(String content, Class cls){
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(content,cls);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    public ObjectMapper getMapper(){
+        ObjectMapper mapper= new ObjectMapper();
+        return mapper;
+    }
+    
 }
