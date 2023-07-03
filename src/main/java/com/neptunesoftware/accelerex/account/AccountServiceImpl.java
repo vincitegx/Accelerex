@@ -184,7 +184,7 @@ public class AccountServiceImpl implements AccountServices {
         interBankTransferByAcctRequestData.setSessionId(String.valueOf(System.currentTimeMillis()));
         interBankTransferByAcctRequestData.setChannelCode("AGENCY");
         interBankTransferByAcctRequestData.setChannelId(17L);
-        interBankTransferByAcctRequestData.setXAPIServiceCode("");
+        interBankTransferByAcctRequestData.setXAPIServiceCode("STC029");
         interBankTransferByAcctRequestData.setBeneficiaryAccountNumber(interBankTransferRequest.getBeneficiaryAccountNo());
         interBankTransferByAcctRequestData.setBeneficiaryName(interBankTransferRequest.getBeneficiaryName());
         interBankTransferByAcctRequestData.setCustAccountNumber(interBankTransferRequest.getSourceAccount());
