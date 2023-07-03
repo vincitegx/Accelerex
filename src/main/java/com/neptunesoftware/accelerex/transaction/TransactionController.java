@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/v3/transactions")
+@RequestMapping("api/v3/transactions")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Transaction")
 public class TransactionController {

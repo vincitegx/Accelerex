@@ -37,7 +37,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
@@ -53,10 +52,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-security</artifactId>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
@@ -127,29 +126,53 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.13.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<generatePackage>com.neptunesoftware.accelerex.data.account</generatePackage>
-					<generateDirectory>${project.basedir}/src/main/java</generateDirectory>
-					<schemaDirectory>${project.basedir}/src/main/resources/wsdl</schemaDirectory>
-					<schemaIncludes>
-						<include>*.wsdl</include>
-					</schemaIncludes>
-					<args>
-						<arg>-XautoNameResolution</arg>
-					</args>
-				</configuration>
-			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>org.jvnet.jaxb2.maven2</groupId>-->
+<!--				<artifactId>maven-jaxb2-plugin</artifactId>-->
+<!--				<version>0.13.2</version>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<goals>-->
+<!--							<goal>generate</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--				<configuration>-->
+<!--					<generatePackage>com.neptunesoftware.accelerex.data.account</generatePackage>-->
+<!--					<generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
+<!--					<schemaDirectory>${project.basedir}/src/main/resources/wsdl</schemaDirectory>-->
+<!--					<schemaIncludes>-->
+<!--						<include>*.wsdl</include>-->
+<!--					</schemaIncludes>-->
+<!--					<args>-->
+<!--						<arg>-XautoNameResolution</arg>-->
+<!--					</args>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
+
+<!--			<plugin>-->
+<!--				<groupId>org.jvnet.jaxb2.maven2</groupId>-->
+<!--				<artifactId>maven-jaxb2-plugin</artifactId>-->
+<!--				<version>0.13.2</version>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<goals>-->
+<!--							<goal>generate</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--				<configuration>-->
+<!--					<generatePackage>com.neptunesoftware.accelerex.data.FundTransfer</generatePackage>-->
+<!--					<generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
+<!--					<schemaDirectory>${project.basedir}/src/main/resources/wsdl</schemaDirectory>-->
+<!--					<schemaIncludes>-->
+<!--						<include>*.wsdl</include>-->
+<!--					</schemaIncludes>-->
+<!--					<args>-->
+<!--						<arg>-XautoNameResolution</arg>-->
+<!--					</args>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 		</plugins>
 	</build>
 </project>

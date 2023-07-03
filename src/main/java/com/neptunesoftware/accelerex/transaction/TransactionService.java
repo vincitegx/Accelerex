@@ -1,8 +1,9 @@
 package com.neptunesoftware.accelerex.transaction;
 
+import com.neptunesoftware.accelerex.account.AccountRepository;
 import com.neptunesoftware.accelerex.account.AccountServices;
 import com.neptunesoftware.accelerex.account.BalanceEnquiryService;
-import com.neptunesoftware.accelerex.config.Credentials;
+import com.neptunesoftware.accelerex.config.AccelerexCredentials;
 import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransfer;
 import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransferResponse;
 import com.neptunesoftware.accelerex.data.fundstransfer.FundsTransferRequestData;
@@ -29,17 +30,17 @@ import java.util.List;
 @Log4j2
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final AccountServices accountService;
+    private final AccountRepository accountRepository;
     private final BalanceEnquiryService balanceEnquiryService;
-    private final Credentials credentials;
+    private final AccelerexCredentials credentials;
     private static final Long LONG_VALUE_99= -99L;
     public static final String PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.fundstransfer";
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, AccountServices accountService,
-                              BalanceEnquiryService balanceEnquiryService, Credentials credentials) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository,
+                              BalanceEnquiryService balanceEnquiryService, AccelerexCredentials credentials) {
         this.transactionRepository = transactionRepository;
-        this.accountService = accountService;
+        this.accountRepository = accountRepository;
         this.balanceEnquiryService = balanceEnquiryService;
         this.credentials = credentials;
     }
@@ -145,7 +146,7 @@ public class TransactionService {
 //    }
     private boolean isValidAccountNumber(String accountNumber) {
         return true;
-//        return accountService.accountExistsAndIsActivated(accountNumber);
+//        return accountRepository.existsByAccountNumber(accountNumber);
     }
     private boolean existsByReferenceNo(String referenceNo){
         return transactionRepository.existsByReferenceNo(referenceNo);

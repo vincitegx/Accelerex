@@ -6,11 +6,19 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-public interface AccountRepository {
-//    Optional<Account> findAccountByUser(User user);
-//    Optional<Account> findAccountByAccountNumber(String accountNumber);
-//    Optional<Account> findAccountByUserId(Integer user_id);
+public interface AccountRepository  {
+    Optional<Account> findAccountByUser(User user);
+    Optional<Account> findAccountByAccountNumber(String accountNumber);
+    String findByAccountNumber(String accountNumber);
+
+    String findNameByAccountNumber(String accountNumber);
+    String findAccountByPhoneNumber(String accountNumber);
+//    BigDecimal findBalanceByAccountNumber();
+
     boolean existsByAccountNumber(String accountNumber);
-    void updateTransactionHistory(TransactionRequest details);
+
+    String findTokenByAccountNumber(String token);
+    void updateOTP(String phoneNumber, String otp);
+    String findUserIdByAccountNumber(String accountNumber);
+    String findBvnByAccountNum(String accountNumber);
 }

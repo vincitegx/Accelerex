@@ -2,7 +2,7 @@ package com.neptunesoftware.accelerex.transaction;
 
 import com.github.javafaker.Faker;
 import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserRepository;
+import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
