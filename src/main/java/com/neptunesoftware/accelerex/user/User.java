@@ -18,6 +18,7 @@ public class User implements UserDetails {
     @JsonIgnore
     private Integer id;
     private String fullName;
+
     private String emailAddress;
     @JsonIgnore
     private String password;
@@ -31,9 +32,7 @@ public class User implements UserDetails {
     private String authority;
     private String bvn;
     private String accountNumber;
-    
-
-
+    //private String accountId;
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 

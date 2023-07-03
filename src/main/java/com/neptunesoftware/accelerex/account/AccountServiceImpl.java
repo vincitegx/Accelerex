@@ -151,11 +151,11 @@ public class AccountServiceImpl implements AccountServices {
         return  interBankTransferResponse;
     }
 
-    @Override
-    public String intraBankNameEnquiry(String accountNumber) {
-        //Todo:
-        return null;
-    }
+//    @Override
+//    public String intraBankNameEnquiry(String accountNumber) {
+//        //Todo:
+//        return null;
+//    }
 
     private BalanceEnquiryRequestData buildRequestForBalanceInquiry(String accountNumber) {
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();

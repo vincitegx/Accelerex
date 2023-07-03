@@ -30,7 +30,7 @@ import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESS
 @Log4j2
 @RequiredArgsConstructor
 @Service
-public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountService{
+public class CreateBankAccountServiceImpl implements CreateBankAccountService {
     private final AppUtils utils;
     private final String PackageToScan= "com.neptunesoftware.accelerex.data.customer, com.neptunesoftware.accelerex.data.account";
     private final AccountRepositoryImp accountRepositoryImp;
@@ -39,11 +39,11 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
     @Value("${endpoint.customerWebService}")
     private String CUSTOMER_WEBSERVICE;
 
-    public CreateAccountResponse createCustomer(CreateCustomerRequest request) throws ParseException {
+    public CreateBankAccountResponse createCustomer(CreateBankAccountRequest request) throws ParseException {
 
         CustomerOutputData customerResponseData;
 
-        CreateAccountResponse response = new CreateAccountResponse();
+        CreateBankAccountResponse response = new CreateBankAccountResponse();
 
         CustomerRequest customerRequestData = new CustomerRequest();
 
@@ -155,7 +155,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
         customerRequestData.setOperationCurrencyId(732l);
         customerRequestData.setPreferredName(request.getFirstName());
         customerRequestData.setPrimaryAddress(true);
-//        customerRequestData.setPrimaryRelationshipOfficerCd(relatnshpMgr);// <primaryRelationshipOfficerCd>HSL1424-13</primaryRelationshipOfficerCd>
+        //customerRequestData.setPrimaryRelationshipOfficerCd(relatnshpMgr);// <primaryRelationshipOfficerCd>HSL1424-13</primaryRelationshipOfficerCd>
         customerRequestData.setPrimaryRelationshipOfficerId(1059L);
         customerRequestData.setPrivacyLevel(3L);
         customerRequestData.setPrivacyLevelId(13l);
@@ -221,7 +221,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
         } catch (Exception e) {
             log.info("Error in creating customer info {}", utils.ObjectToJsonString(customerRequestData));
             log.info("Error in creating customer info {}", HttpStatus.valueOf(401));
-            return new CreateAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,
+            return new CreateBankAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,
                     ResponseConstants.WEBSERVICE_UNAVAILABLE_MESSAGE,
                     null,null,null,null);
         }
@@ -241,6 +241,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
             accountId = createDepositAccountForCustomer(customerResponseData.getCustomerName(),
                     String.valueOf(customerResponseData.getCustomerId())
                     , customerResponseData.getCustomerNumber()).getAccountNumber();
+            log.info("****************Bank Account Created Successfully***************");
         }
 
         log.info("SUCCESS {}", HttpStatus.valueOf(200));
@@ -251,11 +252,12 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
         response.setCustomerNo(customerNumber);
         response.setResponseCode(ResponseConstants.SUCCESS_CODE);
         response.setResponseMessage(SUCCESS_MESSAGE);
+        log.info("Account Details {}", response);
 
         return response;
     }
 
-    private CreateAccountResponse createDepositAccountForCustomer(String custName, String custId, String custNo) {
+    private CreateBankAccountResponse createDepositAccountForCustomer(String custName, String custId, String custNo) {
             DepositAccountRequestData depositRequest = new DepositAccountRequestData();
             depositRequest.setAmount(new BigDecimal(0));
             depositRequest.setAccountTitle(custName);
@@ -263,7 +265,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
             depositRequest.setPrimaryCustomerNumber(custNo);
 
             depositRequest.setXAPIServiceCode("STA060");
-            depositRequest.setChannelCode("MAPP");
+            depositRequest.setChannelCode("AGENCY");
             depositRequest.setChannelId(121L);
 
             depositRequest.setOriginatorUserId(-100L);
@@ -276,7 +278,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
             depositRequest.setTransmissionTime(123456789L);
             depositRequest.setValidXapiRequest(true);
             depositRequest.setCampaignRefCode("MC112");
-            depositRequest.setCampaignRefId(369l);
+            depositRequest.setCampaignRefId(369L);
             depositRequest.setCountryId(687L);
             depositRequest.setOpeningReasonCode("CC002");
             depositRequest.setOpenningReasonId(702L);
@@ -307,7 +309,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
                  depAcctResponseData = (DepositAccountOutputData) webServiceResponse.getValue();
 
              } catch (Exception e) {
-                 return new CreateAccountResponse(ResponseConstants.WEBSERVICE_UNAVAILABLE_CODE,
+                 return new CreateBankAccountResponse(ResponseConstants.WEBSERVICE_UNAVAILABLE_CODE,
                          ResponseConstants.WEBSERVICE_UNAVAILABLE_MESSAGE,
                          custNo,custId,null,null);
              }
@@ -327,7 +329,7 @@ public class CreateCustomerAccountServiceImpl implements CreateCustomerAccountSe
             System.out.println("*******************************************************");
 
 
-            return new CreateAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,SUCCESS_MESSAGE,
+            return new CreateBankAccountResponse(ResponseConstants.WEBSERVICE_RESPONSE_CODE,SUCCESS_MESSAGE,
                     custNo, custId,accountId,generateAccountNumber);
     }
 

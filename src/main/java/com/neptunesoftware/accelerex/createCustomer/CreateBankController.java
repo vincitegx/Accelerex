@@ -14,11 +14,11 @@ import java.text.ParseException;
 @RequiredArgsConstructor
 @RequestMapping("/api/vi/createNewCustomer")
 @Log4j2
-public class CreateCustomerController {
-    private final CreateCustomerAccountService customerAccountService;
+public class CreateBankController {
+    private final CreateBankAccountService customerAccountService;
 
     @PostMapping("createBankAccount")
-    public ResponseEntity<CreateAccountResponse> createBankAccount(CreateCustomerRequest request) {
+    public ResponseEntity<CreateBankAccountResponse> createBankAccount(CreateBankAccountRequest request) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createCustomer(request));
         } catch (ParseException e) {

@@ -11,7 +11,7 @@ public interface AccountServices {
     BalanceEnquiryResponse balanceEnquiry(String accountNumber);
     ExternalTransferNameEnquiryResponse interBankNameEnquiry(String accountNumber);
     InterBankTransferResponse interBankTransfer(InterBankTransferRequest request);
-    String intraBankNameEnquiry(String accountNumber);
+//    String intraBankNameEnquiry(String accountNumber);
     ApiResponse<NameEnquiryResponse> nameEnquiry(String nameEnquiryRequest);
 }
 

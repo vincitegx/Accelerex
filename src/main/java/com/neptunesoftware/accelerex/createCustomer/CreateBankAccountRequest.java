@@ -3,7 +3,7 @@ package com.neptunesoftware.accelerex.createCustomer;
 import lombok.Data;
 
 @Data
-public class CreateCustomerRequest {
+public class CreateBankAccountRequest {
     private String firstName;
     private String lastName;
     private String middleName;
