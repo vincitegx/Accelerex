@@ -1,6 +1,8 @@
 package com.neptunesoftware.accelerex.user;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,37 +13,29 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Objects;
 
-@Entity
-@Table(name = "users")
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class User implements UserDetails {
-
-    @Id
-    @SequenceGenerator(
-            name = "user_id_sequence",
-            sequenceName = "user_id_sequence"
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "user_id_sequence"
-    )
+    @JsonIgnore
     private Integer id;
-    @Column(nullable = false)
     private String fullName;
-    @Column(nullable = true)
+
     private String emailAddress;
-    @Column(nullable = false)
+    @JsonIgnore
     private String password;
-    @Column(nullable = false)
     private String phoneNumber;
-    private String smsToken;
-    @Column(nullable = false)
+    private Role role;
     private boolean isNotBlocked;
     private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    @JsonIgnore
+    private String authority;
+    private String bvn;
+    private String accountNumber;
+    //private String accountId;
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 

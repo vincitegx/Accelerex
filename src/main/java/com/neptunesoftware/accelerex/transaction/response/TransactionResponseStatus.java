@@ -1,7 +1,7 @@
 package com.neptunesoftware.accelerex.transaction.response;
 
 public enum TransactionResponseStatus {
-    SUCCESS("SUCCESS", 0),
+    SUCCESS("SUCCESS", 00),
     FAIL("FAIL", -1);
     private final String description;
     private final int code;

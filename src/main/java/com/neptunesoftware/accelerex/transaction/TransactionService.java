@@ -1,187 +1,201 @@
 package com.neptunesoftware.accelerex.transaction;
 
-import com.neptunesoftware.accelerex.account.Account;
-import com.neptunesoftware.accelerex.account.AccountService;
-import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
-import com.neptunesoftware.accelerex.exception.TransactionNotFoundException;
-import com.neptunesoftware.accelerex.transaction.mapper.TransactionMapper;
+import com.neptunesoftware.accelerex.account.AccountRepository;
+import com.neptunesoftware.accelerex.account.AccountServices;
+import com.neptunesoftware.accelerex.account.BalanceEnquiryService;
+import com.neptunesoftware.accelerex.config.AccelerexCredentials;
+import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransfer;
+import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransferResponse;
+import com.neptunesoftware.accelerex.data.fundstransfer.FundsTransferRequestData;
+import com.neptunesoftware.accelerex.exception.FundTransferException;
 import com.neptunesoftware.accelerex.transaction.request.*;
 import com.neptunesoftware.accelerex.transaction.response.TransactionHistoryResponse;
 import com.neptunesoftware.accelerex.transaction.response.TransactionResponse;
-import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
+import com.neptunesoftware.accelerex.transaction.response.TransactionResponseStatus;
 
+import jakarta.xml.bind.JAXBElement;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ws.client.core.WebServiceTemplate;
+
 import java.math.BigDecimal;
-import java.security.SecureRandom;
-import java.util.ArrayList;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Service
-@Transactional
+@Log4j2
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final AccountService accountService;
-    private final UserService userService;
-    private final TransactionMapper transactionMapper;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private final AccountRepository accountRepository;
+    private final BalanceEnquiryService balanceEnquiryService;
+    private final AccelerexCredentials credentials;
+    private static final Long LONG_VALUE_99= -99L;
+    public static final String PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.fundstransfer";
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, AccountService accountService,
-                              UserService userService, TransactionMapper transactionMapper) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository,
+                              BalanceEnquiryService balanceEnquiryService, AccelerexCredentials credentials) {
         this.transactionRepository = transactionRepository;
-        this.accountService = accountService;
-        this.userService = userService;
-        this.transactionMapper = transactionMapper;
+        this.accountRepository = accountRepository;
+        this.balanceEnquiryService = balanceEnquiryService;
+        this.credentials = credentials;
     }
-
     public TransactionResponse transferFunds(TransactionRequest request){
-        if(isValidationChecksPassed(request)){
-            Account senderAccount  = accountService.getAccountByUserId(request.clientId());
-            Account receiverAccount = accountService.accountExistsAndIsActivated(request.receiverAccountNumber());
-            accountService.debitAccount(senderAccount, request.amount());
-            accountService.creditAccount(receiverAccount, request.amount());
-            Transaction transaction = saveNewTransaction(request, senderAccount, receiverAccount, TransactionStatus.SUCCESS);
-            return transactionMapper.apply(transaction);
+        TransactionResponse txnResponse = null;
+        try{
+            if (isValidationChecksPassed(request)) {
+                WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
+                FundsTransferRequestData txnRequestData = buildRequestFrom(request);
+                CustomerToCustomerTransfer customerToCustomerTransfer = new CustomerToCustomerTransfer();
+                customerToCustomerTransfer.setArg0(txnRequestData);
+                log.info("Initiating internal funds transfer of Amount: {} and reference: {} from source: {} to destination: {}", request.getAmount(), request.getReferenceNo(),
+                        request.getSenderAccountNumber(), request.getReceiverAccountNumber());
+                JAXBElement response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
+                        this.credentials.getFundTransferWsdl(), customerToCustomerTransfer
+                );
+                CustomerToCustomerTransferResponse responseValue = (CustomerToCustomerTransferResponse) response.getValue();
+                log.info("Response Code: {}", responseValue.getReturn().getResponseCode());
+                if (!responseValue.getReturn().getResponseCode().equalsIgnoreCase("00")) {
+                    log.error("Transaction failed !!!");
+                    throw new FundTransferException("Transaction failed !!!");
+                }else{
+                    log.info("Transaction was successful !!!");
+                }
+                TransactionDetails details = TransactionDetails.builder()
+                        .tranRef(responseValue.getReturn().getTxnReference())
+                        .customerNo(request.getClientId().toString())
+                        .fromAccountNumber(responseValue.getReturn().getFromAccountNumber())
+                        .toAccountNumber(responseValue.getReturn().getToAccountNumber())
+                        .amount(responseValue.getReturn().getTransactionAmount().toString())
+                        .responseCode(responseValue.getReturn().getResponseCode())
+                        .subTranRef("InternalFundTransfer")
+                        .narration(request.getNarration())
+                        .build();
+                int transactionResponse = saveTransaction(details);
+                if (transactionResponse != 1) {
+                    log.error("Internal funds transfer of amount: "+
+                            request.getAmount()+" and reference: "+
+                            request.getReferenceNo()+" from source: "+
+                            request.getSenderAccountNumber()+" to destination: "+
+                            request.getReceiverAccountNumber()+" failed to save to database");
+                }else{
+                    log.info("Internal funds transfer of amount: "+
+                            request.getAmount()+" and reference: "+
+                            request.getReferenceNo()+" from source: "+
+                            request.getSenderAccountNumber()+" to destination: "+
+                            request.getReceiverAccountNumber()+" saved successfully to database");
+                }
+                txnResponse = new TransactionResponse(TransactionResponseStatus.SUCCESS, request.getReferenceNo());
+            }else {
+                txnResponse = new TransactionResponse(TransactionResponseStatus.FAIL, request.getReferenceNo());
+            }
+        } catch (FundTransferException e) {
+            log.error(e.getMessage());
+            throw new FundTransferException(e.getMessage());
         }
-        throw new IllegalArgumentException("Request Validation Checks Not Passed");
+        return txnResponse;
     }
-
-    private Boolean isValidationChecksPassed(TransactionRequest request){
-        BigDecimal amount = request.amount();
-        String senderAccountNumber = request.senderAccountNumber();
-        String receiverAccountNumber = request.receiverAccountNumber();
-        Account senderAccount = accountService.accountExistsAndIsActivated(senderAccountNumber);
-        return amount.compareTo(BigDecimal.ZERO) >= 1
-                && !senderAccountNumber.equals(receiverAccountNumber)
-                && isValidAccountNumber(senderAccountNumber)
-                && isValidAccountNumber(receiverAccountNumber)
-                && senderAccount.getAccountBalance().compareTo(amount) >= 0;
+    private boolean isValidationChecksPassed(TransactionRequest request){
+        BigDecimal amount = request.getAmount();
+        String senderAccountNumber = request.getSenderAccountNumber();
+        String receiverAccountNumber = request.getReceiverAccountNumber();
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new FundTransferException("Transaction amount must be greater than 0");
+        }
+        if (senderAccountNumber.equals(receiverAccountNumber)) {
+            throw new FundTransferException("Sender and Receiver account cannot be the same");
+        }
+        if (!isValidAccountNumber(senderAccountNumber)) {
+            throw new FundTransferException("The sender account number is invalid: " + senderAccountNumber);
+        }
+        if (!isValidAccountNumber(receiverAccountNumber)) {
+            throw new FundTransferException("The receiver account number is invalid: " + receiverAccountNumber);
+        }
+        if (!balanceEnquiryService.isAccountSufficient(senderAccountNumber, amount)) {
+            throw new FundTransferException("Insufficient funds");
+        }
+        if (existsByReferenceNo(request.getReferenceNo())) {
+            throw new FundTransferException("Reference Number already exists");
+        }
+        return true;
     }
-
     public TransactionResponse getTransactionStatus(String externalRefNo, String clientId) {
-        User user = userService.getUserById(Integer.parseInt(clientId));
-        Transaction transaction = transactionRepository.findByUserAndReferenceNo(user, externalRefNo);
-        return transactionMapper.apply(transaction);
-    }
-
-    public void reverseTransaction(String externalRefNo) {
-        Transaction transaction = transactionRepository.findByReferenceNo(externalRefNo).orElseThrow(()-> new TransactionNotFoundException("Transaction not found"));
-        Account receiverAccount = accountService.accountExistsAndIsActivated(transaction.getReceiverAccountNumber());
-        Account senderAccount = accountService.accountExistsAndIsActivated(transaction.getSenderAccountNumber());
-        accountService.debitAccount(receiverAccount, transaction.getAmount());
-        accountService.creditAccount(senderAccount, transaction.getAmount());
-        transaction.setStatus(TransactionStatus.SUCCESS);
-        transaction.setReversal('Y');
-        transactionRepository.saveAndFlush(transaction);
-    }
-
-    public Transaction saveNewTransaction(TransactionRequest request, Account senderAccount, Account receiverAccount, TransactionStatus status){
-        String referenceNo = request.referenceNo();
-        if(request.referenceNo().length() > 30 || request.referenceNo().equals("")) referenceNo = generateTransactionReference();
-        return transactionRepository.saveAndFlush(
-                new Transaction(
-                        senderAccount.getUser(),
-                        senderAccount.getAccountNumber(),
-                        receiverAccount.getAccountNumber(),
-                        request.amount(),
-                        referenceNo,
-                        request.currencyCode(),
-                        request.charge(),
-                        request.narration(),
-                        senderAccount.getUser().getFullName(),
-                        receiverAccount.getUser().getFullName(),
-                        status,
-                        request.transactionType()
-                )
-        );
-    }
-
-    public void processBulkTransactions(BulkTransactionRequest request) {
-        List<TransactionEntry> entries = request.transactionEntries();
-        if (entries.size() > 6) {
-            throw new IllegalArgumentException("Exceeded maximum number of entries per bulk transaction");
-        }
-        for (TransactionEntry entry : entries) {
-            validateTransactionEntry(entry);
-            if (entry.transactionType() == TransactionType.DEBIT) {
-                Account debitAccount = accountService.getAccountByNumber(entry.accountNumber());
-                accountService.debitAccount(debitAccount, entry.amount());
-            } else if (entry.transactionType() == TransactionType.CREDIT) {
-                Account creditAccount = accountService.getAccountByNumber(entry.accountNumber());
-                accountService.creditAccount(creditAccount, entry.amount());
-            }
-            saveTransactionEntry(entry);
+        try{
+            log.info(">>>>>>> Initiating Transaction Status For ClientId {}, and ReferenceNo {} >>>>>>>", clientId, externalRefNo);
+            TransactionResponse transactionResponse = transactionRepository.findByClientIdAndReferenceNo(clientId, externalRefNo);
+            return transactionResponse;
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+            throw new FundTransferException(ex.getMessage());
         }
     }
 
-    private void validateTransactionEntry(TransactionEntry entry) {
-        if (!isValidAccountNumber(entry.accountNumber())) {
-            throw new IllegalArgumentException("Invalid account number: " + entry.accountNumber());
-        }
-        if (entry.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Invalid amount: " + entry.amount());
-        }
-    }
-
+//    public void reverseTransaction(String externalRefNo) {
+//        Transaction transaction = transactionRepository.findByReferenceNo(externalRefNo).orElseThrow(()-> new TransactionNotFoundException("Transaction not found"));
+//        Account receiverAccount = accountService.accountExistsAndIsActivated(transaction.getReceiverAccountNumber());
+//        Account senderAccount = accountService.accountExistsAndIsActivated(transaction.getSenderAccountNumber());
+//        accountService.debitAccount(receiverAccount, transaction.getAmount());
+//        accountService.creditAccount(senderAccount, transaction.getAmount());
+//        transaction.setStatus(TransactionStatus.SUCCESS);
+//        transaction.setReversal('Y');
+//        transactionRepository.saveAndFlush(transaction);
+//    }
     private boolean isValidAccountNumber(String accountNumber) {
-        return accountService.accountExistsAndIsActivated(accountNumber) != null;
+        return true;
+//        return accountRepository.existsByAccountNumber(accountNumber);
     }
-
-    private void saveTransactionEntry(TransactionEntry entry) {
-        Transaction transaction = new Transaction();
-        if(entry.transactionType() == TransactionType.CREDIT){
-            transaction.setReceiverAccountNumber(entry.accountNumber());
-        }else{
-            transaction.setSenderAccountNumber(entry.accountNumber());
-        }
-        transaction.setTransactionType(entry.transactionType());
-        transaction.setAmount(entry.amount());
-        transactionRepository.save(transaction);
+    private boolean existsByReferenceNo(String referenceNo){
+        return transactionRepository.existsByReferenceNo(referenceNo);
     }
-
-    private String generateTransactionReference(){
-        final String VALUES = "abcdefghijklmnopqrstuvwxyz0123456789";//TSONAR
-        final int referenceNumberLength = 30;
-        StringBuilder builder = new StringBuilder(referenceNumberLength);
-        do {
-            for (int i = 0; i < referenceNumberLength; i++) {
-                builder.append(VALUES.charAt(SECURE_RANDOM.nextInt(VALUES.length())));
-            }
-        }while (transactionRepository.existsByReferenceNo(builder.toString()));
-        return builder.toString();
-    }
-
-    public List<TransactionHistoryResponse> getTransactionHistory(TransactionHistoryRequest request, Pageable pageable) {
-        Slice<Transaction> transactions = transactionRepository.findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
+    public List<TransactionHistoryResponse> getTransactionHistory(TransactionHistoryRequest request) {
+        log.info(">>>>>>> Initiating Transaction History For account {}, between {} and {} >>>>>>>", request.accountNumber(), request.startDateTime(), request.endDateTime());
+        return transactionRepository.findAllByCreatedAtBetweenAndSenderAccountNumberOrReceiverAccountNumber(
                 request.startDateTime(),
                 request.endDateTime(),
                 request.accountNumber(),
-                request.accountNumber(),
-                pageable
+                request.accountNumber()
         );
-        if(transactions.getContent().isEmpty()){
-            throw new ResourceNotFoundException("no transactions");
-        }
-        return formatTransactions(transactions.getContent());
     }
 
-    private List<TransactionHistoryResponse> formatTransactions(List <Transaction> transactions){
-        List<TransactionHistoryResponse> transactionHistoryResponses = new ArrayList<>();
-        transactions.forEach(
-                transaction -> {
-                    TransactionHistoryResponse transactionHistoryResponse = new TransactionHistoryResponse();
-                    transactionHistoryResponse.setAmount(transaction.getAmount());
-                    transactionHistoryResponse.setReceiverName(transaction.getReceiverName());
-                    transactionHistoryResponse.setSenderName(transaction.getSenderName());
-                    transactionHistoryResponse.setTransactionType(transaction.getTransactionType());
-                    transactionHistoryResponses.add(transactionHistoryResponse);
-                }
-        );
-        return transactionHistoryResponses;
+    private FundsTransferRequestData buildRequestFrom(TransactionRequest details) {
+        FundsTransferRequestData txnRequestData = new FundsTransferRequestData();
+        txnRequestData.setCurrBUId(LONG_VALUE_99);
+        txnRequestData.setChannelId(Long.valueOf(this.credentials.getChannelId()));
+        txnRequestData.setChannelCode(this.credentials.getChannelCode());
+        txnRequestData.setXAPIServiceCode(this.credentials.getXapiServiceCode());
+        txnRequestData.setLocalCcyId(732L);
+        txnRequestData.setTransmissionTime(System.currentTimeMillis());
+        txnRequestData.setFromAccountNumber(details.getSenderAccountNumber());
+        txnRequestData.setFromCurrencyCode(details.getCurrencyCode());
+        txnRequestData.setToAccountNumber(details.getReceiverAccountNumber());
+        txnRequestData.setToCurrencyCode(details.getCurrencyCode());
+        txnRequestData.setAmount(details.getAmount());
+        txnRequestData.setTransactionAmount(details.getAmount());
+        txnRequestData.setTxnDescription(details.getNarration());
+        txnRequestData.setTxnDate(Date.from(Instant.now()).toString());
+        txnRequestData.setReference(details.getReferenceNo());
+        txnRequestData.setRetrievalReferenceNumber(details.getReferenceNo());
+        txnRequestData.setReversalIndicator("N");
+        txnRequestData.setReversal(false);
+        txnRequestData.setUserAccessCode(this.credentials.getUserAccessCode());
+        txnRequestData.setUserPassword(this.credentials.getUserPassword());
+        txnRequestData.setUserId(LONG_VALUE_99);
+        txnRequestData.setUserLoginId(this.credentials.getUserLoginId());
+        txnRequestData.setUserRoleId(LONG_VALUE_99);
+        txnRequestData.setUserBusinessRoleId(LONG_VALUE_99);
+        txnRequestData.setOriginatorUserId(LONG_VALUE_99);
+        return txnRequestData;
+    }
+    public int saveTransaction(TransactionDetails details) {
+        return transactionRepository.saveTransaction(details);
+    }
+    private Marshaller marshaller() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setPackagesToScan(PACKAGE_TO_SCAN);
+        return marshaller;
     }
 }

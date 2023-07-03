@@ -1,20 +1,15 @@
 package com.neptunesoftware.accelerex.account;
 
-import com.neptunesoftware.accelerex.account.request.*;
+import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
+import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 
 public interface AccountServices {
-
     ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request);
-
-    ApiResponse<NameInquiryResponse> nameInquiry(NameInquiryRequest nameInquiryRequest);
-
-    VerifyTokenResponse verifySmsToken(String smsToken);
-    ApiResponse<CreateBankAccountResponse> createBankAccount(CreateBankAccountRequest createBankAccountRequest);
-
-   ApiResponse<VerifyTokenResponse> createVirtualAccount(VirtualAccountRequest request);
-
-    ApiResponse<FetchAccountBalanceResponse> fetchAccountBalance(FetchAccountBalanceRequest request);
-
+    BalanceEnquiryResponse balanceEnquiry(String accountNumber);
+    ExternalTransferNameEnquiryResponse interBankNameEnquiry(String accountNumber);
+    InterBankTransferResponse interBankTransfer(InterBankTransferRequest request);
+    String intraBankNameEnquiry(String accountNumber);
+    ApiResponse<NameEnquiryResponse> nameEnquiry(String nameEnquiryRequest);
 }

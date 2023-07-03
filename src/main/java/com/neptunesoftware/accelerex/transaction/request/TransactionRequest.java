@@ -1,31 +1,43 @@
 package com.neptunesoftware.accelerex.transaction.request;
 
 import com.neptunesoftware.accelerex.transaction.TransactionType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 
-public record TransactionRequest(
+@Data
+@Builder
+public class TransactionRequest {
         @NonNull
-        Integer clientId,
+        private Integer clientId;
         @NonNull
-        String senderAccountNumber,
+        @NotBlank(message = "accountNumber field can't be blank")
+        @Size(min = 10, max = 10, message = "Account Number should be 10 digits")
+        private String senderAccountNumber;
         @NonNull
-        String senderName,
+        private String senderName;
         @NonNull
-        String receiverAccountNumber,
+        @NotBlank(message = "accountNumber field can't be blank")
+        @Size(min = 10, max = 10, message = "Account Number should be 10 digits")
+        private String receiverAccountNumber;
         @NonNull
-        String receiverName,
+        private String receiverName;
         @NonNull
-        String referenceNo,
+        private String referenceNo;
         @NonNull
-        BigDecimal amount,
+        @Positive
+        private BigDecimal amount;
         @NonNull
-        String currencyCode,
-        BigDecimal charge,
+        private String currencyCode;
+        private BigDecimal charge;
         @NonNull
-        TransactionType transactionType,
+        private TransactionType transactionType;
         @NonNull
-        String narration
-) {
+        private String narration;
+        private char isReversal;
 }

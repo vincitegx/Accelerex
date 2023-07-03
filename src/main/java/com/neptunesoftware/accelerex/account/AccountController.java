@@ -1,45 +1,51 @@
 package com.neptunesoftware.accelerex.account;
 
-import com.neptunesoftware.accelerex.account.request.CreateBankAccountRequest;
+import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
-import com.neptunesoftware.accelerex.account.request.VirtualAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/vi/accountService")
+@RequestMapping("api/v3/accounts")
+@Log4j2
 public class AccountController {
        private final AccountServices accountServices;
+
     @PostMapping("/linkBankAccountToAgent")
        public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
-           return ResponseEntity.ok(accountServices.linkBankAccountToAgent(request));
+           return ResponseEntity.status(HttpStatus.OK).body(accountServices.linkBankAccountToAgent(request));
        }
 
-    @PostMapping("/createBankAccount")
-    public ResponseEntity<ApiResponse<CreateBankAccountResponse>> createBankAccount(@RequestBody CreateBankAccountRequest request) {
-        return ResponseEntity.ok(accountServices.createBankAccount(request));
+    @GetMapping("/accountBalance/{accountNumber}")
+    public ResponseEntity<BalanceEnquiryResponse> BalanceEnquiry(@PathVariable("accountNumber") final String accountNumber) {
+        log.info("Account balance for account number of {}", accountNumber );
+
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.balanceEnquiry(accountNumber));
     }
 
-    @PostMapping("/verifySmsToken")
-    public ResponseEntity<VerifyTokenResponse> verifySmsToken(String otp) {
-        return ResponseEntity.ok(accountServices.verifySmsToken(otp));
-       }
-       @PostMapping("/createVirtualAccount")
-    public ResponseEntity<ApiResponse<VirtualAccountResponse>> createVirtualAccount(VirtualAccountRequest request) {
-//        return ResponseEntity.ok(accountServices.createVirtualAccount(request));
-        return null;
-       }
+    @GetMapping("/name/{accountNumber}")
+    public ResponseEntity<ApiResponse<NameEnquiryResponse>> nameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
+        log.info("Name enquiry for account number of {}", accountNumber);
 
-    @GetMapping("/accountBalance")
-    public ResponseEntity<FetchAccountBalanceResponse> getAccountBalance(@RequestParam("clientId") String clientId, @RequestParam("secretKey") String secretKey, @RequestParam("bankCode") String bankCode, @RequestParam("accountNo") String accountNo) {
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.nameEnquiry(accountNumber));
     }
-    @GetMapping("/nameInquiry")
-    public ResponseEntity<String> nameInquiry(@RequestParam("clientId") String clientId, @RequestParam("secretKey") String secretKey, @RequestParam("bankCode") String bankCode, @RequestParam("accountNo") String accountNo) {
-        return null;
+    @GetMapping("account/{accountNumber}")
+    public ResponseEntity<ExternalTransferNameEnquiryResponse>  interBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
+          return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankNameEnquiry(accountNumber));
+    }
+
+//    @GetMapping("account/{accountNumber}")
+//    public ResponseEntity<String>  intraBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
+//          return ResponseEntity.status(HttpStatus.OK).body(accountServices.intraBankNameEnquiry(accountNumber));
+//    }
+    @PostMapping("/interBankTransfer")
+    public ResponseEntity<InterBankTransferResponse> interBankTransfer(@RequestBody InterBankTransferRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
     }
 }

@@ -12,5 +12,4 @@ import lombok.Setter;
 public class TransactionResponse {
     private TransactionResponseStatus response;
     private String coreBankingRefNo;
-    private Integer transactionId;
 }
