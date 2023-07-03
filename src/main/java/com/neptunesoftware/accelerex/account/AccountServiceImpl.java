@@ -134,12 +134,10 @@ public class AccountServiceImpl implements AccountServices {
         InterBankTransferByAccount interBankTransferByAccount =  new InterBankTransferByAccount();
         interBankTransferByAccount.setArg0(requestData);
         JAXBElement response;
-
         try {
             response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(FUND_TRANSFER_SERVICE_END_POINT,interBankTransferByAccount);
              apiResponse = (InterBankTransferByAccountResponse)response.getValue();
             interBankTransferResponse = interBankTransferResponseMapper(apiResponse);
-
              if (!(interBankTransferResponse.getResponseCode().equals("00"))) {
                  log.error("Webservice failed with error code of {}", apiResponse.getReturn().getResponseCode());
                  throw new FundTransferException("Unable to complete transaction. Please try again later.");
@@ -267,7 +265,6 @@ public class AccountServiceImpl implements AccountServices {
         marshaller.setPackagesToScan(ACCOUNT_JAXB_PACKAGE,FUND_TRANSFER_JAXB_PACKAGE);
         return marshaller;
     }
-
     public String generateOTP() {
         return RandomStringUtils.randomNumeric(4);
     }

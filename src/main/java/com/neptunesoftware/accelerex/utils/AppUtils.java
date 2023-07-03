@@ -2,7 +2,6 @@ package com.neptunesoftware.accelerex.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
 import com.neptunesoftware.accelerex.exception.UserNotFoundException;
 import com.neptunesoftware.accelerex.user.User;
@@ -40,32 +39,6 @@ public class AppUtils {
         if (delimitedString!=null)
             return  Arrays.stream(delimitedString.split(",")).collect(Collectors.toList());
         return null;
-    }
-
-    /**
-     * Deserialize JSON or XML data into an object of the specified target type.
-     *
-     * @param data        The JSON or XML data to be deserialized.
-     * @param targetType The class representing the target type.
-     * @param <T>         The type of the target object.
-     * @return The deserialized object of the specified target type.
-     */
-    public  <T> T JSONOrXMLToObject(String data, Class<T> targetType) {
-        T result = null;
-        try {
-            // Detect the data format (JSON or XML)
-            boolean isJSON = data.trim().startsWith("{");
-
-            // Initialize the appropriate object mapper
-            ObjectMapper mapper = isJSON ? new ObjectMapper() : new XmlMapper();
-
-            // Deserialize the data into the target type
-            result = mapper.readValue(data, targetType);
-        } catch (Exception e) {
-            // Handle any exceptions that occur during deserialization
-            e.printStackTrace();
-        }
-        return result;
     }
 
     public  String convertDateFormatToString(String inputDate, String sourceFormat, String neededFormat) throws ParseException {

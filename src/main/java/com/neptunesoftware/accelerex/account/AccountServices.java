@@ -6,7 +6,6 @@ import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 
 public interface AccountServices {
-
     ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request);
     BalanceEnquiryResponse balanceEnquiry(String accountNumber);
     ExternalTransferNameEnquiryResponse interBankNameEnquiry(String accountNumber);
@@ -14,4 +13,3 @@ public interface AccountServices {
 //    String intraBankNameEnquiry(String accountNumber);
     ApiResponse<NameEnquiryResponse> nameEnquiry(String nameEnquiryRequest);
 }
-

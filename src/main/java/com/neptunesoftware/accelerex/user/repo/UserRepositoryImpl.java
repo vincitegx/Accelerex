@@ -43,4 +43,9 @@ public class UserRepositoryImpl implements UserRepository {
             throw new RuntimeException("");
         }
     }
+
+    @Override
+    public User findUserByAccountNumber(String accountNumber) {
+        return null;
+    }
 }

@@ -6,18 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @NoArgsConstructor
 @Getter
 @Setter
 @AllArgsConstructor
 public class TransactionHistoryResponse {
-    LocalDateTime transactionDateTime;
-    BigDecimal amount;
-    TransactionType transactionType;
-    String senderName;
-    String receiverName;
-    String description;
+    private String transactionDate;
+    private String tranRef;
+    private String amount;
+    private String narration;
+    private TransactionType transactionType;
 }

@@ -1,6 +1,8 @@
 package com.neptunesoftware.accelerex.account;
 
+import com.neptunesoftware.accelerex.transaction.request.TransactionRequest;
 import com.neptunesoftware.accelerex.user.User;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 

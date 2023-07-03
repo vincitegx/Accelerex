@@ -1,7 +1,8 @@
 package com.neptunesoftware.accelerex.exception;
 
-public class FundTransferException extends RuntimeException {
-    public FundTransferException (String message) {
+public class FundTransferException extends RuntimeException{
+    public FundTransferException(String message) {
         super(message);
     }
+
 }
