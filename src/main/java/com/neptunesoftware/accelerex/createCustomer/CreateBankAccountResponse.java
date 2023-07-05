@@ -20,6 +20,13 @@ public class CreateBankAccountResponse {
         this.accountNumber = accountNumber;
         this.accountId = accountId;
     }
+
+    public CreateBankAccountResponse(String responseCode, String responseMessage, String custNo, String customerId) {
+        this.responseCode = responseCode;
+        this.responseMessage = responseMessage;
+        this.customerNo = custNo;
+        this.customerId = customerId;
+    }
    public CreateBankAccountResponse() {
 
     }

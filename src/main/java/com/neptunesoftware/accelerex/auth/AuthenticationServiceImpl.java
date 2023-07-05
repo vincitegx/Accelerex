@@ -17,12 +17,12 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     @Override
     public AuthenticationResponse register(RegistrationRequest request) {
 
-        if (userRepository.findByEmailAddress(request.getEmailAddress()).isPresent()) {
-            throw new RuntimeException("User with Email already exist");
-        }
-        if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
-            throw new RuntimeException("Phone number Already exist");
-        }
+//        if (userRepository.findByEmailAddress(request.getEmailAddress()).isPresent()) {
+//            throw new RuntimeException("User with Email already exist");
+//        }
+//        if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+//            throw new RuntimeException("Phone number Already exist");
+//        }
         String name;
         if (request.getMiddleName().isEmpty()){
             name = request.getFirstName()+ " "+ request.getLastName();
@@ -36,6 +36,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
                 .emailAddress(request.getEmailAddress())
                 .role(Role.ROLE_USER)
                 .build();
+        userRepository.saveRegistrationDetails(user);
         return new AuthenticationResponse(jwtService.generateToken(user));
     }
 

@@ -41,12 +41,13 @@ public class AppUtils {
         return null;
     }
 
-    public  String convertDateFormatToString(String inputDate, String sourceFormat, String neededFormat) throws ParseException {
-        DateFormat originalFormat = new SimpleDateFormat(sourceFormat, Locale.ENGLISH);
+    public String convertDateFormatToString(String inputDate, String sourceFormat, String neededFormat) throws ParseException {
+        DateFormat originalFormat = new SimpleDateFormat(sourceFormat);
         DateFormat targetFormat = new SimpleDateFormat(neededFormat);
         Date date = originalFormat.parse(inputDate);
         return targetFormat.format(date);
     }
+
 
     public  String ObjectToJsonString(Object object) {
         String jsonString = null;

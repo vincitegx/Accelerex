@@ -4,6 +4,10 @@ import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.config.AccelerexCredentials;
+import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
+import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
+import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
+import com.neptunesoftware.accelerex.data.fundstransfer.*;
 import com.neptunesoftware.accelerex.exception.AccountNotExistException;
 import com.neptunesoftware.accelerex.exception.AccountServiceException;
 import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
@@ -11,10 +15,6 @@ import com.neptunesoftware.accelerex.exception.FundTransferException;
 import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import com.neptunesoftware.accelerex.utils.ResponseConstants;
-import data.FundTransfer.*;
-import data.account.BalanceEnquiryRequestData;
-import data.account.Balanceenquiry;
-import data.account.BalanceenquiryResponse;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -73,7 +73,7 @@ public class AccountServiceImpl implements AccountServices {
         }
      return  new ApiResponse<>(ResponseConstants.SUCCESS_MESSAGE,"Account Linked successfully",response);
     }
-    
+
     @Override
     public BalanceEnquiryResponse balanceEnquiry(String accountNumber) {
         validateAccount(accountNumber);
@@ -176,7 +176,7 @@ public class AccountServiceImpl implements AccountServices {
         nameInquiryRequestData.setAccountNumber(accountNumber);
         return nameInquiryRequestData;
     }
-    
+
     private InterBankTransferByAcctRequestData buildRequestDataForInterBankTransfer(InterBankTransferRequest interBankTransferRequest) {
         InterBankTransferByAcctRequestData interBankTransferByAcctRequestData = new InterBankTransferByAcctRequestData();
         interBankTransferByAcctRequestData.setSessionId(String.valueOf(System.currentTimeMillis()));
@@ -226,7 +226,7 @@ public class AccountServiceImpl implements AccountServices {
         interBankTransferResponse.setNIBSS_SessionId(String.valueOf(System.currentTimeMillis()));
         return interBankTransferResponse;
     }
-    
+
     @Override
     public ApiResponse<NameEnquiryResponse> nameEnquiry(String accountNumber) {
         String accountName = accountRepository.findNameByAccountNumber(accountNumber);

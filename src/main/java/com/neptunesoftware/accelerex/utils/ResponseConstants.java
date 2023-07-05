@@ -11,6 +11,7 @@ public class ResponseConstants {
     public static final String WEBSERVICE_UNAVAILABLE_CODE ="02";
     public static final String WEBSERVICE_RESPONSE_CODE ="03";
     public static final String WEBSERVICE_FAILED_RESPONSE_CODE = "04";
+    public static final String WEBSERVICE_FAILED_RESPONSE_MESSAGE = "Failed to get response from webservice";
     public static final String BVN_EXIST_CODE ="05";
     public static final String MANDATORY_CODE ="09";
     public static final String MANDATORY_MESSAGE ="A mandatory parameter has not been passed: ";

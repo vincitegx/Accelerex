@@ -9,14 +9,11 @@ public class CreateBankAccountRequest {
     private String middleName;
     private String gender;
     private String phone;
-    private String image;
     private String dateOfBirth;
     private String city;
     private String state;
-//    private String signatureType;
-//    private String signature;
-//    private String imageType;
     private String homeAddress;
+    private String alternativeAddress;
     private String email;
     private String bvn;
 }

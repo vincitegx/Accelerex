@@ -28,16 +28,15 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
     private String phoneNumber;
+    @JsonIgnore
     private Role role;
     private boolean isNotBlocked;
-    private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    @JsonIgnore
-    private String authority;
-    private String bvn;
-    private String accountNumber;
-    //private String accountId;
+//    @JsonIgnore
+//    private String authority;
+//    private String bvn;
+//    private String accountNumber;
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
@@ -70,7 +69,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));  
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     public String getPassword() {

@@ -1,38 +1,30 @@
 package com.neptunesoftware.accelerex.user;
 
-import com.neptunesoftware.accelerex.account.Account;
 import com.neptunesoftware.accelerex.account.AccountServices;
 import com.neptunesoftware.accelerex.config.JWTService;
-import com.neptunesoftware.accelerex.config.PasswordEncoderConfig;
-import com.neptunesoftware.accelerex.exception.*;
+import com.neptunesoftware.accelerex.exception.InvalidAuthenticationException;
+import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
+import com.neptunesoftware.accelerex.exception.UserNotFoundException;
 import com.neptunesoftware.accelerex.user.repo.UserRepository;
-import com.neptunesoftware.accelerex.user.requests.ChangePasswordRequest;
 import com.neptunesoftware.accelerex.user.requests.UserAuthenticationRequests;
-import com.neptunesoftware.accelerex.user.requests.UserRegistrationRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final JWTService jwtService;
     private final AccountServices accountService;
-    private final PasswordEncoderConfig passwordEncoderConfig;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserService(UserRepository userRepository, JWTService jwtService, AccountServices accountService, PasswordEncoderConfig passwordEncoderConfig) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.accountService = accountService;
-        this.passwordEncoderConfig = passwordEncoderConfig;
-    }
+
 //    public void updateUser(User existingUser){
 //        existingUser.setUpdatedAt(LocalDateTime.now());
 //        userRepository.save(existingUser);
@@ -57,7 +49,7 @@ public class UserService {
 //        accountService.createAccount(new Account(newUser));
 //    }
     public boolean passwordMatches(String rawPassword, String encodedPassword){
-        return passwordEncoderConfig.passwordEncoder().matches(rawPassword,encodedPassword);
+        return passwordEncoder.encode(encodedPassword).matches(rawPassword);
     }
     public String authenticateUser(UserAuthenticationRequests requests){
         User existingUser = getUserByEmailAddress(requests.emailAddress());
@@ -73,7 +65,8 @@ public class UserService {
         String password = (String) authentication.getCredentials();
         User securityUser = userRepository.findUserByAccountNumber(accountNumber);
         if (passwordMatches(password, securityUser.getPassword())) {
-            return new UsernamePasswordAuthenticationToken(securityUser.getAccountNumber(), securityUser.getPassword());
+            return new UsernamePasswordAuthenticationToken(securityUser.getEmailAddress(), securityUser.getPassword());
+//            return new UsernamePasswordAuthenticationToken(securityUser.getAccountNumber(), securityUser.getPassword());
         }
         throw new UserNotFoundException("The account number or password entered is not correct");
     }
@@ -103,6 +96,6 @@ public class UserService {
     }
 
     public String encodePassword(String password){
-        return passwordEncoderConfig.passwordEncoder().encode(password);
+        return passwordEncoder.encode(password);
     }
 }

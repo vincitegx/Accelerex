@@ -15,6 +15,8 @@ public final class AccelerexCredentials {
     private String fundTransferWsdl;
     @Value("${endpoint.accountWebservice}")
     private String accountWsdl;
+     @Value("${endpoint.customerWebService}")
+    private String customerWsdl;
     @Value("${accelerex.xapiServiceCode}")
     private String xapiServiceCode;
     @Value("${accelerex.userAccessCode}")
