@@ -15,7 +15,7 @@ public class CreateBankController {
     private final CreateBankAccountService customerAccountService;
 
     @PostMapping("/createBankAccount")
-    public ResponseEntity<CreateBankAccountResponse> createBankAccount(@RequestBody CreateBankAccountRequest request) {
+    public ResponseEntity<CreateBankAccountResponse> createBankAccount(@RequestBody CreateCustRqTest request) {
         return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createCustomer(request));
     }
 }

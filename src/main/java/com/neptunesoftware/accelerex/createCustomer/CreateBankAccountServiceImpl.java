@@ -29,10 +29,10 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
     private final AppUtils utils;
     private final AccelerexCredentials accelerexCredentials;
 
-    public CreateBankAccountResponse createCustomer(CreateBankAccountRequest request) {
+    public CreateBankAccountResponse createCustomer(CreateCustRqTest request) {
 
         CreateBankAccountResponse response = new CreateBankAccountResponse();
-        CustomerRequest customerRequestData = buildCustomerRequest(request);
+        CustomerRequest customerRequestData = buildCustomerRequest1(request);
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
 
         CreateCustomer createCustomer = new CreateCustomer();
@@ -44,9 +44,9 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         String customerNumber = null;
         String customerId = null;
 
-        try {
+//        try {
 
-        apiResponse  = (JAXBElement) webServiceTemplate.marshalSendAndReceive("http://10.152.2.161:7001/supernovaws/CustomerWebServiceEndPointPort?wsdl",createCustomer);
+        apiResponse  = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getCustomerWsdl(),createCustomer);
 
             webserviceResponse = (CreateCustomerResponse) apiResponse.getValue();
 
@@ -70,15 +70,15 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
             response.setCustomerId(customerId);
             response.setCustomerNo(customerNumber);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setResponseMessage(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
-            response.setResponseCode(WEBSERVICE_FAILED_RESPONSE_CODE);
-//            if (e instanceof SoapFaultClientException soapException) {
-//                String errorCode =soapException.getFaultCode().getLocalPart();
-//                System.out.println("Error Code: " + errorCode);
-//            }
-        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            response.setResponseMessage(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
+//            response.setResponseCode(WEBSERVICE_FAILED_RESPONSE_CODE);
+////            if (e instanceof SoapFaultClientException soapException) {
+////                String errorCode =soapException.getFaultCode().getLocalPart();
+////                System.out.println("Error Code: " + errorCode);
+////            }
+//        }
 
         return response;
     }
@@ -115,7 +115,7 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         customerRequestData.setAddressCountryId(682L);
 
         customerRequestData.setAddressLine1(request.getHomeAddress());
-//        customerRequestData.setCustomerName(customerName);
+        customerRequestData.setCustomerName(customerName);
         customerRequestData.setAddressLine2(request.getAlternativeAddress());
         customerRequestData.setAddressPropertyTypeId(422L);
         customerRequestData.setAddressState(request.getState());
@@ -373,6 +373,92 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
 //
 //        log.info("Account Details {}", response);
 
+    CustomerRequest buildCustomerRequest1(CreateCustRqTest testRequest) {
+        CustomerRequest customerRequestData = new CustomerRequest();
+
+        customerRequestData.setXapiServiceCode("STC029");
+        customerRequestData.setChannelCode("MAPP");
+        customerRequestData.setChannelId(121L);
+        customerRequestData.setCurrBUId(-99L);
+        customerRequestData.setLocalCcyId(732L);
+        customerRequestData.setOriginatorUserId(-100L);
+        customerRequestData.setResponse(0);
+        customerRequestData.setTransmissionTime(12345678L);
+        customerRequestData.setUserId(-100L);
+        customerRequestData.setUserLoginId("EXTUSER");
+        customerRequestData.setUserRoleId(-100L);
+        customerRequestData.setValidXapiRequest(true);
+        customerRequestData.setAddressCity(testRequest.getCity());
+        customerRequestData.setAddressCountryId(682L);
+        customerRequestData.setAddressLine1(testRequest.getHomeAddress());
+        customerRequestData.setAddressLine2(testRequest.getAlternativeAddress());
+        customerRequestData.setAddressPropertyTypeId(422L);
+        customerRequestData.setAddressState(testRequest.getState());
+        customerRequestData.setAddressTypeCd("AT105");
+        customerRequestData.setAddressTypeId(121L);
+        customerRequestData.setBusinessUnitCodeId(-99L);
+        customerRequestData.setCountryId(682L);
+        customerRequestData.setCountryOfBirthCd("NGA");
+        customerRequestData.setCountryOfBirthId(682L);
+        customerRequestData.setCountryOfResidenceId(682L);
+        customerRequestData.setCustCountryCd("NGA");
+        customerRequestData.setCustShortName("ADE");
+        customerRequestData.setCustomerCategory("PER");
+        customerRequestData.setCustomerSegmentCd("CS107");
+        customerRequestData.setCustomerSegmentId(424L);
+        customerRequestData.setCustomerType(721L);
+        customerRequestData.setCustomerTypeCd("CT100");
+        customerRequestData.setEmploymentFlag(false);
+        customerRequestData.setFirstName(testRequest.getFirstName());
+        customerRequestData.setGender("M");
+        customerRequestData.setIndustryCd("SIC052");
+        customerRequestData.setIndustryId(776L);
+        customerRequestData.setLastName(testRequest.getLastName());
+        customerRequestData.setLocale("en_US");
+        customerRequestData.setMainBusinessUnitCd("001");
+        customerRequestData.setMainBusinessUnitId(-99L);
+        customerRequestData.setMaritalStatus("S");
+        customerRequestData.setMarketingCampaignCd("MC112");
+        customerRequestData.setMarketingCampaignId(369L);
+        customerRequestData.setMiddleName(testRequest.getMiddleName());
+        customerRequestData.setNationalityCd("N101");
+        customerRequestData.setNationalityId(532L);
+        customerRequestData.setNoOfDependents(0L);
+        customerRequestData.setOpeningReasonCode("CC002");
+        customerRequestData.setOpeningReasonId(702L);
+        customerRequestData.setOperationCurrencyCd("NGN");
+        customerRequestData.setOperationCurrencyId(732L);
+        customerRequestData.setPreferredName(testRequest.getFirstName());
+        customerRequestData.setPrimaryAddress(true);
+        customerRequestData.setPrimaryRelationshipOfficerCd("HSL1424-13");
+        customerRequestData.setPrimaryRelationshipOfficerId(1059L);
+        customerRequestData.setPrivacyLevel(3L);
+        customerRequestData.setPrivacyLevelId(13L);
+        customerRequestData.setPropertyTypeCd("PT107");
+        customerRequestData.setRelationshipOfficerOneId(1059L);
+        customerRequestData.setResidentCountryCd("NGA");
+        customerRequestData.setResidentFlag(true);
+        customerRequestData.setRiskCode("CUST105");
+        customerRequestData.setRiskCountryCd("NGA");
+        customerRequestData.setRiskId(745L);
+        customerRequestData.setServiceLevel(400L);
+        customerRequestData.setServiceLevelId(14L);
+        customerRequestData.setSourceOfFundCd("SF014");
+        customerRequestData.setSourceOfFundId(430L);
+        customerRequestData.setStatus("A");
+        customerRequestData.setStrDate("27/09/2021"); //*****
+        customerRequestData.setStrFromDate("24/09/2021"); //***
+//        customerRequestData.setStartDateMm("09");
+//        customerRequestData.setStartDateYyyy("2021");
+        customerRequestData.setStrDateOfBirth(testRequest.getDateOfBirth());
+        customerRequestData.setSubmitFlag(true);
+        customerRequestData.setTaxGroupCd("CTG105");
+        customerRequestData.setTaxGroupId(442L);
+        customerRequestData.setTitleCd("T114");
+        customerRequestData.setTitleId(347L);
+
+        return customerRequestData;
+    }
 
 }
 
