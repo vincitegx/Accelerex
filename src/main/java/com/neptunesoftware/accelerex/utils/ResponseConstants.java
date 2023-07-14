@@ -18,7 +18,7 @@ public class ResponseConstants {
     public static final String WRONG_IMAGE_MESSAGE ="";
     public static final String BVN_EXIST_MESSAGE ="Record already exist";
     public static final String EXCEPTION_CODE ="";
-    public static final String EXCEPTION_MESSAGE ="";
+    public static final String EXCEPTION_MESSAGE ="Error";
     public static final String UNMARSHAL_CODE = "08";
     public static final String UNMARSHAL_MESSAGE = "Unmarshalling/Deserialize error: Could not convert String to class object."
             + "\n Check xml/json String to object class created";

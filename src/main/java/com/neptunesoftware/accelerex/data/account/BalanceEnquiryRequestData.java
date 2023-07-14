@@ -10,6 +10,7 @@ package com.neptunesoftware.accelerex.data.account;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 
@@ -48,6 +49,7 @@ import jakarta.xml.bind.annotation.XmlType;
     "targetAccountNumber",
     "targetBankVerificationNumber"
 })
+
 public class BalanceEnquiryRequestData {
 
     protected String authorizationCode;

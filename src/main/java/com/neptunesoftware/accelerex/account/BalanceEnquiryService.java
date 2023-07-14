@@ -1,78 +1,106 @@
 package com.neptunesoftware.accelerex.account;
 
+import com.neptunesoftware.accelerex.account.response.BalanceResponse;
+import com.neptunesoftware.accelerex.config.AccelerexCredentials;
 import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
 import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
 import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
-import org.springframework.ws.WebServiceException;
-import org.springframework.ws.client.WebServiceIOException;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.math.BigDecimal;
+
+import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
+import static com.neptunesoftware.accelerex.utils.ResponseConstants.WEBSERVICE_FAILED_RESPONSE_MESSAGE;
+
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class BalanceEnquiryService {
-    private static final String PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.account";
-    private final AccountServices accountService;
-    @Value("${endpoint.accountWebservice}")
-    private String ACCOUNT_WEB_SERVICE_END_POINT_PORT;
 
-    public BalanceenquiryResponse balanceEnquiry(String accountNumber) {
-//        validateAccount(accountNumber);
-        WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
-        BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-        Balanceenquiry balanceenquiry = new Balanceenquiry();
-        balanceenquiry.setArg0(balEnqRequest);
-        JAXBElement response;
-        try {
-            response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
-                    "http://10.152.2.161:7001/supernovaws/AccountWebServiceEndPointPort?wsdl", balanceenquiry);
-            log.info(response.getValue().toString());
-        } catch (Exception e) {
-            throw new BalanceEnquiryException("An error occurred while querying the account balance" + " for account " + accountNumber);
+    private  final AccelerexCredentials accelerexCredentials;
+
+    public BalanceResponse balanceEnquiry(String accountNumber) {
+            BalanceResponse response = new BalanceResponse();
+            String availableBalance;
+            String accountName;
+            String accountNo;
+            String responseCode;
+
+            try {
+                BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
+                WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
+                Balanceenquiry balanceenquiry = new Balanceenquiry();
+                balanceenquiry.setArg0(balEnqRequest);
+                BalanceenquiryResponse balanceenquiryResponse;
+                JAXBElement apiResponse;
+
+                apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
+                balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
+
+                availableBalance = String.valueOf(balanceenquiryResponse.getReturn().getAvailableBalance());
+                responseCode = balanceenquiryResponse.getReturn().getResponseCode();
+                accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
+                accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
+
+                log.info("AvailableBalance {}", availableBalance);
+                log.info("AccountName {}", accountName);
+                log.info("ResponseCode {}", responseCode);
+
+                if (!responseCode.equals("00")) {
+                    throw  new com.neptunesoftware.accelerex.exception.BalanceEnquiryException("There was an error querying Balance for accountNumber " +accountNumber);
+                }
+
+            } catch (Exception e) {
+                throw new com.neptunesoftware.accelerex.exception.BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
+            }
+
+            response.setAvailableBalance(availableBalance);
+            response.setAccountName(accountName);
+            response.setAccountNo(accountNo);
+            response.setResponseCode(responseCode);
+            response.setResponseMessage(SUCCESS_MESSAGE);
+            log.info("HttpStatus {}", HttpStatus.OK);
+
+            return response;
         }
-        return (BalanceenquiryResponse) response.getValue();
-    }
-
     private BalanceEnquiryRequestData buildRequest(String accountNumber) {
+
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
-//        balEnqRequest.setSessionId(String.valueOf(System.currentTimeMillis()));
-        balEnqRequest.setChannelCode("1");
+        balEnqRequest.setChannelCode(String.valueOf(1));
         balEnqRequest.setTargetAccountNumber(accountNumber);
-
-//        balEnqRequest.setDestinationInstitutionCode("");
-//        balEnqRequest.setTargetBankVerificationNumber("");
-//        balEnqRequest.setAuthorizationCode("");
-//        balEnqRequest.setTargetAccountName("");
-//        balEnqRequest.setTargetBankVerificationNumber("");
-
         return balEnqRequest;
     }
-    public boolean isAccountSufficient(String sourceAccount, BigDecimal amount) {
-//        validateAccount(sourceAccount);
-        BalanceenquiryResponse response = balanceEnquiry(sourceAccount);
-        return response.getReturn().getAvailableBalance().compareTo(amount) >= 0;
-//        if (b) throw new BalanceEnquiryException("Account has insufficient balance");
-//        return false;
-    }
-
-//    private void validateAccount(String accountNumber) {
-//        accountService.nameInquiry(accountNumber);
-//    }
 
     private Marshaller marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         // this package must match the package in the <generatePackage> specified in
         // pom.xml
-        marshaller.setPackagesToScan(PACKAGE_TO_SCAN);
+        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.account");
         return marshaller;
     }
 
+    public boolean isAccountSufficient(String accountNumber, BigDecimal amount) {
+//        validateAccount(accountNumber);
+        BalanceResponse response = balanceEnquiry(accountNumber);
+        boolean b = response.getAvailableBalance().compareTo(String.valueOf(amount)) >= 0;
+        if (!b) {
+            throw new BalanceEnquiryException("Account has insufficient balance");
+        }
+        return true;
+    }
+
+    private void validateAccount(String accountNumber) {
+        nameEnquiry(accountNumber);
+    }
+
+    public  String nameEnquiry(String accountNumber) {
+       return balanceEnquiry(accountNumber).getAccountName();
+    }
 }

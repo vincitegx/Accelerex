@@ -26,4 +26,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ApiResponse> handleUsernameNotFoundException(UsernameNotFoundException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(CustomerFailedException.class)
+    public final ResponseEntity<ApiResponse> handleCustomerFailedException(CustomerFailedException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
 }

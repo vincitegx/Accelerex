@@ -8,10 +8,11 @@
 
 package com.neptunesoftware.accelerex.data.account;
 
-import java.math.BigDecimal;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -64,7 +65,7 @@ public class BalanceEnquiryResponseData {
     protected String targetAccountName;
     protected String targetAccountNumber;
     protected String targetBankVerificationNumber;
-
+    
     /**
      * Gets the value of the authorizationCode property.
      * 

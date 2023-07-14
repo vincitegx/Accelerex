@@ -33,10 +33,7 @@ public class User implements UserDetails {
     private boolean isNotBlocked;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-//    @JsonIgnore
-//    private String authority;
-//    private String bvn;
-//    private String accountNumber;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 

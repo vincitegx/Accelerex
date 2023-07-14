@@ -23,6 +23,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 //        if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
 //            throw new RuntimeException("Phone number Already exist");
 //        }
+
         String name;
         if (request.getMiddleName().isEmpty()){
             name = request.getFirstName()+ " "+ request.getLastName();

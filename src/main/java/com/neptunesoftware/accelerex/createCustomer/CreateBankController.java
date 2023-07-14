@@ -12,10 +12,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/createNewCustomer")
 @Log4j2
 public class CreateBankController {
+
     private final CreateBankAccountService customerAccountService;
 
     @PostMapping("/createBankAccount")
-    public ResponseEntity<CreateBankAccountResponse> createBankAccount(@RequestBody CreateCustRqTest request) {
+    public ResponseEntity<CreateCustomerResponse> createBankAccount(@RequestBody CreateCustomerRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createCustomer(request));
+    }
+    @PostMapping("/createAccount")
+    public ResponseEntity<CreateAccountResponse> createAccount(@RequestBody DepositAccountRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createDepositAccount(request));
     }
 }

@@ -1,5 +1,8 @@
 package com.neptunesoftware.accelerex.createCustomer;
 
 public interface CreateBankAccountService {
-    CreateBankAccountResponse createCustomer(CreateCustRqTest request);
+    CreateCustomerResponse createCustomer(CreateCustomerRequest request);
+
+    CreateAccountResponse createDepositAccount(DepositAccountRequest depositAccountRequest);
+//     BalanceResponse balanceEnquiry(String accountNumber);
 }

@@ -23,19 +23,19 @@ public class AccountController {
        }
 
     @GetMapping("/accountBalance/{accountNumber}")
-    public ResponseEntity<BalanceEnquiryResponse> BalanceEnquiry(@PathVariable("accountNumber") final String accountNumber) {
+    public ResponseEntity<BalanceResponse> BalanceEnquiry(@PathVariable ("accountNumber") final String accountNumber) {
         log.info("Account balance for account number of {}", accountNumber );
 
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.balanceEnquiry(accountNumber));
     }
 
-    @GetMapping("/name/{accountNumber}")
-    public ResponseEntity<ApiResponse<NameEnquiryResponse>> nameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
+    @GetMapping("/nameEnquiry/{accountNumber}")
+    public ResponseEntity<NameEnquiryResponse> nameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
         log.info("Name enquiry for account number of {}", accountNumber);
-
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.nameEnquiry(accountNumber));
     }
-    @GetMapping("account/{accountNumber}")
+
+    @GetMapping("interBankNameEnquiry/{accountNumber}")
     public ResponseEntity<ExternalTransferNameEnquiryResponse>  interBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
           return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankNameEnquiry(accountNumber));
     }
@@ -44,6 +44,8 @@ public class AccountController {
 //    public ResponseEntity<String>  intraBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
 //          return ResponseEntity.status(HttpStatus.OK).body(accountServices.intraBankNameEnquiry(accountNumber));
 //    }
+
+
     @PostMapping("/interBankTransfer")
     public ResponseEntity<InterBankTransferResponse> interBankTransfer(@RequestBody InterBankTransferRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));

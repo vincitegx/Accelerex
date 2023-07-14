@@ -44,9 +44,9 @@ public class AccountRepositoryImp implements AccountRepository {
     @Override
     public String findNameByAccountNumber(String accountNumber) {
         try {
-            return jdbcTemplate.queryForObject(NAME_ENQUIRY, String.class, accountNumber);
+            return String.valueOf(jdbcTemplate.queryForObject(NAME_ENQUIRY, new AccountRowMapper(), accountNumber));
         } catch (EmptyResultDataAccessException e) {
-            return Strings.EMPTY;
+           return   Strings.EMPTY;
         }
     }
     @Override
