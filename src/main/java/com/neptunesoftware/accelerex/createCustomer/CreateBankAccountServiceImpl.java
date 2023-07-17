@@ -1,14 +1,17 @@
 package com.neptunesoftware.accelerex.createCustomer;
 
-import com.neptunesoftware.accelerex.account.response.BalanceResponse;
 import com.neptunesoftware.accelerex.config.AccelerexCredentials;
-import com.neptunesoftware.accelerex.data.account.*;
+import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
+import com.neptunesoftware.accelerex.data.account.CreateDepositAccount;
+import com.neptunesoftware.accelerex.data.account.CreateDepositAccountResponse;
+import com.neptunesoftware.accelerex.data.account.DepositAccountRequestData;
 import com.neptunesoftware.accelerex.data.customer.CreateCustomer;
 import com.neptunesoftware.accelerex.data.customer.CustomerContactInformation;
 import com.neptunesoftware.accelerex.data.customer.CustomerImageInformation;
 import com.neptunesoftware.accelerex.data.customer.CustomerRequest;
-import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
+import com.neptunesoftware.accelerex.exception.CustomerFailedException;
 import com.neptunesoftware.accelerex.exception.ValidationException;
+import com.neptunesoftware.accelerex.utils.AppUtils;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -34,6 +37,7 @@ import static com.neptunesoftware.accelerex.utils.ResponseConstants.*;
 public class CreateBankAccountServiceImpl implements CreateBankAccountService {
 
     private final AccelerexCredentials accelerexCredentials;
+    private final AppUtils utils;
 
     public CreateCustomerResponse createCustomer(CreateCustomerRequest request) {
 
@@ -45,9 +49,9 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         String customerName;
 
         try {
-    
+            
         CustomerRequest customerRequestData = buildCustomerRequest(request);
-        log.info("Customer Request Date {}",customerRequestData);
+        log.info("Customer Request Date {}",utils.getStringFromObject(customerRequestData));
 
         customerName = customerRequestData.getCustomerName();
         log.info("Customer Name {}", customerName);
@@ -72,9 +76,7 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
                 accountStatus = webserviceResponse.getReturn().getStatus();
 
                 log.info("ResponseCode {}, Reference {}", webserviceResponse.getReturn().getReturnCode(), webserviceResponse.getReturn().getReferenceNo());
-                log.info("Error Message {}", webserviceResponse.getReturn().getErrorMsg());
                 log.info("AccountStatus: {}", accountStatus);
-                log.info("Customer Name From Webservice call: {}", webserviceResponse.getReturn().getCustomerName());
                 log.info("HttpStatus {}", HttpStatus.valueOf(200));
                 log.info("Customer Created Successfully ");
                 log.info("Customer Id {}, Customer Number {}, AccountStatus: {}", customerId, customerNumber, accountStatus);
@@ -116,12 +118,15 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
 
                 log.info("******************Create Bank Account Starts here *********************");
 
-                                 //Todo: Create bank account
+                                 //Todo: Create bank account for existing customer
                 /**
-                the method at this point creates the customer with an inactive status(accountStatus= I),
+                The method at this point creates the customer with an inactive status(accountStatus= I),
                  customerNumber and customerId which are the parameters for creating the bankAccount.
                 Trying to use the above parameter from the said method would throw a xapiErrorCode of 0064, ie customer status inactive
                  */
+                
+            } else {
+                throw new CustomerFailedException("Service unavailable, please try again later");
             }
             
         } catch (Exception e) {
@@ -137,54 +142,6 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
      }
         return response;
     }
-
-//    public BalanceResponse balanceEnquiry(String accountNumber) {
-//        BalanceResponse response = new BalanceResponse();
-//        String availableBalance;
-//        String accountName;
-//        String accountNo;
-//        String responseCode;
-//
-//        try {
-//
-//            BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-//            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerB());
-//
-//            Balanceenquiry balanceenquiry = new Balanceenquiry();
-//            balanceenquiry.setArg0(balEnqRequest);
-//
-//            BalanceenquiryResponse balanceenquiryResponse;
-//            JAXBElement apiResponse;
-//
-//            apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
-//
-//            balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
-//            availableBalance = String.valueOf(balanceenquiryResponse.getReturn().getAvailableBalance());
-//            responseCode = balanceenquiryResponse.getReturn().getResponseCode();
-//            accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
-//            accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
-//
-//            log.info("Available Balance {}", availableBalance);
-//            log.info("ResponseCode {}", responseCode);
-//
-//            if (!responseCode.equals("00")) {
-//                throw  new BalanceEnquiryException("There was an error querying Balance for accountNumber " +accountNumber);
-//            }
-//
-//        } catch (Exception e) {
-//            throw new BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
-//        }
-//
-//        response.setAvailableBalance(availableBalance);
-//        response.setAccountName(accountName);
-//        response.setAccountNo(accountNo);
-//        response.setResponseCode(responseCode);
-//        response.setResponseMessage(SUCCESS_MESSAGE);
-//
-//        log.info("HttpStatus {}", HttpStatus.OK);
-//
-//        return response;
-//    }
 
     public CreateAccountResponse createDepositAccount(DepositAccountRequest depositAccountRequest) {
         CreateAccountResponse response = new CreateAccountResponse();
@@ -232,7 +189,7 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
             }
         }
 
-        return response;
+        return null;
     }
 
 
@@ -347,8 +304,9 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         customerRequestData.setSourceOfFundCd("SF014");
         customerRequestData.setSourceOfFundId(430L);
         customerRequestData.setStatus("S");
-        customerRequestData.setStrDate("07/03/2023");
-        customerRequestData.setStrFromDate("07/03/2023");
+
+        customerRequestData.setStrDate(formatDate(LocalDate.now()));
+        customerRequestData.setStrFromDate(formatDate(LocalDate.now()));
 
 //        customerRequestData.setStartDateMm("09");
 //        customerRequestData.setStartDateYyyy("2021");
@@ -534,16 +492,13 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         depositRequest.setAccountTitle(request.getCustomerName());
         depositRequest.setPrimaryCustomerId(Long.parseLong(request.getCustomerId()));
         depositRequest.setPrimaryCustomerNumber(request.getCustomerNo());
-
         depositRequest.setXAPIServiceCode("STA060");
         depositRequest.setChannelCode("AGENCY");
         depositRequest.setChannelId(121L);
-
         depositRequest.setOriginatorUserId(-100L);
         depositRequest.setUserId(-100L);
         depositRequest.setUserLoginId("EXTUSER");
         depositRequest.setUserRoleId(-100L);
-
         depositRequest.setCurrBUId(-99L);
         depositRequest.setLocalCcyId(732L);
         depositRequest.setTransmissionTime(123456789L);
@@ -557,8 +512,6 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         depositRequest.setProductId(15L);
         depositRequest.setRelationshipOfficerId(1058L);
         depositRequest.setRelationshipOfficerCode("HSL1424-13");
-
-
         depositRequest.setRiskClassCd("RC110");
         depositRequest.setRiskClassId(744L);
         depositRequest.setSourceOfFundCode("SF014");
@@ -574,6 +527,11 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         balEnqRequest.setChannelCode(String.valueOf(1));
         balEnqRequest.setTargetAccountNumber(accountNumber);
         return balEnqRequest;
+    }
+
+    private static String formatDate(LocalDate date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return date.format(formatter);
     }
 
     private Jaxb2Marshaller createCustomerMarshaller() {
@@ -602,6 +560,7 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
         return marshaller;
     }
 }
+
 //                    "responseCode": "00",
 //                            "responseMessage": "Successful",
 //                            "customerId": "351539",
@@ -635,3 +594,53 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
 //
 //
 //        log.info("Account Details {}", response);
+
+
+
+//    public BalanceResponse balanceEnquiry(String accountNumber) {
+//        BalanceResponse response = new BalanceResponse();
+//        String availableBalance;
+//        String accountName;
+//        String accountNo;
+//        String responseCode;
+//
+//        try {
+//
+//            BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
+//            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerB());
+//
+//            Balanceenquiry balanceenquiry = new Balanceenquiry();
+//            balanceenquiry.setArg0(balEnqRequest);
+//
+//            BalanceenquiryResponse balanceenquiryResponse;
+//            JAXBElement apiResponse;
+//
+//            apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
+//
+//            balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
+//            availableBalance = String.valueOf(balanceenquiryResponse.getReturn().getAvailableBalance());
+//            responseCode = balanceenquiryResponse.getReturn().getResponseCode();
+//            accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
+//            accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
+//
+//            log.info("Available Balance {}", availableBalance);
+//            log.info("ResponseCode {}", responseCode);
+//
+//            if (!responseCode.equals("00")) {
+//                throw  new BalanceEnquiryException("There was an error querying Balance for accountNumber " +accountNumber);
+//            }
+//
+//        } catch (Exception e) {
+//            throw new BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
+//        }
+//
+//        response.setAvailableBalance(availableBalance);
+//        response.setAccountName(accountName);
+//        response.setAccountNo(accountNo);
+//        response.setResponseCode(responseCode);
+//        response.setResponseMessage(SUCCESS_MESSAGE);
+//
+//        log.info("HttpStatus {}", HttpStatus.OK);
+//
+//        return response;
+//    }

@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Data
 @Builder
@@ -62,6 +63,9 @@ public class User implements UserDetails {
                 DATE_TIME_FORMATTER);
         this.updatedAt = createdAt;
         this.isNotBlocked = isNotBlocked;
+    }
+
+    public <T> User(String mail, String password, Set<T> roleAdmin) {
     }
 
     @Override

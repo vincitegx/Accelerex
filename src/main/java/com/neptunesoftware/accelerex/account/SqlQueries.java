@@ -22,7 +22,7 @@ final class SqlQueries {
             """;
 
     public  static final String UPDATE_USER_ID_WITH_ACCOUNT_NUMBER = """
-            update account set user_id = ? where account_number = ?;
+            UPDATE ACCOUNT set USER_ID = ? where ACCT_NO = ?;
             """;
 
 

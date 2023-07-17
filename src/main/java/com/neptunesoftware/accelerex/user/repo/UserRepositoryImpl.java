@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.user.repo;
 
+import com.neptunesoftware.accelerex.exception.AccountNotExistException;
 import com.neptunesoftware.accelerex.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,7 +22,7 @@ public class UserRepositoryImpl implements UserRepository {
             Integer count = Objects.requireNonNull(jdbcTemplate.queryForObject(FIND_BY_EMAIL, new UserRowMapper(), emailAddress)).getId();
             return count != null && count > 0;
         }   catch (EmptyResultDataAccessException e) {
-            return false;
+            throw new AccountNotExistException("Invalid email address");
         }
     }
     

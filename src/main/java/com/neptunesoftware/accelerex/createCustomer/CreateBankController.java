@@ -15,11 +15,11 @@ public class CreateBankController {
 
     private final CreateBankAccountService customerAccountService;
 
-    @PostMapping("/createBankAccount")
-    public ResponseEntity<CreateCustomerResponse> createBankAccount(@RequestBody CreateCustomerRequest request) {
+    @PostMapping("/createCustomer")
+    public ResponseEntity<CreateCustomerResponse> createCustomer(@RequestBody CreateCustomerRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createCustomer(request));
     }
-    @PostMapping("/createAccount")
+    @PostMapping("/createBankAccountForCustomer")
     public ResponseEntity<CreateAccountResponse> createAccount(@RequestBody DepositAccountRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createDepositAccount(request));
     }
