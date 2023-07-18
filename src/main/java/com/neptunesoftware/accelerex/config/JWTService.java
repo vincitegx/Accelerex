@@ -68,7 +68,7 @@ public class JWTService {
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
             Arrays.stream(roles).forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
-            Authentication authentication2 = SecurityContextHolder.getContext().getAuthentication();
+//            Authentication authentication2 = SecurityContextHolder.getContext().getAuthentication();
             if (authentication.isAuthenticated()) {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 return true;
