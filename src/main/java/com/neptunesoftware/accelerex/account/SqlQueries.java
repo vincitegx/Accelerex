@@ -2,18 +2,15 @@ package com.neptunesoftware.accelerex.account;
 
 final class SqlQueries {
 
-    public static final String NAME_ENQUIRY = """
+    public static final String ACCOUNT_NUMBER_ENQUIRY = """
             SELECT ACCT_NM FROM ACCOUNT WHERE ACCT_NO = ?       
             """;
     public static final String IS_ACCOUNT_EXISTING = """
-          
+           SELECT ACCT_NO FROM ACCOUNT WHERE ACCT_NO = ?
            """;
        public static final String TOKEN = """
 """;
 
-    public static final String SAVE_OTP = """
-            
-            """;
     public static final String SAVE_SMS = """
           
             """;
@@ -24,25 +21,10 @@ final class SqlQueries {
     public  static final String UPDATE_USER_ID_WITH_ACCOUNT_NUMBER = """
             UPDATE ACCOUNT set USER_ID = ? where ACCT_NO = ?;
             """;
-
-
-
     public static final String SELECT_PHONE_NUM = """
            
             """;
 
-    public static final String SELECT_BVN = """
-    
-            """;
-
-    public static final String UPDATE_PASSWORD = """
-          
-            """;
-
-    public static final String DELETE_BENEFICIARY = """
-             
-            """;
- 
     private SqlQueries() {
     }
 }

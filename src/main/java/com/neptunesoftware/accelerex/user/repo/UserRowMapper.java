@@ -15,6 +15,7 @@ public class UserRowMapper implements RowMapper<User> {
                 .emailAddress(rs.getString("EMAIL_ADDRESS"))
                 .password(rs.getString("PASSWORD"))
                 .phoneNumber(rs.getString("PHONE_NUMBER"))
+                .gender(rs.getString("GENDER"))
 //                .role((Role) rs.getObject("RN_"))
                 .isNotBlocked(rs.getBoolean("IS_NOT_BLOCK"))
 //                .isVerified(rs.getBoolean("is_verified"))

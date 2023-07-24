@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.account;
 
+import com.neptunesoftware.accelerex.account.request.DepositToGlRequest;
 import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
@@ -19,7 +20,6 @@ import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -30,8 +30,7 @@ import java.math.BigDecimal;
 
 import static com.neptunesoftware.accelerex.account.SqlQueries.UPDATE_USER_ID_WITH_ACCOUNT_NUMBER;
 import static com.neptunesoftware.accelerex.utils.Cypher.deCypher;
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.WEBSERVICE_FAILED_RESPONSE_MESSAGE;
+import static com.neptunesoftware.accelerex.utils.ResponseConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -52,121 +51,51 @@ public class AccountServiceImpl implements AccountServices {
 
         LinkBankAccountResponse response = new LinkBankAccountResponse();
         String opt = generateOTP();
-        boolean isAccountValid = validateBankAccount(request.getAccountNo());
-        boolean existsByEmailAddress = userRepository.existsByEmailAddress(request.getEmail());
-        boolean isOtpVerified = verifySmsToken(request.getAccountNo(), opt);
-
-        if (existsByEmailAddress && isAccountValid) {
-            sendOTP(request.getMobileNo(), opt);
-            if (isOtpVerified) {
-                String clientId = accountRepository.findUserIdByAccountNumber(request.getAccountNo());
-                linkAccount(clientId, request.getAccountNo());
-
-                String accountName = accountRepository.findNameByAccountNumber(request.getAccountNo());
-                String accountNumber = accountRepository.findAccountByPhoneNumber(request.getMobileNo());
-
-                if (request.getAccountNo().equals(accountNumber)) {
-                    response.setAccountNo(accountRepository.findAccountByPhoneNumber(accountNumber));
-                    response.setAccountName(accountName);
-                }
-            }
+         BalanceResponse existingData = balanceEnquiryService.balanceEnquiry(response.getAccountNo());
+        if (!existedByAccount(request.getAccountNo())) {
+            return new ApiResponse<>(ResponseConstants.ERROR_MESSAGE, "Invalid bank account",response);
         }
-     return  new ApiResponse<>(ResponseConstants.SUCCESS_MESSAGE,"Account Linked successfully",response);
-    }
+        if (!userRepository.existsByEmailAddress(request.getEmail())) {
+            return new ApiResponse<>(ResponseConstants.ERROR_MESSAGE, "Email address not found", response);
+        }
+        sendOTP(request.getMobileNo(), opt);
 
+        if (!verifySmsToken(request.getAccountNo(), opt)) {
+            return new ApiResponse<>(ResponseConstants.ERROR_MESSAGE, "OTP verification failed", response);
+        }
+        String clientId = accountRepository.findUserIdByAccountNumber(request.getAccountNo());
+        linkAccount(clientId, request.getAccountNo());
+
+        response.setAccountNo(existingData.getAccountNo());
+        response.setAccountName(existingData.getAccountName());
+        response.setMobileNo(request.getMobileNo());
+        response.setEmail(request.getEmail());
+
+        return new ApiResponse<>(ResponseConstants.SUCCESS_MESSAGE, "Account Linked successfully", response);
+    }
 
     @Override
     public BalanceResponse intraBankBalanceEnquiry(String accountNumber) {
-            BalanceResponse response = new BalanceResponse();
-            String availableBalance;
-            String accountName;
-            String accountNo;
-            String responseCode;
 
-            try {
-
-                BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-                WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerB());
-
-                Balanceenquiry balanceenquiry = new Balanceenquiry();
-                balanceenquiry.setArg0(balEnqRequest);
-
-                BalanceenquiryResponse balanceenquiryResponse;
-                JAXBElement apiResponse;
-
-                apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
-
-                balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
-                availableBalance = String.valueOf(balanceenquiryResponse.getReturn().getAvailableBalance());
-                responseCode = balanceenquiryResponse.getReturn().getResponseCode();
-                accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
-                accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
-
-                log.info(HttpStatus.OK);
-                log.info("Available Balance {}", availableBalance);
-                log.info("ResponseCode {}", responseCode);
-
-                if (!responseCode.equals("00")) {
-                    throw  new BalanceEnquiryException("There was an error querying Balance for accountNumber " +accountNumber);
-                }
-
-            } catch (Exception e) {
-                response.setResponseMessage("Invalid Account Number");
-                throw new BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
-            }
-
-            response.setAvailableBalance(availableBalance);
-            response.setAccountName(accountName);
-            response.setAccountNo(accountNo);
-            response.setResponseCode(responseCode);
-            response.setResponseMessage(SUCCESS_MESSAGE);
-            return response;
+        BalanceResponse response = balanceEnquiryService.balanceEnquiry(accountNumber);
+            log.info("Available Balance {}", response.getAvailableBalance());
+            return new BalanceResponse(response.getAccountNo(),
+                    response.getAccountName(),
+                    response.getAvailableBalance(),
+                    response.getResponseCode(),
+                    response.getMessage());
         }
 
     @Override
     public NameEnquiryResponse IntraBankNameEnquiry(String accountNumber) {
-        NameEnquiryResponse response = new NameEnquiryResponse();
-        String accountName;
-        String responseCode;
 
-        try {
-            BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerB());
-
-            Balanceenquiry balanceenquiry = new Balanceenquiry();
-            balanceenquiry.setArg0(balEnqRequest);
-
-            BalanceenquiryResponse balanceenquiryResponse;
-            JAXBElement apiResponse;
-
-            apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
-
-            balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
-
-            responseCode = balanceenquiryResponse.getReturn().getResponseCode();
-            accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
-
-            if (!responseCode.equals("00")) {
-                throw  new AccountNotExistException("There was an error querying Balance for accountNumber " +accountNumber);
-            }
-
-        } catch (Exception e) {
-            response.setMessage("Invalid Account Number");
-            throw new AccountServiceException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
-        }
-
-        response.setAccountName(accountName);
-        response.setResponseCode(responseCode);
-        response.setMessage(SUCCESS_MESSAGE);
-
-        if (accountName.isEmpty()) {
-            throw new AccountNotExistException("The specified account number does not exist " + accountNumber);
-        }
-        log.info("ResponseCode {}", responseCode);
-        log.info("AccountName is {}", accountName);
-        return  response;
+        BalanceResponse response = balanceEnquiryService.balanceEnquiry(accountNumber);
+        log.info("AccountName {}",response.getAccountName());
+        return  NameEnquiryResponse.builder()
+                .accountName(response.getAccountName())
+                .message(response.getMessage())
+                .responseCode(response.getResponseCode()).build();
     }
-
 
     @Override
     public ExternalTransferNameEnquiryResponse interBankNameEnquiry(String accountNumber) {
@@ -189,7 +118,7 @@ public class AccountServiceImpl implements AccountServices {
             webServiceResponse = (NameInquiryResponseData) response.getValue();
             log.info("Account Name {}",webServiceResponse.getAccountName());
 
-            responseData = mapInterBankNameEnquiryResponse(webServiceResponse);
+            responseData = interBankNameEnquiryResponseMapper(webServiceResponse);
 
         } catch (Exception e) {
 
@@ -239,8 +168,7 @@ public class AccountServiceImpl implements AccountServices {
         return  interBankTransferResponse;
     }
 
-
-      @Override
+    @Override
     public Boolean existedByAccount(String accountNumber) {
 
         String accountName;
@@ -254,10 +182,8 @@ public class AccountServiceImpl implements AccountServices {
             balanceenquiry.setArg0(balEnqRequest);
 
             BalanceenquiryResponse balanceenquiryResponse;
-            JAXBElement apiResponse;
 
-            apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
-
+            JAXBElement apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
             balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
 
             responseCode = balanceenquiryResponse.getReturn().getResponseCode();
@@ -270,10 +196,40 @@ public class AccountServiceImpl implements AccountServices {
         } catch (Exception e) {
             throw new AccountServiceException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
         }
-
-        log.info("ResponseCode {}", responseCode);
         log.info("AccountName is {}", accountName);
         return  true;
+    }
+
+                 //Todo: Deposit to General Ledger Account
+    /**
+     * This Api will debit the customer on rubikon server,
+     * save it on clearable GL and credit the payable or receivable GL
+     depending on, if it is an intraBank or interBank Transaction and
+     considering if factors such as on-us,not-on-us,
+     or remote-on-us as the case may be.
+     */
+
+    @Override
+    public DepositToGlResponse depositToGL(DepositToGlRequest request) {
+//        String processingDate = processingDate();
+
+        validateGlTrn(request.getSourceAccountNumber(),request.getAmount());
+//        XAPIBaseTxnRequestData txnRequestData = createRequestData(transactionDetails, processingDate);
+//        PostDepositToGLAccountTransfer depositToGLAccountTransfer = new PostDepositToGLAccountTransfer();
+//        depositToGLAccountTransfer.setArg0(txnRequestData);
+//
+//        log.info("Initiating deposit to GL of amount {}", transactionDetails.getAmount());
+//
+//        JAXBElement response;
+//        try {
+//            response = (JAXBElement) this.webServiceTemplate.marshalSendAndReceive(
+//                    TXN_PROCESS_WEBSERVICE, depositToGLAccountTransfer);
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            throw new FundTransferException("An error occurred while performing deposit to GL operation");
+//        }
+//        return (PostDepositToGLAccountTransferResponse) response.getValue();
+        return null;
     }
 
     private boolean verifySmsToken(String accountNumber, String smsToken) {
@@ -282,12 +238,12 @@ public class AccountServiceImpl implements AccountServices {
         return true;
     }
 
+    private void validateGlTrn(String accountNo, BigDecimal amount) {
+        balanceEnquiryService.isAccountSufficient(accountNo,amount);
+    }
     private boolean validateBankAccount(String accountNumber) {
-        String dbAccountNumber = accountRepository.findByAccountNumber(accountNumber);
-        if (!(dbAccountNumber.equals(accountNumber))) {
-            throw new AccountNotExistException("Account does not exist");
-        }
-        return true;
+      String dbAccountNumber = balanceEnquiryService.balanceEnquiry(accountNumber).getAccountNo();
+        return dbAccountNumber.equals(accountNumber);
     }
     private void linkAccount(String clientId, String accountNumber) {
         jdbcTemplate.update(UPDATE_USER_ID_WITH_ACCOUNT_NUMBER,clientId,accountNumber);
@@ -295,13 +251,6 @@ public class AccountServiceImpl implements AccountServices {
 
     private void validateAccount(String accountNumber) {
         interBankNameEnquiry(accountNumber);
-    }
-    private Marshaller marshallerBalanceEnquiry() {
-        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        // this package must match the package in the <generatePackage> specified in
-        // pom.xml
-        marshaller.setPackagesToScan(accelerexCredentials.getAccountWsdl());
-        return marshaller;
     }
 
     private Marshaller marshallerTransferAndNameEnquiry() {
@@ -316,10 +265,9 @@ public class AccountServiceImpl implements AccountServices {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         // this package must match the package in the <generatePackage> specified in
         // pom.xml
-        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.account");
+        marshaller.setPackagesToScan(ACCOUNT_JAXB_PACKAGE);
         return marshaller;
     }
-
 
     private BalanceEnquiryRequestData buildRequest(String accountNumber) {
 
@@ -328,7 +276,6 @@ public class AccountServiceImpl implements AccountServices {
         balEnqRequest.setTargetAccountNumber(accountNumber);
         return balEnqRequest;
     }
-
 
     public String generateOTP() {
         return RandomStringUtils.randomNumeric(4);
@@ -340,17 +287,6 @@ public class AccountServiceImpl implements AccountServices {
         accountRepository.updateOTP(mobileNumber,otp);
     }
 
-    private BalanceEnquiryRequestData buildRequestForBalanceInquiry(String accountNumber) {
-        BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
-        balEnqRequest.setSessionId(String.valueOf(System.currentTimeMillis()));
-        balEnqRequest.setDestinationInstitutionCode("");
-        balEnqRequest.setChannelCode(deCypher(accelerexCredentials.getChannelCode()));
-        balEnqRequest.setAuthorizationCode("");
-        balEnqRequest.setTargetAccountName("");
-        balEnqRequest.setTargetBankVerificationNumber("");
-        balEnqRequest.setTargetAccountNumber(accountNumber);
-        return balEnqRequest;
-    }
 
     private NameInquiryRequestData buildRequestForNameInquiry(String accountNumber) {
         NameInquiryRequestData nameInquiryRequestData = new NameInquiryRequestData();
@@ -379,21 +315,13 @@ public class AccountServiceImpl implements AccountServices {
 
     public void isAccountSufficient(String sourceAccountNumber, String amount) {
         validateAccount(sourceAccountNumber);
-        BalanceResponse response = intraBankBalanceEnquiry(sourceAccountNumber);
+        BalanceResponse response = balanceEnquiryService.balanceEnquiry(sourceAccountNumber);
         boolean balanceEnquiryResponse = response.getAvailableBalance().compareTo(String.valueOf(new BigDecimal(amount))) < 0;
         if (balanceEnquiryResponse)
             throw new BalanceEnquiryException("Insufficient Balance");
     }
 
-    private BalanceResponse mapAccountBalanceToBalanceEnquiryResponse (BalanceenquiryResponse response) {
-        BalanceResponse fetchAccountBalanceResponse = new BalanceResponse();
-        fetchAccountBalanceResponse.setAvailableBalance(String.valueOf(response.getReturn().getAvailableBalance()));
-        fetchAccountBalanceResponse.setAccountName(response.getReturn().getTargetAccountName());
-        fetchAccountBalanceResponse.setAccountNo(response.getReturn().getTargetAccountNumber());
-        return fetchAccountBalanceResponse;
-    }
-
-    private ExternalTransferNameEnquiryResponse mapInterBankNameEnquiryResponse(NameInquiryResponseData nameInquiryResponseData ) {
+    private ExternalTransferNameEnquiryResponse interBankNameEnquiryResponseMapper(NameInquiryResponseData nameInquiryResponseData ) {
 
         ExternalTransferNameEnquiryResponse response = new ExternalTransferNameEnquiryResponse();
         response.setAccountName(nameInquiryResponseData.getAccountName());

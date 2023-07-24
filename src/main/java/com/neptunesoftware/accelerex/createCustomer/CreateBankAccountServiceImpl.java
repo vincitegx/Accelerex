@@ -9,7 +9,6 @@ import com.neptunesoftware.accelerex.data.customer.CreateCustomer;
 import com.neptunesoftware.accelerex.data.customer.CustomerContactInformation;
 import com.neptunesoftware.accelerex.data.customer.CustomerImageInformation;
 import com.neptunesoftware.accelerex.data.customer.CustomerRequest;
-import com.neptunesoftware.accelerex.exception.CustomerFailedException;
 import com.neptunesoftware.accelerex.exception.ValidationException;
 import com.neptunesoftware.accelerex.utils.AppUtils;
 import jakarta.xml.bind.JAXBElement;
@@ -30,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.neptunesoftware.accelerex.utils.ResponseConstants.*;
+import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -42,19 +42,14 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
     public CreateCustomerResponse createCustomer(CreateCustomerRequest request) {
 
         CreateCustomerResponse response = new CreateCustomerResponse();
-
         String customerNumber;
         String customerId;
         String accountStatus;
         String customerName;
 
         try {
-            
         CustomerRequest customerRequestData = buildCustomerRequest(request);
         log.info("Customer Request Date {}",utils.getStringFromObject(customerRequestData));
-
-        customerName = customerRequestData.getCustomerName();
-        log.info("Customer Name {}", customerName);
 
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(createCustomerMarshaller());
 
@@ -63,71 +58,35 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
 
         com.neptunesoftware.accelerex.data.customer.CreateCustomerResponse webserviceResponse;
 
-        JAXBElement  apiResponse;
-
-        apiResponse  = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getCustomerWsdl(),createCustomer);
-
-            webserviceResponse = (com.neptunesoftware.accelerex.data.customer.CreateCustomerResponse) apiResponse.getValue();
+        JAXBElement  apiResponse  = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getCustomerWsdl(),createCustomer);
+        webserviceResponse = (com.neptunesoftware.accelerex.data.customer.CreateCustomerResponse) apiResponse.getValue();
 
             if (webserviceResponse.getReturn().getCustomerNumber() != null) {
+                log.info("Customer Created Successfully");
 
-                customerId = String.valueOf(webserviceResponse.getReturn().getCustomerId());
-                customerNumber = webserviceResponse.getReturn().getCustomerNumber();
-                accountStatus = webserviceResponse.getReturn().getStatus();
+                        //Todo: Create bank account for existing customer
+               // The method at this point creates the customer with an inactive status(accountStatus= I),
+                // customerNumber and customerId which are the parameters for creating the bankAccount.
+               // Trying to use the above parameter from the said method would throw a xapiErrorCode of 0064,
+                // ie customer status inactive
 
-                log.info("ResponseCode {}, Reference {}", webserviceResponse.getReturn().getReturnCode(), webserviceResponse.getReturn().getReferenceNo());
-                log.info("AccountStatus: {}", accountStatus);
-                log.info("HttpStatus {}", HttpStatus.valueOf(200));
-                log.info("Customer Created Successfully ");
-                log.info("Customer Id {}, Customer Number {}, AccountStatus: {}", customerId, customerNumber, accountStatus);
-
-                response.setResponseCode(SUCCESS_CODE);
-                response.setResponseMessage(SUCCESS_MESSAGE);
-                response.setCustomerNo(customerNumber);
-                response.setCustomerId(customerId);
-                response.setStatus(accountStatus);
-
-//                CustomerRequest submitRequest = buildCustomerRequestSub(request,customerNumber,customerId);
-//
-//                SubmitCustomer submitCustomer = new SubmitCustomer();
-//                submitCustomer.setArg0(submitRequest);
-//
-//
-//                SubmitCustomerResponse submitWebResponse;
-//
-//                WebServiceTemplate webServiceTemplate1 = new WebServiceTemplate(createCustomerMarshaller());
-//
-//                JAXBElement submitResponse;
-//
-//                submitResponse = (JAXBElement) webServiceTemplate1.marshalSendAndReceive(accelerexCredentials.getCustomerWsdl(),submitCustomer);
-//                submitWebResponse = (SubmitCustomerResponse) submitResponse.getValue();
-//                if (submitWebResponse.getReturn().getCustomerNumber().isEmpty()) {
-//                    throw new CustomerFailedException("Error submitting customer");
-//                }
-//
-//                log.info("Customer Status {}, CustomerId {}, CustomerName {}, CustomerNumber {}",
-//                        submitWebResponse.getReturn().getStatus(),
-//                        submitWebResponse.getReturn().getCustomerId(),
-//                        submitWebResponse.getReturn().getCustomerName(),
-//                        submitWebResponse.getReturn().getCustomerNumber());
-//
-//            } else {
-//
-//                throw  new CustomerFailedException("Failed to customer");
-//            }
-
-                log.info("******************Create Bank Account Starts here *********************");
-
-                                 //Todo: Create bank account for existing customer
-                /**
-                The method at this point creates the customer with an inactive status(accountStatus= I),
-                 customerNumber and customerId which are the parameters for creating the bankAccount.
-                Trying to use the above parameter from the said method would throw a xapiErrorCode of 0064, ie customer status inactive
-                 */
-                
             } else {
-                throw new CustomerFailedException("Service unavailable, please try again later");
+                log.info("Failed to create customer");
             }
+            
+            customerId = String.valueOf(webserviceResponse.getReturn().getCustomerId());
+            customerNumber = webserviceResponse.getReturn().getCustomerNumber();
+            accountStatus = webserviceResponse.getReturn().getStatus();
+            customerName = customerRequestData.getCustomerName();
+
+            log.info("HttpStatus {}, CustomerId {}, CustomerNumber {}, AccountStatus: {}",HttpStatus.OK, customerId, customerNumber, accountStatus);
+             log.info("CustomerName {}", customerName);
+            log.info("********Create Bank Account Starts Here ***********");
+            response.setResponseCode(SUCCESS_CODE);
+            response.setResponseMessage(SUCCESS_MESSAGE);
+            response.setCustomerNo(customerNumber);
+            response.setCustomerId(customerId);
+            response.setStatus(accountStatus);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -162,8 +121,8 @@ public class CreateBankAccountServiceImpl implements CreateBankAccountService {
             webServiceResponse = (JAXBElement) webServiceTemplateA.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), createDepositAccount);
 
             createDepositAccountResponse = (CreateDepositAccountResponse) webServiceResponse.getValue();
-            System.out.println(createDepositAccountResponse.getReturn().getAccountId());
-            log.info("Account number {}", createDepositAccountResponse.getReturn().getPrimaryAccountNumber());
+//            System.out.println(createDepositAccountResponse.getReturn().getAccountId());
+//            log.info("Account number {}", createDepositAccountResponse.getReturn().getPrimaryAccountNumber());
 
             if (!(createDepositAccountResponse.getReturn().getPrimaryAccountNumber() == null)) {
                 generateAccountNumber = createDepositAccountResponse.getReturn().getPrimaryAccountNumber();

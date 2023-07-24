@@ -7,25 +7,25 @@ public class BalanceResponse {
      private String accountNo;
      private String accountName;
      private String availableBalance;
-     private String currencyCode;
      private String responseCode;
-     private String responseMessage;
+     private String message;
 
-     public BalanceResponse(String accountNo, String responseCode, String responseMessage) {
-          this.accountNo = accountNo;
-          this.responseCode = responseCode;
-          this.responseMessage = responseMessage;
-     }
-
-     public BalanceResponse(String accountNo,String accountName, String availableBalance, String responseCode, String responseMessage) {
+     public BalanceResponse(String accountNo,String accountName, String availableBalance, String responseCode, String message) {
           this.accountNo = accountNo;
           this.accountName = accountName;
           this.availableBalance = availableBalance;
           this.responseCode = responseCode;
-          this.responseMessage = responseMessage;
+          this.message = message;
      }
 
      public BalanceResponse() {
     
+     }
+
+     public BalanceResponse(String accountNo, String accountName, String availableBalance, String webserviceUnavailableMessage) {
+     }
+
+     public BalanceResponse(String accountNo, String message) {
+
      }
 }

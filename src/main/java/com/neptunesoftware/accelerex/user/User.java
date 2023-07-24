@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Data
 @Builder
@@ -29,9 +28,11 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
     private String phoneNumber;
+    private String gender;
     @JsonIgnore
     private Role role;
     private boolean isNotBlocked;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -65,17 +66,16 @@ public class User implements UserDetails {
         this.isNotBlocked = isNotBlocked;
     }
 
-    public <T> User(String mail, String password, Set<T> roleAdmin) {
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
+
 
     @Override
     public String getUsername() {
@@ -89,7 +89,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return isNotBlocked;
+        return true;
     }
 
     @Override

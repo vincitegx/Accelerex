@@ -2,7 +2,7 @@ package com.neptunesoftware.accelerex.auth;
 
 public interface AuthenticationService {
 
-    AuthenticationResponse register(RegistrationRequest request);
+    AuthResponse register(RegistrationRequest request);
 
-    AuthenticationResponse login(LoginRequest request);
+    AuthResponse login(AuthRequest request);
 }

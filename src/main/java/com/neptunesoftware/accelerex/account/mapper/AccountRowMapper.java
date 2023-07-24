@@ -1,5 +1,8 @@
-package com.neptunesoftware.accelerex.account;
+package com.neptunesoftware.accelerex.account.mapper;
 
+import com.neptunesoftware.accelerex.account.Account;
+import com.neptunesoftware.accelerex.account.AccountStatus;
+import com.neptunesoftware.accelerex.account.Tier;
 import com.neptunesoftware.accelerex.user.Role;
 import com.neptunesoftware.accelerex.user.User;
 import org.springframework.jdbc.core.RowMapper;
@@ -27,8 +30,8 @@ public class AccountRowMapper implements RowMapper<Account> {
         LocalDateTime createdAt = resultSet.getTimestamp("createdat").toLocalDateTime();
         LocalDateTime updatedAt = resultSet.getTimestamp("updatedat").toLocalDateTime();
 
-        return new Account(id, user, accountName, mainBranchId, customerId, accountBalance,
-                accountStatus, currencyCode, accountNumber, tierLevel, transactionPin,
+        return new Account(id, user, accountName, accountNumber, accountBalance, accountStatus,
+                customerId, mainBranchId, currencyCode, tierLevel, transactionPin,
                 createdAt, updatedAt);
 
 

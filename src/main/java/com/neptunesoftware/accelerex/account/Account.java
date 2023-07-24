@@ -14,20 +14,22 @@ public class Account {
 
     private Integer id;
     private User user;
+
     private String accountName;
-    private Integer mainBranchId;
-    private Integer customerId;
+    private String accountNumber;
     private BigDecimal accountBalance;
     private AccountStatus accountStatus;
+
+    private Integer customerId;
+    private Integer mainBranchId;
+
     private String currencyCode;
-    private String accountNumber;
     private Tier tierLevel;
     private String transactionPin;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
     public Account(User user){
         this.setUser(user);

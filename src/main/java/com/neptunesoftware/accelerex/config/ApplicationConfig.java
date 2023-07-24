@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.config;
 
+import com.neptunesoftware.accelerex.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,18 +8,32 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
+
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
-    private final CustomUserDetailService customUserDetailService;
+
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return customUserDetailService;
+        return
+                username -> {
+                    String email = "ace@email";
+                    String password = passwordEncoder().encode("ace@pass");
+
+                    return
+                            new org.springframework.security.core.userdetails.User(
+                                    email,
+                                    password, Collections.singleton(
+                                            new SimpleGrantedAuthority(Role.ROLE_ADMIN.name())
+                                    ));
+        };
     }
 
     @Bean

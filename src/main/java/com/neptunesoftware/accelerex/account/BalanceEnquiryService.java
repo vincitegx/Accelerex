@@ -5,6 +5,7 @@ import com.neptunesoftware.accelerex.config.AccelerexCredentials;
 import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
 import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
 import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
+import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,15 +17,14 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.math.BigDecimal;
 
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.WEBSERVICE_FAILED_RESPONSE_MESSAGE;
+import static com.neptunesoftware.accelerex.utils.ResponseConstants.*;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class BalanceEnquiryService {
 
-    private  final AccelerexCredentials accelerexCredentials;
+    private final AccelerexCredentials accelerexCredentials;
 
     public BalanceResponse balanceEnquiry(String accountNumber) {
             BalanceResponse response = new BalanceResponse();
@@ -36,12 +36,12 @@ public class BalanceEnquiryService {
             try {
                 BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
                 WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshaller());
+
                 Balanceenquiry balanceenquiry = new Balanceenquiry();
                 balanceenquiry.setArg0(balEnqRequest);
                 BalanceenquiryResponse balanceenquiryResponse;
-                JAXBElement apiResponse;
-
-                apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
+                
+                JAXBElement   apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
                 balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
 
                 availableBalance = String.valueOf(balanceenquiryResponse.getReturn().getAvailableBalance());
@@ -49,27 +49,28 @@ public class BalanceEnquiryService {
                 accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
                 accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
 
-                log.info("AvailableBalance {}", availableBalance);
-                log.info("AccountName {}", accountName);
-                log.info("ResponseCode {}", responseCode);
-
                 if (!responseCode.equals("00")) {
-                    throw  new com.neptunesoftware.accelerex.exception.BalanceEnquiryException("There was an error querying Balance for accountNumber " +accountNumber);
+                    log.info("Error Retrieving Account Balance");
+                    log.info(HttpStatus.INTERNAL_SERVER_ERROR);
+                    response.setMessage(WEBSERVICE_UNAVAILABLE_MESSAGE);
+
+                } else {
+                   log.info(HttpStatus.OK);
+                    response.setAvailableBalance(availableBalance);
+                    response.setAccountName(accountName);
+                    response.setAccountNo(accountNo);
+                    response.setResponseCode(responseCode);
+                    response.setMessage(SUCCESS_MESSAGE);
                 }
 
             } catch (Exception e) {
-                throw new com.neptunesoftware.accelerex.exception.BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
+//                response.setMessage(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
+//                response.setResponseCode(WEBSERVICE_UNAVAILABLE_CODE);
+                throw new BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
             }
-
-            response.setAvailableBalance(availableBalance);
-            response.setAccountName(accountName);
-            response.setAccountNo(accountNo);
-            response.setResponseCode(responseCode);
-            response.setResponseMessage(SUCCESS_MESSAGE);
-            log.info("HttpStatus {}", HttpStatus.OK);
-
             return response;
         }
+        
     private BalanceEnquiryRequestData buildRequest(String accountNumber) {
 
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
@@ -87,7 +88,7 @@ public class BalanceEnquiryService {
     }
 
     public boolean isAccountSufficient(String accountNumber, BigDecimal amount) {
-//        validateAccount(accountNumber);
+        validateAccount(accountNumber);
         BalanceResponse response = balanceEnquiry(accountNumber);
         boolean b = response.getAvailableBalance().compareTo(String.valueOf(amount)) >= 0;
         if (!b) {
@@ -97,10 +98,6 @@ public class BalanceEnquiryService {
     }
 
     private void validateAccount(String accountNumber) {
-        nameEnquiry(accountNumber);
-    }
-
-    public  String nameEnquiry(String accountNumber) {
-       return balanceEnquiry(accountNumber).getAccountName();
+        balanceEnquiry(accountNumber);
     }
 }

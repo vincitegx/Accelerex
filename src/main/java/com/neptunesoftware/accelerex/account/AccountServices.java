@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.account;
 
+import com.neptunesoftware.accelerex.account.request.DepositToGlRequest;
 import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
@@ -11,6 +12,6 @@ public interface AccountServices {
     NameEnquiryResponse IntraBankNameEnquiry(String nameEnquiryRequest);
     ExternalTransferNameEnquiryResponse interBankNameEnquiry(String accountNumber);
     InterBankTransferResponse interBankTransfer(InterBankTransferRequest request);
-     Boolean existedByAccount(String accountNumber);
-
+    Boolean existedByAccount(String accountNumber);
+    DepositToGlResponse depositToGL(DepositToGlRequest request);
 }

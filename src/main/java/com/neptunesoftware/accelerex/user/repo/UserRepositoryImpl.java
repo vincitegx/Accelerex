@@ -19,21 +19,14 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByEmailAddress(String emailAddress) {
           try {
-            Integer count = Objects.requireNonNull(jdbcTemplate.queryForObject(FIND_BY_EMAIL, new UserRowMapper(), emailAddress)).getId();
-            return count != null && count > 0;
+              Object[] args = { emailAddress };
+            Integer count = Objects.requireNonNull(jdbcTemplate.queryForObject(FIND_BY_EMAIL, args, Integer.class));
+            return count > 0;
         }   catch (EmptyResultDataAccessException e) {
             throw new AccountNotExistException("Invalid email address");
         }
     }
-    
-    @Override
-    public Optional<User> findByPhoneNumber(String mobileNumber) {
-      try {
-          return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_PHONE_NUMBER, new UserRowMapper(), mobileNumber));
-      } catch (Exception e) {
-          throw new RuntimeException("");
-      }
-    }
+
 
     @Override
     public Optional<User> findByEmailAddress(String email) {
@@ -49,15 +42,15 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
-    @Override
-    public void saveRegistrationDetails(User user) {
-            jdbcTemplate.update(SAVE_REGISTRATION_DETAILS,
-                    user.getFullName(),
-                    user.getEmailAddress(),
-                    user.getPassword(),
-                    user.getPhoneNumber(),
-                    user.isNotBlocked(),
-                    user.getCreatedAt(),
-                    user.getUpdatedAt(), new UserRowMapper());
-    }
+//    @Override
+//    public void saveRegistrationDetails(User user) {
+//            jdbcTemplate.update(SAVE_REGISTRATION_DETAILS,
+//                    user.getFullName(),
+//                    user.getEmailAddress(),
+//                    user.getPassword(),
+//                    user.getPhoneNumber(),
+//                    user.isNotBlocked(),
+//                    user.getCreatedAt(),
+//                    user.getUpdatedAt(), new UserRowMapper());
+//    }
 }

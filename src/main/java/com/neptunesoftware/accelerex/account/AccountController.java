@@ -1,9 +1,12 @@
 package com.neptunesoftware.accelerex.account;
 
+import com.neptunesoftware.accelerex.account.request.DepositToGlRequest;
 import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -14,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("api/v3/accounts")
 @Log4j2
+@Tag(name = "Account")
 public class AccountController {
        private final AccountServices accountServices;
 
     @PostMapping("/linkBankAccountToAgent")
+    @Hidden
        public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
            return ResponseEntity.status(HttpStatus.OK).body(accountServices.linkBankAccountToAgent(request));
        }
@@ -42,8 +47,15 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
     }
 
-//    @GetMapping("accountExist/{accountNumber}")
-//    public ResponseEntity<Boolean>  accountExist(@PathVariable("accountNumber") final String accountNumber) {
-//        return ResponseEntity.status(HttpStatus.OK).body(accountServices.existedByAccount(accountNumber));
-//    }
+    @PostMapping("/depositToGLAccount")
+    @Hidden
+    public ResponseEntity<DepositToGlResponse> depositToGL(@RequestBody DepositToGlRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.depositToGL(request));
+    }
+
+    @GetMapping("accountExist/{accountNumber}")
+//    @Hidden
+    public ResponseEntity<Boolean>  accountExist(@PathVariable("accountNumber") final String accountNumber) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountServices.existedByAccount(accountNumber));
+    }
 }
