@@ -1,7 +1,7 @@
 package com.neptunesoftware.accelerex.transaction;
 
-import com.neptunesoftware.accelerex.account.AccountRepository;
-import com.neptunesoftware.accelerex.account.BalanceEnquiryService;
+import com.neptunesoftware.accelerex.account.sql.AccountRepository;
+import com.neptunesoftware.accelerex.account.service.BalanceEnquiryService;
 import com.neptunesoftware.accelerex.config.AccelerexCredentials;
 import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransfer;
 import com.neptunesoftware.accelerex.data.fundstransfer.CustomerToCustomerTransferResponse;

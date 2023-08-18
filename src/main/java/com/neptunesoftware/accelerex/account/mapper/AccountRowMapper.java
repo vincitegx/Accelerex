@@ -1,8 +1,8 @@
 package com.neptunesoftware.accelerex.account.mapper;
 
-import com.neptunesoftware.accelerex.account.Account;
-import com.neptunesoftware.accelerex.account.AccountStatus;
-import com.neptunesoftware.accelerex.account.Tier;
+import com.neptunesoftware.accelerex.account.model.Account;
+import com.neptunesoftware.accelerex.account.enums.AccountStatus;
+import com.neptunesoftware.accelerex.account.enums.Tier;
 import com.neptunesoftware.accelerex.user.Role;
 import com.neptunesoftware.accelerex.user.User;
 import org.springframework.jdbc.core.RowMapper;

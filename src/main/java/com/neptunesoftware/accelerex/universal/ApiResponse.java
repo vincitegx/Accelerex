@@ -13,8 +13,6 @@ public class ApiResponse<N> {
 
     private String message;
     private Object data;
-
-
     public ApiResponse(String message) {
         this.message = message;
     }

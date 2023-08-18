@@ -1,0 +1,15 @@
+package com.neptunesoftware.accelerex.auth.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
+public class AuthRequest {
+    private String emailAddress;
+    private String password;
+}
