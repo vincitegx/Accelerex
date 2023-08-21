@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.exception;
 
+import com.neptunesoftware.accelerex.account.response.BalanceResponse;
 import com.neptunesoftware.accelerex.universal.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,4 +30,10 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ApiResponse> handleCustomerFailedException(CustomerFailedException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(BalanceEnquiryException.class)
+    public final ResponseEntity<BalanceResponse> handleCustomerFailedException(BalanceEnquiryException exception){
+        return new ResponseEntity<>(new BalanceResponse(null,null,null,exception.getResponseCode(),exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
 }

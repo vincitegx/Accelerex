@@ -1,8 +1,10 @@
 package com.neptunesoftware.accelerex.account.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BalanceResponse {
      private String accountNo;
      private String accountName;
@@ -19,7 +21,7 @@ public class BalanceResponse {
      }
 
      public BalanceResponse() {
-    
+
      }
 
      public BalanceResponse(String accountNo, String accountName, String availableBalance, String webserviceUnavailableMessage) {

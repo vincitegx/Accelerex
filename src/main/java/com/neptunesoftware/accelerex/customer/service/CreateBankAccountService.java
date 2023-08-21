@@ -41,7 +41,6 @@ public class CreateBankAccountService  {
         CreateAccountResponse accountResponse = null;
         String customerId = null;
         String customerNumber = null;
-        String customerName;
         try {
         CustomerRequest customerRequestData = buildCustomerRequest(request);
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(createCustomerMarshaller());
@@ -54,11 +53,11 @@ public class CreateBankAccountService  {
         webserviceResponse = (com.neptunesoftware.accelerex.data.customer.CreateCustomerResponse) apiResponse.getValue();
         customerId = String.valueOf(webserviceResponse.getReturn().getCustomerId());
         customerNumber = webserviceResponse.getReturn().getCustomerNumber();
-        customerName = customerRequestData.getCustomerName();
+        log.info("CustomerName {}",customerRequestData.getCustomerName());
         if (customerNumber != null) {
             updateTransaction(customerNumber);
             accountResponse =  createDepositAccount(
-                    new DepositAccountRequest(customerNumber,customerId,customerName));
+                    new DepositAccountRequest(customerNumber,customerId,customerRequestData.getCustomerName()));
         } else {
             log.info("Failed to create customer");
         }
@@ -88,7 +87,6 @@ public class CreateBankAccountService  {
             createDepositAccountResponse = (CreateDepositAccountResponse) webServiceResponse.getValue();
 
             log.info("AccountNumber {}", createDepositAccountResponse.getReturn().getPrimaryAccountNumber());
-            log.info("AccountStatus {}", createDepositAccountResponse.getReturn().getAccountStatus());
 
             if (!(createDepositAccountResponse.getReturn().getPrimaryAccountNumber() == null)) {
                 generateAccountNumber = createDepositAccountResponse.getReturn().getPrimaryAccountNumber();
@@ -104,13 +102,13 @@ public class CreateBankAccountService  {
         }
         return response;
     }
-    private CustomerRequest buildCustomerRequest(CreateCustomerRequest testRequest) {
+    private CustomerRequest buildCustomerRequest(CreateCustomerRequest createCustomerRequest) {
         CustomerRequest customerRequestData = new CustomerRequest();
         String customerName;
-        if (testRequest.getMiddleName() == null || testRequest.getMiddleName().isEmpty()) {
-            customerName = testRequest.getFirstName()+" "+ testRequest.getLastName();
+        if (createCustomerRequest.getMiddleName() == null || createCustomerRequest.getMiddleName().isEmpty()) {
+            customerName = createCustomerRequest.getFirstName()+" "+ createCustomerRequest.getLastName();
         } else {
-            customerName = testRequest.getFirstName()+" "+testRequest.getMiddleName()+" "+testRequest.getLastName();
+            customerName = createCustomerRequest.getFirstName()+" "+createCustomerRequest.getMiddleName()+" "+createCustomerRequest.getLastName();
         }
         customerRequestData.setXapiServiceCode("STC029");
         customerRequestData.setChannelCode("AGENCY");
@@ -129,9 +127,9 @@ public class CreateBankAccountService  {
         List<CustomerContactInformation> contacts = new ArrayList<>();
         CustomerContactInformation custContact = new CustomerContactInformation();
 
-        if (!testRequest.getEmail().isEmpty()) {
-            custContact.setCustomerShortName(testRequest.getFirstName());
-            custContact.setContactDetails(testRequest.getEmail());
+        if (!createCustomerRequest.getEmail().isEmpty()) {
+            custContact.setCustomerShortName(createCustomerRequest.getFirstName());
+            custContact.setContactDetails(createCustomerRequest.getEmail());
             custContact.setContactMode("CM101");
             custContact.setContactModeCategoryCode("CM101");
             custContact.setContactModeTypeId(201L);
@@ -139,20 +137,21 @@ public class CreateBankAccountService  {
             contacts.add(custContact);
         }
         else {
-            custContact.setContactDetails(testRequest.getPhone());
+            custContact.setContactDetails(createCustomerRequest.getPhone());
             custContact.setContactMode("CM100");
             custContact.setContactModeCategoryCode("CM100");
             custContact.setContactModeTypeId(206L);
-            custContact.setCustomerShortName(testRequest.getFirstName());
+            custContact.setCustomerShortName(createCustomerRequest.getFirstName());
             custContact.setStatus("S");
             contacts.add(custContact);
         }
+//        customerRequestData.getContacts().add(custContact);
         customerRequestData.getContacts().addAll(contacts);
-        customerRequestData.setAddressCity(testRequest.getCity());
+        customerRequestData.setAddressCity(createCustomerRequest.getCity());
         customerRequestData.setAddressCountryId(682L);
-        customerRequestData.setAddressLine1(testRequest.getHomeAddress());
+        customerRequestData.setAddressLine1(createCustomerRequest.getHomeAddress());
         customerRequestData.setAddressPropertyTypeId(422L);
-        customerRequestData.setAddressState(testRequest.getState());
+        customerRequestData.setAddressState(createCustomerRequest.getState());
         customerRequestData.setAddressTypeCd("AT105");
         customerRequestData.setAddressTypeId(121L);
         customerRequestData.setBusinessUnitCodeId(-99L);
@@ -169,18 +168,18 @@ public class CreateBankAccountService  {
         customerRequestData.setCustomerTypeCd("CT100");
         customerRequestData.setEmploymentFlag(false);
         customerRequestData.setCustomerName(customerName);
-        customerRequestData.setFirstName(testRequest.getFirstName());
+        customerRequestData.setFirstName(createCustomerRequest.getFirstName());
         customerRequestData.setGender("M");
         customerRequestData.setIndustryCd("SIC052");
         customerRequestData.setIndustryId(776L);
-        customerRequestData.setLastName(testRequest.getLastName());
+        customerRequestData.setLastName(createCustomerRequest.getLastName());
         customerRequestData.setLocale("en_US");
         customerRequestData.setMainBusinessUnitCd("001");
         customerRequestData.setMainBusinessUnitId(-99L);
         customerRequestData.setMaritalStatus("S");
         customerRequestData.setMarketingCampaignCd("MC112");
         customerRequestData.setMarketingCampaignId(369L);
-        customerRequestData.setMiddleName(testRequest.getMiddleName());
+        customerRequestData.setMiddleName(createCustomerRequest.getMiddleName());
         customerRequestData.setNationalityCd("N101");
         customerRequestData.setNationalityId(532L);
         customerRequestData.setNoOfDependents(0L);
@@ -188,7 +187,7 @@ public class CreateBankAccountService  {
         customerRequestData.setOpeningReasonId(702L);
         customerRequestData.setOperationCurrencyCd("NGN");
         customerRequestData.setOperationCurrencyId(732L);
-        customerRequestData.setPreferredName(testRequest.getFirstName());
+        customerRequestData.setPreferredName(createCustomerRequest.getFirstName());
         customerRequestData.setPrimaryAddress(true);
         customerRequestData.setPrimaryRelationshipOfficerCd("HSL1424-13");
         customerRequestData.setPrimaryRelationshipOfficerId(1059L);
@@ -208,7 +207,7 @@ public class CreateBankAccountService  {
         customerRequestData.setStatus("S");
         customerRequestData.setStrDate(formatDate(LocalDate.now()));
         customerRequestData.setStrFromDate(formatDate(LocalDate.now()));
-        customerRequestData.setStrDateOfBirth(testRequest.getDateOfBirth());
+        customerRequestData.setStrDateOfBirth(createCustomerRequest.getDateOfBirth());
         customerRequestData.setSubmitFlag(true);
         customerRequestData.setTaxGroupCd("CTG105");
         customerRequestData.setTaxGroupId(442L);
@@ -219,15 +218,15 @@ public class CreateBankAccountService  {
 //         CustomerImageInformation custImage = new CustomerImageInformation();
 //
 //        byte[] image;
-//        if (testRequest.getImage() != null && !testRequest.getImage().isEmpty()){
-//            image = java.util.Base64.getEncoder().encodeToString(testRequest.getImage().getBytes()).getBytes();
+//        if (createCustomerRequest.getImage() != null && !createCustomerRequest.getImage().isEmpty()){
+//            image = java.util.Base64.getEncoder().encodeToString(createCustomerRequest.getImage().getBytes()).getBytes();
 //             custImage.setBinaryImage(image);
 //             custImage.setImageTypeCode("PHO");
 //             custImage.setBinaryImage(image);
 //             images.add(custImage);
 //         }
-//        if (testRequest.getSignature() != null && !testRequest.getSignature().isEmpty()) {
-//            image = java.util.Base64.getEncoder().encodeToString(testRequest.getSignature().getBytes()).getBytes();
+//        if (createCustomerRequest.getSignature() != null && !createCustomerRequest.getSignature().isEmpty()) {
+//            image = java.util.Base64.getEncoder().encodeToString(createCustomerRequest.getSignature().getBytes()).getBytes();
 //            custImage.setImageTypeCode("SIG");
 //            custImage.setBinaryImage(image);
 //         images.add(custImage);
@@ -265,7 +264,6 @@ public class CreateBankAccountService  {
         depositRequest.setSourceOfFundCode("SF014");
         depositRequest.setSourceOfFundId(430L);
         depositRequest.setStrOpeningDate("11/12/2021");
-        log.info(depositRequest);
         return depositRequest;
     }
 
@@ -455,122 +453,4 @@ public class CreateBankAccountService  {
 //        customerRequestData.getImages().addAll(images);
 //
 //        return customerRequestData;
-//    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//                    "responseCode": "00",
-//                            "responseMessage": "Successful",
-//                            "customerId": "351539",
-//                            "customerNo": "0000101294",
-//                            "status": "I"
-//                            }
-
-
-
-//        System.out.println("****************************************************************");
-//        if (customerResponseData.getCustomerId() != null && customerResponseData.getCustomerNumber() != null) {
-//
-//            accountNumber = createDepositAccountForCustomer(customerResponseData.getCustomerName(),
-//                    String.valueOf(customerResponseData.getCustomerId())
-//                    , customerResponseData.getCustomerNumber()).getAccountNumber();
-//
-//            accountId = createDepositAccountForCustomer(customerResponseData.getCustomerName(),
-//                    String.valueOf(customerResponseData.getCustomerId())
-//                    , customerResponseData.getCustomerNumber()).getAccountNumber();
-//
-//            response.setAccountId(accountId);
-//            response.setAccountNumber(accountNumber);
-//
-//            log.info("SUCCESS {}", HttpStatus.valueOf(200));
-//
-//            response.setResponseCode(ResponseConstants.SUCCESS_CODE);
-//            response.setResponseMessage(SUCCESS_MESSAGE);
-//
-//            log.info("*********Bank Account Created Successfully***************");
-//        }
-//
-//
-//        log.info("Account Details {}", response);
-
-
-
-//    public BalanceResponse balanceEnquiry(String accountNumber) {
-//        BalanceResponse response = new BalanceResponse();
-//        String availableBalance;
-//        String accountName;
-//        String accountNo;
-//        String responseCode;
-//
-//        try {
-//
-//            BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-//            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerB());
-//
-//            Balanceenquiry balanceenquiry = new Balanceenquiry();
-//            balanceenquiry.setArg0(balEnqRequest);
-//
-//            BalanceenquiryResponse balanceenquiryResponse;
-//            JAXBElement apiResponse;
-//
-//            apiResponse = (JAXBElement) webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), balanceenquiry);
-//
-//            balanceenquiryResponse = (BalanceenquiryResponse) apiResponse.getValue();
-//            availableBalance = String.valueOf(balanceenquiryResponse.getReturn().getAvailableBalance());
-//            responseCode = balanceenquiryResponse.getReturn().getResponseCode();
-//            accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
-//            accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
-//
-//            log.info("Available Balance {}", availableBalance);
-//            log.info("ResponseCode {}", responseCode);
-//
-//            if (!responseCode.equals("00")) {
-//                throw  new BalanceEnquiryException("There was an error querying Balance for accountNumber " +accountNumber);
-//            }
-//
-//        } catch (Exception e) {
-//            throw new BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
-//        }
-//
-//        response.setAvailableBalance(availableBalance);
-//        response.setAccountName(accountName);
-//        response.setAccountNo(accountNo);
-//        response.setResponseCode(responseCode);
-//        response.setResponseMessage(SUCCESS_MESSAGE);
-//
-//        log.info("HttpStatus {}", HttpStatus.OK);
-//
-//        return response;
 //    }

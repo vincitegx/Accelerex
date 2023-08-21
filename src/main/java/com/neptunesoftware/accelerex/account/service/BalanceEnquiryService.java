@@ -9,15 +9,12 @@ import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.math.BigDecimal;
-
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -48,25 +45,19 @@ public class BalanceEnquiryService {
                 responseCode = balanceenquiryResponse.getReturn().getResponseCode();
                 accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
                 accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
-
+                 log.info(responseCode);
                 if (!responseCode.equals("00")) {
-                    log.info("Error Retrieving Account Balance");
-                    log.info(HttpStatus.INTERNAL_SERVER_ERROR);
-                    response.setMessage(WEBSERVICE_UNAVAILABLE_MESSAGE);
+                    throw new BalanceEnquiryException(balanceenquiryResponse.getReturn().getResponseCode());
 
                 } else {
-                   log.info(HttpStatus.OK);
                     response.setAvailableBalance(availableBalance);
                     response.setAccountName(accountName);
                     response.setAccountNo(accountNo);
                     response.setResponseCode(responseCode);
-                    response.setMessage(SUCCESS_MESSAGE);
                 }
 
             } catch (Exception e) {
-//                response.setMessage(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
-//                response.setResponseCode(WEBSERVICE_UNAVAILABLE_CODE);
-                throw new BalanceEnquiryException(WEBSERVICE_FAILED_RESPONSE_MESSAGE);
+                throw new BalanceEnquiryException(e.getMessage());
             }
             return response;
         }

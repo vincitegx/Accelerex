@@ -13,7 +13,6 @@ public class CreateBankAccountRequest {
     private String city;
     private String state;
     private String homeAddress;
-    private String alternativeAddress;
     private String email;
     private String bvn;
 }
