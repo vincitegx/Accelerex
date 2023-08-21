@@ -25,7 +25,6 @@ public class AccountController {
     @GetMapping("/accountBalance/{accountNumber}")
     public ResponseEntity<BalanceEnquiryResponse> BalanceEnquiry(@PathVariable("accountNumber") final String accountNumber) {
         log.info("Account balance for account number of {}", accountNumber );
-
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.balanceEnquiry(accountNumber));
     }
 

@@ -1,37 +1,55 @@
 package com.neptunesoftware.accelerex.user;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.neptunesoftware.accelerex.account.Account;
 import com.neptunesoftware.accelerex.account.AccountServices;
 import com.neptunesoftware.accelerex.config.JWTService;
+import com.neptunesoftware.accelerex.config.JwtProvider;
 import com.neptunesoftware.accelerex.config.PasswordEncoderConfig;
 import com.neptunesoftware.accelerex.exception.*;
 import com.neptunesoftware.accelerex.user.repo.UserRepository;
 import com.neptunesoftware.accelerex.user.requests.ChangePasswordRequest;
+import com.neptunesoftware.accelerex.user.requests.LoginRequest;
 import com.neptunesoftware.accelerex.user.requests.UserAuthenticationRequests;
 import com.neptunesoftware.accelerex.user.requests.UserRegistrationRequest;
+import com.neptunesoftware.accelerex.user.response.JwtAuthResponse;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
 @Service
+@Log4j2
 public class UserService {
     private final UserRepository userRepository;
     private final JWTService jwtService;
     private final AccountServices accountService;
     private final PasswordEncoderConfig passwordEncoderConfig;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public UserService(UserRepository userRepository, JWTService jwtService, AccountServices accountService, PasswordEncoderConfig passwordEncoderConfig) {
+    public UserService(UserRepository userRepository, JWTService jwtService,
+                       AccountServices accountService, PasswordEncoderConfig passwordEncoderConfig,
+                       AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.accountService = accountService;
         this.passwordEncoderConfig = passwordEncoderConfig;
+        this.authenticationManager = authenticationManager;
     }
 //    public void updateUser(User existingUser){
 //        existingUser.setUpdatedAt(LocalDateTime.now());
@@ -104,5 +122,12 @@ public class UserService {
 
     public String encodePassword(String password){
         return passwordEncoderConfig.passwordEncoder().encode(password);
+    }
+
+    public JwtAuthResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.clientId(), loginRequest.clientSecret()));
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = jwtService.generateJwtToken(authenticate);
+        return new JwtAuthResponse(token);
     }
 }
