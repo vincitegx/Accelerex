@@ -1,0 +1,20 @@
+2023-08-21 10:06:51 [main] INFO  : Starting AccelerexApplication using Java 17.0.7 with PID 16352 (C:\Users\NeptuneDev2\Desktop\Accelerex\target\classes started by NeptuneDev2 in C:\Users\NeptuneDev2\Desktop\Accelerex)
+2023-08-21 10:06:51 [main] INFO  : No active profile set, falling back to 1 default profile: "default"
+2023-08-21 10:06:52 [main] INFO  : Bean 'org.springframework.ws.config.annotation.DelegatingWsConfiguration' of type [org.springframework.ws.config.annotation.DelegatingWsConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2023-08-21 10:06:52 [main] INFO  : Supporting [WS-Addressing August 2004, WS-Addressing 1.0]
+2023-08-21 10:06:52 [main] INFO  : Tomcat initialized with port(s): 8080 (http)
+2023-08-21 10:06:52 [main] INFO  : Initializing ProtocolHandler ["http-nio-8080"]
+2023-08-21 10:06:52 [main] INFO  : Starting service [Tomcat]
+2023-08-21 10:06:52 [main] INFO  : Starting Servlet engine: [Apache Tomcat/10.1.8]
+2023-08-21 10:06:52 [main] INFO  : Initializing Spring embedded WebApplicationContext
+2023-08-21 10:06:52 [main] INFO  : Root WebApplicationContext: initialization completed in 1464 ms
+2023-08-21 10:06:53 [main] DEBUG : Mapping filters: springSecurityFilterChain urls=[/*] order=-100, characterEncodingFilter urls=[/*] order=-2147483648, formContentFilter urls=[/*] order=-9900, requestContextFilter urls=[/*] order=-105, JWTFilter urls=[/*] order=2147483647
+2023-08-21 10:06:53 [main] DEBUG : Mapping servlets: dispatcherServlet urls=[/], messageDispatcherServlet urls=[/services/*]
+2023-08-21 10:06:53 [main] INFO  : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5d92e8e2, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@542c65d9, org.springframework.security.web.context.SecurityContextHolderFilter@16c5b50a, org.springframework.security.web.header.HeaderWriterFilter@78288f83, org.springframework.security.web.authentication.logout.LogoutFilter@5353dd09, com.neptunesoftware.accelerex.config.JWTFilter@7d2c345d, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@278fe428, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@255ed8e4, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@cdbe995, org.springframework.security.web.session.SessionManagementFilter@333d44f6, org.springframework.security.web.access.ExceptionTranslationFilter@22ca1242, org.springframework.security.web.access.intercept.AuthorizationFilter@7e3ee128]
+2023-08-21 10:06:54 [main] INFO  : Starting ProtocolHandler ["http-nio-8080"]
+2023-08-21 10:06:54 [main] INFO  : Tomcat started on port(s): 8080 (http) with context path ''
+2023-08-21 10:06:54 [main] INFO  : Started AccelerexApplication in 3.216 seconds (process running for 3.963)
+2023-08-21 10:07:00 [http-nio-8080-exec-2] INFO  : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-21 10:07:00 [http-nio-8080-exec-2] INFO  : Initializing Servlet 'dispatcherServlet'
+2023-08-21 10:07:00 [http-nio-8080-exec-2] INFO  : Completed initialization in 1 ms
+2023-08-21 10:07:00 [http-nio-8080-exec-2] WARN  : Request method 'GET' is not supported
