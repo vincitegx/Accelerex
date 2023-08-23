@@ -47,8 +47,7 @@ public class BalanceEnquiryService {
             accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
             log.info(responseCode);
             if (!responseCode.equals("00")) {
-                throw new BalanceEnquiryException(balanceenquiryResponse.getReturn().getResponseCode());
-
+                throw new BalanceEnquiryException(balanceenquiryResponse.getReturn().getResponseCode(),"Account Not Found");
             } else {
                 response.setAvailableBalance(availableBalance);
                 response.setAccountName(accountName);

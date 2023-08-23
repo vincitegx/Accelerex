@@ -11,9 +11,11 @@ import com.neptunesoftware.accelerex.data.account.DepositAccountRequestData;
 import com.neptunesoftware.accelerex.data.customer.CreateCustomer;
 import com.neptunesoftware.accelerex.data.customer.CustomerContactInformation;
 import com.neptunesoftware.accelerex.data.customer.CustomerRequest;
-import com.neptunesoftware.accelerex.exception.AccountNotActivatedException;
 import com.neptunesoftware.accelerex.exception.AccountServiceException;
 import com.neptunesoftware.accelerex.exception.CustomerFailedException;
+import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
+import com.neptunesoftware.accelerex.account.mapper.CustomUserRowMapper;
+import com.neptunesoftware.accelerex.user.User;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,8 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.neptunesoftware.accelerex.account.sql.SqlQueries.SAVE_REGISTRATION_DETAILS;
-import static com.neptunesoftware.accelerex.account.sql.SqlQueries.UPDATE_CUSTOMER_STATUS;
+import static com.neptunesoftware.accelerex.account.sql.SqlQueries.*;
 import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_CODE;
 import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
 
@@ -63,6 +64,7 @@ public class CreateBankAccountService {
                         new DepositAccountRequest(customerNumber, customerId, customerRequestData.getCustomerName()));
                  saveCustomerRecord(request,customerRequestData.getCustomerName(),accountResponse.accountNo);
                  log.info("Customer Record Saved To Database");
+//                 log.info(searchUser("08074757585","17/01/1991","wer2e@neptunegroup.com"));
             }
 
         } catch (Exception e) {
@@ -97,7 +99,7 @@ public class CreateBankAccountService {
                 response.setAccountNo(generatedAccountNumber);
                 response.setAccountStatus(accountStatus);
             } else {
-                throw new AccountNotActivatedException("Inactive Customer Status");
+                throw new AccountServiceException("FAILED TO GENERATE ACCOUNT NUMBER");
             }
         } catch (Exception e) {
             throw new AccountServiceException(e.getMessage());
@@ -115,6 +117,12 @@ public class CreateBankAccountService {
                     createCustomerRequest.getMiddleName() + " " +
                     createCustomerRequest.getLastName();
         }
+        if (createCustomerRequest.getPhone() == null || createCustomerRequest.getPhone().isEmpty()){
+            throw new ResourceNotFoundException("PHONE NUMBER MUST BE PROVIDED");
+        }
+        if (searchUser(createCustomerRequest.getPhone(),createCustomerRequest.getDateOfBirth(),createCustomerRequest.getEmail())) {
+            throw new CustomerFailedException("CUSTOMER ALREADY EXIST");
+        }
         customerRequestData.setXapiServiceCode("STC029");
         customerRequestData.setChannelCode("AGENCY");
         customerRequestData.setChannelId(17L);
@@ -131,16 +139,7 @@ public class CreateBankAccountService {
         //Contact Details
         List<CustomerContactInformation> contacts = new ArrayList<>();
         CustomerContactInformation custContact = new CustomerContactInformation();
-
-        if (!createCustomerRequest.getEmail().isEmpty()) {
-            custContact.setCustomerShortName(createCustomerRequest.getFirstName());
-            custContact.setContactDetails(createCustomerRequest.getEmail());
-            custContact.setContactMode("CM101");
-            custContact.setContactModeCategoryCode("CM101");
-            custContact.setContactModeTypeId(201L);
-            custContact.setStatus("A");
-            contacts.add(custContact);
-        } else {
+        if (createCustomerRequest.getPhone() != null && !createCustomerRequest.getPhone().isEmpty()) {
             custContact.setContactDetails(createCustomerRequest.getPhone());
             custContact.setContactMode("CM100");
             custContact.setContactModeCategoryCode("CM100");
@@ -148,8 +147,16 @@ public class CreateBankAccountService {
             custContact.setCustomerShortName(createCustomerRequest.getFirstName());
             custContact.setStatus("S");
             contacts.add(custContact);
+        } else {
+            custContact.setCustomerShortName(createCustomerRequest.getFirstName());
+            custContact.setContactDetails(createCustomerRequest.getEmail());
+            custContact.setContactMode("CM101");
+            custContact.setContactModeCategoryCode("CM101");
+            custContact.setContactModeTypeId(201L);
+            custContact.setStatus("A");
+            contacts.add(custContact);
         }
-        
+
 //        customerRequestData.getContacts().add(custContact);
         customerRequestData.getContacts().addAll(contacts);
         customerRequestData.setAddressCity(createCustomerRequest.getCity());
@@ -314,5 +321,16 @@ public class CreateBankAccountService {
             log.error(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
+    }
+    private boolean searchUser(String phoneNumber, String dateOfBirth, String email) {
+        List<User> users = jdbcTemplate.query(SELECT_USER_BY_PHONE_NUMBER_EMAIL_DOB,
+                new Object[]{phoneNumber, dateOfBirth, email},
+                new CustomUserRowMapper());
+        return !users.isEmpty();
+    }
+    public boolean fetchUserByPhone(String phoneNumber) {
+        List<User> users = jdbcTemplate.query(
+                SELECT_USER_BY_PHONE_NUMBER, new Object[]{phoneNumber}, new CustomUserRowMapper());
+        return !users.isEmpty();
     }
 }

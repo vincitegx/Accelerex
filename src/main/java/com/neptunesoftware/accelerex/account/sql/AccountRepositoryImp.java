@@ -1,64 +1,38 @@
 package com.neptunesoftware.accelerex.account.sql;
 
-import com.neptunesoftware.accelerex.account.mapper.AccountRowMapper;
+import com.neptunesoftware.accelerex.account.mapper.CustomUserRowMapper;
+import com.neptunesoftware.accelerex.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.util.Strings;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Date;
-import java.time.LocalDate;
+import java.util.List;
 
-import static com.neptunesoftware.accelerex.account.sql.SqlQueries.*;
+import static com.neptunesoftware.accelerex.account.sql.SqlQueries.SELECT_USER_BY_PHONE_NUMBER_EMAIL_DOB;
 
 
 @Repository
 @RequiredArgsConstructor
 @Log4j2
 public class AccountRepositoryImp implements AccountRepository {
-    
-        private final JdbcTemplate jdbcTemplate;
 
+    private final JdbcTemplate jdbcTemplate;
     @Override
-    public String findNameByAccountNumber(String accountNumber) {
-        try {
-            return String.valueOf(jdbcTemplate.queryForObject(ACCOUNT_NUMBER_ENQUIRY, new AccountRowMapper(), accountNumber));
-        } catch (EmptyResultDataAccessException e) {
-           return   Strings.EMPTY;
-        }
-    }
-    @Override
-    public String findAccountByPhoneNumber(String mobilePhoneNumber) {
-        try{
-            return jdbcTemplate.queryForObject(SELECT_PHONE_NUM,String.class,mobilePhoneNumber);
-        } catch (EmptyResultDataAccessException e) {
-            return Strings.EMPTY;
-        }
+    public boolean findAccountByPhoneAndAccountNumber(String mobilePhoneNumber, String accountNumber) {
+        List<User> users = jdbcTemplate.query(SELECT_USER_BY_PHONE_NUMBER_EMAIL_DOB,
+                new Object[]{mobilePhoneNumber, accountNumber}, new CustomUserRowMapper());
+        return !users.isEmpty();
     }
 
-    @Override
-    public String findTokenByAccountNumber(String accountNumber) {
-        try {
-            return jdbcTemplate.queryForObject(TOKEN, String.class, accountNumber);
-        } catch (EmptyResultDataAccessException e) {
-            return Strings.EMPTY;
-        }
-    }
-
-    @Override
-    public void updateOTP(String phoneNumber, String otp) {
-        Date date = Date.valueOf(LocalDate.now());
-        jdbcTemplate.update(SAVE_SMS, phoneNumber, date);
-    }
-    @Override
-    public String findUserIdByAccountNumber(String accountNumber) {
-       try {
-           return jdbcTemplate.query(SELECT_CUSTOMER_ID,(resultSet, i) -> resultSet.getString("acct_num")).toString();
-       } catch (EmptyResultDataAccessException e) {
-          return Strings.EMPTY;
-       }
-    }
-
+//    @Override
+//    public void linkedAccount(String userName, String phoneNumber, String email, String generatedAccountNumber) {
+//        try {
+//            jdbcTemplate.update(LINK_DETAILS, userName, email, phoneNumber, generatedAccountNumber);
+//        } catch (DataAccessException e) {
+//            log.error("Error Updating DB Record");
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e.getMessage());
+//        }
+//    }
 }

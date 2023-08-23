@@ -16,6 +16,6 @@ public class CreateCustomerRequest {
     private String state;
     private String homeAddress;
     private String bvn;
-//    private String image;
-//     private String signature;
+    private String image;
+     private String signature;
 }

@@ -46,7 +46,7 @@ public class AccountController {
 
     @PostMapping("depositToGLAccount")
     @Hidden
-    public ResponseEntity<DepositToGlResponse> depositToGL(@RequestBody DepositToGlRequest request) {
+    public ResponseEntity<DepositToGLResponse> depositToGL(@RequestBody DepositToGlRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.depositToGL(request));
     }
     @GetMapping("accountExist/{accountNumber}")
