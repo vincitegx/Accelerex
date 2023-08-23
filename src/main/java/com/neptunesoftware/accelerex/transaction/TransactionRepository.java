@@ -12,6 +12,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @AllArgsConstructor
@@ -21,7 +22,12 @@ public class TransactionRepository {
 
     TransactionResponse findByClientIdAndReferenceNo(String clientId, String referenceNo){
         try {
-            return jdbcTemplate.query(SqlQueries.TRANSACTION_STATUS_QUERY, new TransactionResponseRowMapper(),clientId, referenceNo).stream().findFirst().get();
+            Optional<TransactionResponse> transactionResponse = jdbcTemplate.query(SqlQueries.TRANSACTION_STATUS_QUERY, new TransactionResponseRowMapper(),clientId, referenceNo).stream().findFirst();
+            if (transactionResponse.isPresent()) {
+                return transactionResponse.get();
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             throw new TransactionNotFoundException("Unable to load transaction status");
         }

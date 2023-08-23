@@ -52,7 +52,6 @@ public class AccountRepositoryImp implements AccountRepository {
         Date date = Date.valueOf(LocalDate.now());
         jdbcTemplate.update(SAVE_SMS, phoneNumber, date);
     }
-
     @Override
     public String findUserIdByAccountNumber(String accountNumber) {
        try {

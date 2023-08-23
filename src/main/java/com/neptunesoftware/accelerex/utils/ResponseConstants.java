@@ -23,7 +23,7 @@ public class ResponseConstants {
     public static final String UNMARSHAL_CODE = "08";
     public static final String UNMARSHAL_MESSAGE = "Unmarshalling/Deserialize error: Could not convert String to class object."
             + "\n Check xml/json String to object class created";
-    public static final String ERROR_MESSAGE = "Invalid bank account";
+    public static final String ERROR_MESSAGE = "Invalid bank account number";
 
     private ResponseConstants() {
         

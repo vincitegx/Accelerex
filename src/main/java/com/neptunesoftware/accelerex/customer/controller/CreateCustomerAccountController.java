@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin
-@RequestMapping("api/v1/creatCustomer")
+@RequestMapping("api/v1/customer")
 @Tag(name = "Customer")
 
 public class CreateCustomerAccountController {
     private final CreateBankAccountService customerAccountService;
-    @PostMapping()
+    @PostMapping("create")
     public ResponseEntity<CreateCustomerResponse> createCustomer(@RequestBody CreateCustomerRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createCustomer(request));
     }
+    
 }

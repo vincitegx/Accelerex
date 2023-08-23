@@ -5,32 +5,38 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.Objects;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User implements UserDetails {
     @JsonIgnore
     private Integer id;
     private String fullName;
-
+    private String userName;
     private String emailAddress;
+    private String dataOfBirth;
     @JsonIgnore
     private String password;
     private String phoneNumber;
-    private String gender;
-    @JsonIgnore
     private Role role;
     private boolean isNotBlocked;
-
+    private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    @JsonIgnore
+    private String authority;
+    private String bvn;
+    private String accountNumber;
+    //private String accountId;
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
@@ -43,13 +49,13 @@ public class User {
                 DATE_TIME_FORMATTER);
         this.updatedAt = createdAt;
         this.isNotBlocked = isNotBlocked;
-        this.phoneNumber= phoneNumber;
+        this.phoneNumber = phoneNumber;
     }
 
     /**
      * This constructor is for test purpose. Id must always be auto generated
      */
-    public User(Integer id,String fullName, String emailAddress, String password, boolean isNotBlocked) {
+    public User(Integer id, String fullName, String emailAddress, String password, boolean isNotBlocked) {
         this.id = id;
         this.fullName = fullName;
         this.emailAddress = emailAddress;
@@ -60,42 +66,40 @@ public class User {
         this.updatedAt = createdAt;
         this.isNotBlocked = isNotBlocked;
     }
-//
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority(role.name()));
-//    }
-//
-//    @Override
-//    public String getPassword() {
-//        return password;
-//    }
-//
-//
-//    @Override
-//    public String getUsername() {
-//        return emailAddress;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonLocked() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isCredentialsNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isEnabled() {
-//        return true;
-//    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return emailAddress;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return isNotBlocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
 
     @Override

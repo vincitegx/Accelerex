@@ -39,18 +39,22 @@ public class AccountRowMapper implements RowMapper<Account> {
 
     private User getUserFromResultSet(ResultSet resultSet) throws SQLException {
         Integer id = resultSet.getInt("userid");
-        String fullName = resultSet.getString("fullname");
-        String emailAddress = resultSet.getString("emailaddress");
-        String password = resultSet.getString("password");
-        String phoneNumber = resultSet.getString("phonenumber");
-        Role role = Role.valueOf(resultSet.getString("role"));
-        boolean isNotBlocked = resultSet.getBoolean("isnotblocked");
-        LocalDateTime createdAt = resultSet.getTimestamp("usercreatedat").toLocalDateTime();
-        LocalDateTime updatedAt = resultSet.getTimestamp("userupdatedat").toLocalDateTime();
+        String fullName = resultSet.getString("AGENT_NAME");
+        String userName = resultSet.getString("USERNAME");
+        String emailAddress = resultSet.getString("AGENT_EMAIL");
+        String password = resultSet.getString("PASSWORD");
+        String phoneNumber = resultSet.getString("PHONE_NUMBER");
+        String dateOfBirth = resultSet.getString("DATE_OF_BIRTH");
+        Role role = Role.valueOf(resultSet.getString("ROLE"));
+        boolean isNotBlocked = resultSet.getBoolean("IS_ACCOUNT_NOT_BLOCKED");
+        LocalDateTime createdAt = resultSet.getTimestamp("CREATED_AT").toLocalDateTime();
+        LocalDateTime updatedAt = resultSet.getTimestamp("UPDATED_AT").toLocalDateTime();
 
         return User.builder()
                 .id(id)
                 .fullName(fullName)
+                .dataOfBirth(dateOfBirth)
+                .userName(userName)
                 .emailAddress(emailAddress)
                 .password(password)
                 .phoneNumber(phoneNumber)
@@ -60,5 +64,4 @@ public class AccountRowMapper implements RowMapper<Account> {
                 .updatedAt(updatedAt)
                 .build();
     }
-
 }

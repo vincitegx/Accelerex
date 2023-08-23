@@ -1,10 +1,10 @@
 package com.neptunesoftware.accelerex.account.controller;
 
-import com.neptunesoftware.accelerex.account.service.AccountServices;
 import com.neptunesoftware.accelerex.account.request.DepositToGlRequest;
 import com.neptunesoftware.accelerex.account.request.InterBankTransferRequest;
 import com.neptunesoftware.accelerex.account.request.LinkBankAccountRequest;
 import com.neptunesoftware.accelerex.account.response.*;
+import com.neptunesoftware.accelerex.account.service.AccountServices;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,22 +27,18 @@ public class AccountController {
        public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
            return ResponseEntity.status(HttpStatus.OK).body(accountServices.linkBankAccountToAgent(request));
        }
-
     @GetMapping("intraBankBalanceEnquiry/{accountNumber}")
     public ResponseEntity<BalanceResponse> intraBankBalanceEnquiry(@PathVariable ("accountNumber") final String accountNumber) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.intraBankBalanceEnquiry(accountNumber));
     }
-
     @GetMapping("intraBankNameEnquiry/{accountNumber}")
     public ResponseEntity<NameEnquiryResponse> intraBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.IntraBankNameEnquiry(accountNumber));
     }
-
     @GetMapping("interBankNameEnquiry/{accountNumber}")
     public ResponseEntity<ExternalTransferNameEnquiryResponse>  interBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
           return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankNameEnquiry(accountNumber));
     }
-
     @PostMapping("interBankTransfer")
     public ResponseEntity<InterBankTransferResponse> interBankTransfer(@RequestBody InterBankTransferRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
@@ -53,7 +49,6 @@ public class AccountController {
     public ResponseEntity<DepositToGlResponse> depositToGL(@RequestBody DepositToGlRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.depositToGL(request));
     }
-
     @GetMapping("accountExist/{accountNumber}")
 //    @Hidden
     public ResponseEntity<Boolean>  accountExist(@PathVariable("accountNumber") final String accountNumber) {

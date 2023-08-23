@@ -2,7 +2,6 @@ package com.neptunesoftware.accelerex.customer.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
 @Data
 @AllArgsConstructor
 public class DepositAccountRequest {
