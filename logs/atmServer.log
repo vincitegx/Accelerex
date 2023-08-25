@@ -1,35 +1,27 @@
-2023-08-23 17:24:04 [main] INFO  : Starting AccelerexApplication using Java 17.0.7 with PID 11544 (C:\Users\NeptuneDev2\Desktop\Accelerex\target\classes started by NeptuneDev2 in C:\Users\NeptuneDev2\Desktop\Accelerex)
-2023-08-23 17:24:04 [main] DEBUG : Running with Spring Boot v3.1.0, Spring v6.0.9
-2023-08-23 17:24:04 [main] INFO  : No active profile set, falling back to 1 default profile: "default"
-2023-08-23 17:24:05 [main] INFO  : Bean 'org.springframework.ws.config.annotation.DelegatingWsConfiguration' of type [org.springframework.ws.config.annotation.DelegatingWsConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
-2023-08-23 17:24:05 [main] INFO  : Supporting [WS-Addressing August 2004, WS-Addressing 1.0]
-2023-08-23 17:24:05 [main] INFO  : Tomcat initialized with port(s): 8080 (http)
-2023-08-23 17:24:05 [main] INFO  : Initializing ProtocolHandler ["http-nio-8080"]
-2023-08-23 17:24:05 [main] INFO  : Starting service [Tomcat]
-2023-08-23 17:24:05 [main] INFO  : Starting Servlet engine: [Apache Tomcat/10.1.8]
-2023-08-23 17:24:05 [main] INFO  : Initializing Spring embedded WebApplicationContext
-2023-08-23 17:24:05 [main] INFO  : Root WebApplicationContext: initialization completed in 1477 ms
-2023-08-23 17:24:05 [main] DEBUG : Mapping filters: springSecurityFilterChain urls=[/*] order=-100, characterEncodingFilter urls=[/*] order=-2147483648, formContentFilter urls=[/*] order=-9900, requestContextFilter urls=[/*] order=-105, JWTFilter urls=[/*] order=2147483647
-2023-08-23 17:24:05 [main] DEBUG : Mapping servlets: dispatcherServlet urls=[/], messageDispatcherServlet urls=[/services/*]
-2023-08-23 17:24:05 [main] DEBUG : Filter 'JWTFilter' configured for use
-2023-08-23 17:24:06 [main] INFO  : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7848321e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@f4f843f, org.springframework.security.web.context.SecurityContextHolderFilter@7686f701, org.springframework.security.web.header.HeaderWriterFilter@5aa6da2, org.springframework.security.web.authentication.logout.LogoutFilter@438aaa9f, com.neptunesoftware.accelerex.config.JWTFilter@67acfde9, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@210a26b, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@678586f0, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@7b5833ee, org.springframework.security.web.session.SessionManagementFilter@67fac095, org.springframework.security.web.access.ExceptionTranslationFilter@1410d645, org.springframework.security.web.access.intercept.AuthorizationFilter@297bd171]
-2023-08-23 17:24:06 [main] INFO  : Starting ProtocolHandler ["http-nio-8080"]
-2023-08-23 17:24:06 [main] INFO  : Tomcat started on port(s): 8080 (http) with context path ''
-2023-08-23 17:24:06 [main] INFO  : Started AccelerexApplication in 3.21 seconds (process running for 3.964)
-2023-08-23 17:24:30 [http-nio-8080-exec-1] INFO  : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2023-08-23 17:24:30 [http-nio-8080-exec-1] INFO  : Initializing Servlet 'dispatcherServlet'
-2023-08-23 17:24:30 [http-nio-8080-exec-1] INFO  : Completed initialization in 1 ms
-2023-08-23 17:24:30 [http-nio-8080-exec-1] INFO  : Creating SAAJ 1.3 MessageFactory with SOAP 1.1 Protocol
-2023-08-23 17:24:31 [http-nio-8080-exec-1] INFO  : 99
-2023-08-23 17:24:35 [http-nio-8080-exec-3] INFO  : Creating SAAJ 1.3 MessageFactory with SOAP 1.1 Protocol
-2023-08-23 17:24:36 [http-nio-8080-exec-3] INFO  : 00
-2023-08-23 17:24:36 [http-nio-8080-exec-3] INFO  : Available Balance 36.18
-2023-08-23 17:25:28 [http-nio-8080-exec-4] INFO  : HikariPool-1 - Starting...
-2023-08-23 17:25:28 [http-nio-8080-exec-4] INFO  : HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@2c2b53e5
-2023-08-23 17:25:28 [http-nio-8080-exec-4] INFO  : HikariPool-1 - Start completed.
-2023-08-23 17:25:28 [http-nio-8080-exec-4] INFO  : Creating SAAJ 1.3 MessageFactory with SOAP 1.1 Protocol
-2023-08-23 17:25:29 [http-nio-8080-exec-4] INFO  : Creating SAAJ 1.3 MessageFactory with SOAP 1.1 Protocol
-2023-08-23 17:25:30 [http-nio-8080-exec-4] INFO  : AccountNumber 3000220447
-2023-08-23 17:25:30 [http-nio-8080-exec-4] INFO  : Customer Record Saved To Database
-2023-08-23 17:26:32 [SpringApplicationShutdownHook] INFO  : HikariPool-1 - Shutdown initiated...
-2023-08-23 17:26:33 [SpringApplicationShutdownHook] INFO  : HikariPool-1 - Shutdown completed.
+2023-08-25 18:55:32 [main] INFO  : Starting AccelerexApplication using Java 17.0.7 with PID 13028 (C:\Users\NeptuneDev2\Desktop\Accelerex\target\classes started by NeptuneDev2 in C:\Users\NeptuneDev2\Desktop\Accelerex)
+2023-08-25 18:55:32 [main] DEBUG : Running with Spring Boot v3.1.0, Spring v6.0.9
+2023-08-25 18:55:32 [main] INFO  : No active profile set, falling back to 1 default profile: "default"
+2023-08-25 18:55:33 [main] INFO  : Bean 'org.springframework.ws.config.annotation.DelegatingWsConfiguration' of type [org.springframework.ws.config.annotation.DelegatingWsConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2023-08-25 18:55:33 [main] INFO  : Supporting [WS-Addressing August 2004, WS-Addressing 1.0]
+2023-08-25 18:55:33 [main] INFO  : Tomcat initialized with port(s): 8080 (http)
+2023-08-25 18:55:33 [main] INFO  : Initializing ProtocolHandler ["http-nio-8080"]
+2023-08-25 18:55:33 [main] INFO  : Starting service [Tomcat]
+2023-08-25 18:55:33 [main] INFO  : Starting Servlet engine: [Apache Tomcat/10.1.8]
+2023-08-25 18:55:34 [main] INFO  : Initializing Spring embedded WebApplicationContext
+2023-08-25 18:55:34 [main] INFO  : Root WebApplicationContext: initialization completed in 1694 ms
+2023-08-25 18:55:34 [main] DEBUG : Mapping filters: springSecurityFilterChain urls=[/*] order=-100, characterEncodingFilter urls=[/*] order=-2147483648, formContentFilter urls=[/*] order=-9900, requestContextFilter urls=[/*] order=-105, JWTFilter urls=[/*] order=2147483647
+2023-08-25 18:55:34 [main] DEBUG : Mapping servlets: dispatcherServlet urls=[/], messageDispatcherServlet urls=[/services/*]
+2023-08-25 18:55:34 [main] DEBUG : Filter 'JWTFilter' configured for use
+2023-08-25 18:55:35 [main] INFO  : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6e46891d, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@48632f69, org.springframework.security.web.context.SecurityContextHolderFilter@678586f0, org.springframework.security.web.header.HeaderWriterFilter@74ce7fdf, org.springframework.security.web.authentication.logout.LogoutFilter@40bf0e15, com.neptunesoftware.accelerex.config.JWTFilter@67acfde9, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@586728e8, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@745926c3, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5fde1d64, org.springframework.security.web.session.SessionManagementFilter@2dc21583, org.springframework.security.web.access.ExceptionTranslationFilter@640a8f93, org.springframework.security.web.access.intercept.AuthorizationFilter@1e471884]
+2023-08-25 18:55:35 [main] INFO  : Starting ProtocolHandler ["http-nio-8080"]
+2023-08-25 18:55:35 [main] INFO  : Tomcat started on port(s): 8080 (http) with context path ''
+2023-08-25 18:55:35 [main] INFO  : Started AccelerexApplication in 3.573 seconds (process running for 4.365)
+2023-08-25 18:55:40 [http-nio-8080-exec-2] INFO  : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-25 18:55:40 [http-nio-8080-exec-2] INFO  : Initializing Servlet 'dispatcherServlet'
+2023-08-25 18:55:40 [http-nio-8080-exec-2] INFO  : Completed initialization in 1 ms
+2023-08-25 18:55:40 [http-nio-8080-exec-2] INFO  : HikariPool-1 - Starting...
+2023-08-25 18:55:40 [http-nio-8080-exec-2] INFO  : HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@63a11b50
+2023-08-25 18:55:40 [http-nio-8080-exec-2] INFO  : HikariPool-1 - Start completed.
+2023-08-25 18:55:41 [http-nio-8080-exec-2] INFO  : 66767676767
+2023-08-25 18:55:49 [SpringApplicationShutdownHook] INFO  : HikariPool-1 - Shutdown initiated...
+2023-08-25 18:55:49 [SpringApplicationShutdownHook] INFO  : HikariPool-1 - Shutdown completed.

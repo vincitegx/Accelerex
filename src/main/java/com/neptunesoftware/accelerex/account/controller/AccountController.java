@@ -23,13 +23,15 @@ public class AccountController {
        private final AccountServices accountServices;
 
     @PostMapping("linkBankAccountToAgent")
+    @ResponseStatus(HttpStatus.CREATED)
     @Hidden
-       public ResponseEntity<ApiResponse<LinkBankAccountResponse>> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
-           return ResponseEntity.status(HttpStatus.OK).body(accountServices.linkBankAccountToAgent(request));
+       public ApiResponse<LinkBankAccountResponse> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
+           return accountServices.linkBankAccountToAgent(request);
        }
     @GetMapping("intraBankBalanceEnquiry/{accountNumber}")
-    public ResponseEntity<BalanceResponse> intraBankBalanceEnquiry(@PathVariable ("accountNumber") final String accountNumber) {
-        return ResponseEntity.status(HttpStatus.OK).body(accountServices.intraBankBalanceEnquiry(accountNumber));
+    @ResponseStatus(HttpStatus.OK)
+    public BalanceResponse intraBankBalanceEnquiry(@PathVariable ("accountNumber") final String accountNumber) {
+        return accountServices.intraBankBalanceEnquiry(accountNumber);
     }
     @GetMapping("intraBankNameEnquiry/{accountNumber}")
     public ResponseEntity<NameEnquiryResponse> intraBankNameEnquiry(@PathVariable("accountNumber") final String accountNumber) {
@@ -43,6 +45,12 @@ public class AccountController {
     public ResponseEntity<InterBankTransferResponse> interBankTransfer(@RequestBody InterBankTransferRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
     }
+
+//    @PostMapping("accountInfo")
+//    @ResponseStatus(HttpStatus.OK)
+//    public AccountInfoResponseDto accountInfo(@RequestBody InfoRequest request) {
+//        return accountInfoService.getAccountInformation(request);
+//    }
 
     @PostMapping("depositToGLAccount")
     @Hidden

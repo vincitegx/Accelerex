@@ -10,6 +10,7 @@ package com.neptunesoftware.accelerex.data.account;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 
@@ -35,7 +36,7 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "accountInquiryInfo", propOrder = {
     "arg0"
-})
+})  @XmlRootElement
 public class AccountInquiryInfo {
 
     protected AccountRequest arg0;

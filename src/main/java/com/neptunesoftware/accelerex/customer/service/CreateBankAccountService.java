@@ -1,5 +1,6 @@
 package com.neptunesoftware.accelerex.customer.service;
 
+import com.neptunesoftware.accelerex.account.mapper.CustomUserRowMapper;
 import com.neptunesoftware.accelerex.config.AccelerexCredentials;
 import com.neptunesoftware.accelerex.customer.request.CreateCustomerRequest;
 import com.neptunesoftware.accelerex.customer.request.DepositAccountRequest;
@@ -14,8 +15,8 @@ import com.neptunesoftware.accelerex.data.customer.CustomerRequest;
 import com.neptunesoftware.accelerex.exception.AccountServiceException;
 import com.neptunesoftware.accelerex.exception.CustomerFailedException;
 import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
-import com.neptunesoftware.accelerex.account.mapper.CustomUserRowMapper;
 import com.neptunesoftware.accelerex.user.User;
+import com.neptunesoftware.accelerex.utils.ResponseConstants;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,14 +26,17 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import static com.neptunesoftware.accelerex.account.sql.SqlQueries.*;
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_CODE;
 import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
 
 @Log4j2
@@ -41,11 +45,13 @@ import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESS
 public class CreateBankAccountService {
     private final AccelerexCredentials accelerexCredentials;
     private final JdbcTemplate jdbcTemplate;
-
+    private static final String ACCOUNT_PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.account";
+    private static final String CUSTOMER_PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.customer";
     public CreateCustomerResponse createCustomer(CreateCustomerRequest request) {
         CreateAccountResponse accountResponse = null;
         String customerId;
         String customerNumber;
+        String customerName;
         try {
             CustomerRequest customerRequestData = buildCustomerRequest(request);
             WebServiceTemplate webServiceTemplate = new WebServiceTemplate(createCustomerMarshaller());
@@ -58,23 +64,22 @@ public class CreateBankAccountService {
             webserviceResponse = (com.neptunesoftware.accelerex.data.customer.CreateCustomerResponse) apiResponse.getValue();
             customerId = String.valueOf(webserviceResponse.getReturn().getCustomerId());
             customerNumber = webserviceResponse.getReturn().getCustomerNumber();
+            customerName = customerRequestData.getCustomerName();
             if (customerNumber != null) {
-                updateTransaction(customerNumber);
+                updateCustomerStatus(customerNumber);
                 accountResponse = createDepositAccount(
                         new DepositAccountRequest(customerNumber, customerId, customerRequestData.getCustomerName()));
-                 saveCustomerRecord(request,customerRequestData.getCustomerName(),accountResponse.accountNo);
-                 log.info("Customer Record Saved To Database");
+//                 saveCustomerRecord(request,customerRequestData.getCustomerName(),accountResponse.accountNo);
+//                 log.info("Customer Record Saved To Database");
 //                 log.info(searchUser("08074757585","17/01/1991","wer2e@neptunegroup.com"));
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new CustomerFailedException(e.getMessage());
         }
 
-        assert accountResponse != null;
-        return new CreateCustomerResponse(SUCCESS_CODE, SUCCESS_MESSAGE, customerId, customerNumber,
-                accountResponse.getAccountStatus(), accountResponse.getAccountNo());
+        return new CreateCustomerResponse(SUCCESS_MESSAGE, request.getUserName(),
+                customerName, customerId, customerNumber, accountResponse.getAccountNo());
     }
     private CreateAccountResponse createDepositAccount(DepositAccountRequest depositAccountRequest) {
         CreateAccountResponse response = new CreateAccountResponse();
@@ -88,11 +93,12 @@ public class CreateBankAccountService {
 
             JAXBElement webServiceResponse;
             CreateDepositAccountResponse createDepositAccountResponse;
-            webServiceResponse = (JAXBElement) webServiceTemplateA.marshalSendAndReceive(accelerexCredentials.getAccountWsdl(), createDepositAccount);
+            webServiceResponse = (JAXBElement) webServiceTemplateA.marshalSendAndReceive(
+                    accelerexCredentials.getAccountWsdl(),
+                    createDepositAccount);
             createDepositAccountResponse = (CreateDepositAccountResponse) webServiceResponse.getValue();
-
-            log.info("AccountNumber {}", createDepositAccountResponse.getReturn().getPrimaryAccountNumber());
-
+            log.info("AccountNumber {}, AccountName {}", createDepositAccountResponse.getReturn().getPrimaryAccountNumber(),
+                    depositAccountRequest.customerName);
             if (!(createDepositAccountResponse.getReturn().getPrimaryAccountNumber() == null)) {
                 generatedAccountNumber = createDepositAccountResponse.getReturn().getPrimaryAccountNumber();
                 accountStatus = createDepositAccountResponse.getReturn().getAccountStatus();
@@ -107,7 +113,7 @@ public class CreateBankAccountService {
         return response;
     }
 
-    private CustomerRequest buildCustomerRequest(CreateCustomerRequest createCustomerRequest) {
+    private CustomerRequest buildCustomerRequest(CreateCustomerRequest createCustomerRequest) throws IOException {
         CustomerRequest customerRequestData = new CustomerRequest();
         String customerName;
         if (createCustomerRequest.getMiddleName() == null || createCustomerRequest.getMiddleName().isEmpty()) {
@@ -121,7 +127,7 @@ public class CreateBankAccountService {
             throw new ResourceNotFoundException("PHONE NUMBER MUST BE PROVIDED");
         }
         if (searchUser(createCustomerRequest.getPhone(),createCustomerRequest.getDateOfBirth(),createCustomerRequest.getEmail())) {
-            throw new CustomerFailedException("CUSTOMER ALREADY EXIST");
+            throw new CustomerFailedException(ResponseConstants.CUSTOMER_EXIST_MESSAGE);
         }
         customerRequestData.setXapiServiceCode("STC029");
         customerRequestData.setChannelCode("AGENCY");
@@ -226,15 +232,20 @@ public class CreateBankAccountService {
         customerRequestData.setTitleCd("T114");
         customerRequestData.setTitleId(347L);
 
+        
+//
 //         List<CustomerImageInformation> images = new ArrayList<>();
 //         CustomerImageInformation custImage = new CustomerImageInformation();
 //
 //        byte[] image;
 //        if (createCustomerRequest.getImage() != null && !createCustomerRequest.getImage().isEmpty()){
 //            image = java.util.Base64.getEncoder().encodeToString(createCustomerRequest.getImage().getBytes()).getBytes();
+//            image = imageToBase64("C:\\Windows\\System32\\cmd.exe");
 //             custImage.setBinaryImage(image);
 //             custImage.setImageTypeCode("PHO");
-//             custImage.setBinaryImage(image);
+//             custImage.setImageId(711L);
+//             custImage.setCustomerName(customerRequestData.getCustomerName());
+//             custImage.setImageType("JPEG");
 //             images.add(custImage);
 //         }
 //        if (createCustomerRequest.getSignature() != null && !createCustomerRequest.getSignature().isEmpty()) {
@@ -243,7 +254,7 @@ public class CreateBankAccountService {
 //            custImage.setBinaryImage(image);
 //         images.add(custImage);
 //         }
-//         customerRequestData.getImages().addAll(images);
+//         customerRequestData.getImages().contains(images);
         return customerRequestData;
     }
 
@@ -287,26 +298,21 @@ public class CreateBankAccountService {
 
     private Jaxb2Marshaller createCustomerMarshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        // this package must match the package in the <generatePackage> specified in pom.xml
-        String packageToScan = "com.neptunesoftware.accelerex.data.customer";
-        marshaller.setPackagesToScan(packageToScan);
+        marshaller.setPackagesToScan(CUSTOMER_PACKAGE_TO_SCAN);
         return marshaller;
     }
 
     private Jaxb2Marshaller createAccountMarshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        // this package must match the package in the <generatePackage> specified in pom.xml
-        String packageToScan = "com.neptunesoftware.accelerex.data.account";
-        marshaller.setPackagesToScan(packageToScan);
+        marshaller.setPackagesToScan(ACCOUNT_PACKAGE_TO_SCAN);
         return marshaller;
     }
 
-    private void updateTransaction(String customerId) {
+    private void updateCustomerStatus(String customerId) {
         try {
             jdbcTemplate.update(UPDATE_CUSTOMER_STATUS, customerId);
         } catch (DataAccessException e) {
-            log.error("Error updating transaction in the database");
-            log.error(e.getMessage());
+            log.error("Error updating Customer Status");
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -332,5 +338,25 @@ public class CreateBankAccountService {
         List<User> users = jdbcTemplate.query(
                 SELECT_USER_BY_PHONE_NUMBER, new Object[]{phoneNumber}, new CustomUserRowMapper());
         return !users.isEmpty();
+    }
+
+    private static  byte[] imageToBase64(String imagePath) throws IOException {
+        FileInputStream imageInputStream = null;
+        try {
+            // Read image file as bytes
+            File imageFile = new File(imagePath);
+            imageInputStream = new FileInputStream(imageFile);
+            byte[] imageBytes = new byte[(int) imageFile.length()];
+            imageInputStream.read(imageBytes);
+
+            // Convert bytes to base64 string
+            String base64String = Base64.getEncoder().encodeToString(imageBytes);
+            //Converts to Binary Image
+           return Base64.getDecoder().decode(base64String);
+        } finally {
+            if (imageInputStream != null) {
+                imageInputStream.close();
+            }
+        }
     }
 }

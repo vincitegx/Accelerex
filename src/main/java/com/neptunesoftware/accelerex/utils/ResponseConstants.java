@@ -4,8 +4,8 @@ public class ResponseConstants {
     public static final String CUSTOMER_EXIST_CODE ="";
     public static final String CUSTOMER_EXIST_MASSAGE ="Customer already exist";
     public static final String SUCCESS_CODE ="00";
-    public static final String SUCCESS_MESSAGE ="Successful";
-    public static final String CUSTOMER_EXIST_MESSAGE ="";
+    public static final String SUCCESS_MESSAGE ="Success";
+    public static final String CUSTOMER_EXIST_MESSAGE ="CUSTOMER ALREADY EXIST";
     public static final String WRONG_IMAGE_CODE ="";
     public static final String WEBSERVICE_UNAVAILABLE_MESSAGE ="Service unreachable";
     public static final String WEBSERVICE_UNAVAILABLE_CODE ="02";

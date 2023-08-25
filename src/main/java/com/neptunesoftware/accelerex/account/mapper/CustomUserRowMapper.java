@@ -10,12 +10,12 @@ public class CustomUserRowMapper implements RowMapper<User> {
     @Override
     public User mapRow(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
-        user.setFullName(rs.getString("AGENT_NAME"));
-        user.setAccountNumber(rs.getString("PRIMARY_ACCOUNT_NUMBER"));
-        user.setUserName(rs.getString("USERNAME"));
-        user.setEmailAddress(rs.getString("AGENT_EMAIL"));
+//        user.setFullName(rs.getString("AGENT_NAME"));
+//        user.setAccountNumber(rs.getString("PRIMARY_ACCOUNT_NUMBER"));
+//        user.setUserName(rs.getString("USERNAME"));
+        user.setEmailAddress(rs.getString("EMAIL"));
         user.setPhoneNumber(rs.getString("PHONE_NUMBER"));
-        user.setDataOfBirth(rs.getString("DATE_OF_BIRTH"));
+//        user.setDataOfBirth(rs.getString("DATE_OF_BIRTH"));
         return user;
     }
 }

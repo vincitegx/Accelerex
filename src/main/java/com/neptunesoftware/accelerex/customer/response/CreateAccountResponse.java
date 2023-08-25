@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateAccountResponse {
     public String accountNo;
-    public String accountId;
     public String accountStatus;
 }

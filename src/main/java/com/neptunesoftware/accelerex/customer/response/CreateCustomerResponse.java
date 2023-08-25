@@ -9,10 +9,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class CreateCustomerResponse {
     private String responseCode;
-    private String responseMessage;
+    private String userName;
+    private String customerName;
     private String customerId;
     private String customerNo;
-    private String accountStatus;
     private String accountNumber;
 
 }

@@ -43,18 +43,15 @@ public class AccountServices  {
 //    private static final String FUND_TRANSFER_JAXB_PACKAGE =  "com.neptunesoftware.accelerex.data.fundstransfer";
     
     public ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request) {
-        LinkBankAccountResponse response = new LinkBankAccountResponse();
         if (!accountRepository.findAccountByPhoneAndAccountNumber(request.getMobileNo(), request.getAccountNo())) {
              throw new AccountNotExistException("Account Does Not Exist");
         }
+        //Todo: Otp to verify account by sending a verification code to phone number linked to the account.
         String otp = generateOTP();
-        //Todo: API to verify otp
-//        accountRepository.linkedAccount("",request.getMobileNo(),request.getEmail(),request.getAccountNo());
-//        response.setAccountName(existingData.getAccountName());
-        response.setMobileNo(request.getMobileNo());
-        response.setEmail(request.getEmail());
-        response.setAccountNo(request.getAccountNo());
-        return new ApiResponse<>(ResponseConstants.SUCCESS_CODE, "Linked Successfully", response);
+        accountRepository.linkExistingAccountToAgentProfile(request);
+        return new ApiResponse<>(ResponseConstants.SUCCESS_CODE, "Linked Successfully",
+                new LinkBankAccountResponse(request.getUserName(),request.getAccountNo(),
+                        request.getAccountName(),request.getMobileNo(),request.getEmail()));
     }
     public BalanceResponse intraBankBalanceEnquiry(String accountNumber) {
         BalanceResponse response = balanceEnquiryService.balanceEnquiry(accountNumber);
