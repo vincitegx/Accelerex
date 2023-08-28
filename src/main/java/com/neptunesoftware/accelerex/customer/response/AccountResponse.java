@@ -1,15 +1,15 @@
 package com.neptunesoftware.accelerex.customer.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class CreateAccountResponse {
-    private String responseCode;
-    private CustomerData customerData;
+public class AccountResponse {
+    public String accountNo;
+    public String accountStatus;
 }

@@ -1,11 +1,11 @@
 package com.neptunesoftware.accelerex.customer.service;
 
-import com.neptunesoftware.accelerex.account.mapper.CustomUserRowMapper;
 import com.neptunesoftware.accelerex.config.AccelerexCredentials;
 import com.neptunesoftware.accelerex.customer.request.CreateCustomerRequest;
 import com.neptunesoftware.accelerex.customer.request.DepositAccountRequest;
+import com.neptunesoftware.accelerex.customer.response.AccountResponse;
 import com.neptunesoftware.accelerex.customer.response.CreateAccountResponse;
-import com.neptunesoftware.accelerex.customer.response.CreateCustomerResponse;
+import com.neptunesoftware.accelerex.customer.response.CustomerData;
 import com.neptunesoftware.accelerex.data.account.CreateDepositAccount;
 import com.neptunesoftware.accelerex.data.account.CreateDepositAccountResponse;
 import com.neptunesoftware.accelerex.data.account.DepositAccountRequestData;
@@ -14,9 +14,7 @@ import com.neptunesoftware.accelerex.data.customer.CustomerContactInformation;
 import com.neptunesoftware.accelerex.data.customer.CustomerRequest;
 import com.neptunesoftware.accelerex.exception.AccountServiceException;
 import com.neptunesoftware.accelerex.exception.CustomerFailedException;
-import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
-import com.neptunesoftware.accelerex.user.User;
-import com.neptunesoftware.accelerex.utils.ResponseConstants;
+import com.neptunesoftware.accelerex.exception.MissingParameterException;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -36,8 +34,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static com.neptunesoftware.accelerex.account.sql.SqlQueries.*;
-import static com.neptunesoftware.accelerex.utils.ResponseConstants.SUCCESS_MESSAGE;
+import static com.neptunesoftware.accelerex.account.sql.SqlQueries.UPDATE_CUSTOMER_STATUS;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -47,8 +44,8 @@ public class CreateBankAccountService {
     private final JdbcTemplate jdbcTemplate;
     private static final String ACCOUNT_PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.account";
     private static final String CUSTOMER_PACKAGE_TO_SCAN = "com.neptunesoftware.accelerex.data.customer";
-    public CreateCustomerResponse createCustomer(CreateCustomerRequest request) {
-        CreateAccountResponse accountResponse = null;
+    public CreateAccountResponse createCustomer(CreateCustomerRequest request) {
+        AccountResponse accountResponse = null;
         String customerId;
         String customerNumber;
         String customerName;
@@ -69,20 +66,27 @@ public class CreateBankAccountService {
                 updateCustomerStatus(customerNumber);
                 accountResponse = createDepositAccount(
                         new DepositAccountRequest(customerNumber, customerId, customerRequestData.getCustomerName()));
-//                 saveCustomerRecord(request,customerRequestData.getCustomerName(),accountResponse.accountNo);
-//                 log.info("Customer Record Saved To Database");
-//                 log.info(searchUser("08074757585","17/01/1991","wer2e@neptunegroup.com"));
             }
 
         } catch (Exception e) {
             throw new CustomerFailedException(e.getMessage());
         }
 
-        return new CreateCustomerResponse(SUCCESS_MESSAGE, request.getUserName(),
-                customerName, customerId, customerNumber, accountResponse.getAccountNo());
+        assert accountResponse != null;
+        return CreateAccountResponse.builder()
+                .responseCode("00")
+                .customerData(CustomerData.builder()
+                        .accountName(customerName)
+                        .accountNumber(accountResponse.getAccountNo())
+                        .phoneNumber(request.getPhone())
+                        .dateOfBirth(request.getDateOfBirth())
+                        .emailAddress(request.getEmail())
+                        .userName(request.getUserName())
+                        .build())
+                .build();
     }
-    private CreateAccountResponse createDepositAccount(DepositAccountRequest depositAccountRequest) {
-        CreateAccountResponse response = new CreateAccountResponse();
+    private AccountResponse createDepositAccount(DepositAccountRequest depositAccountRequest) {
+        AccountResponse response = new AccountResponse();
         String generatedAccountNumber;
         String accountStatus;
         try {
@@ -116,19 +120,30 @@ public class CreateBankAccountService {
     private CustomerRequest buildCustomerRequest(CreateCustomerRequest createCustomerRequest) throws IOException {
         CustomerRequest customerRequestData = new CustomerRequest();
         String customerName;
+        if (createCustomerRequest.getFirstName() == null || createCustomerRequest.getFirstName().isEmpty()) {
+            throw new MissingParameterException("FIRST NAME NOT PROVIDE");
+        }
+        if (createCustomerRequest.getLastName() == null || createCustomerRequest.getLastName().isEmpty()) {
+            throw new MissingParameterException("LAST NAME NOT PROVIDED");
+        }
+        if (createCustomerRequest.getGender() == null || createCustomerRequest.getGender().isEmpty()) {
+            throw new MissingParameterException("GENDER NOT PROVIDED, SHOULD BE MALE(M) OR FEMALE(F)");
+        }
+        if (createCustomerRequest.getDateOfBirth() == null || createCustomerRequest.getDateOfBirth().isEmpty()) {
+            throw new MissingParameterException("DATE OF BIRTH NOT PROVIDED");
+        }
         if (createCustomerRequest.getMiddleName() == null || createCustomerRequest.getMiddleName().isEmpty()) {
             customerName = createCustomerRequest.getFirstName() + " " + createCustomerRequest.getLastName();
         } else {
-            customerName = createCustomerRequest.getFirstName() + " " +
-                    createCustomerRequest.getMiddleName() + " " +
+            customerName = createCustomerRequest.getFirstName() + " " + createCustomerRequest.getMiddleName() + " " +
                     createCustomerRequest.getLastName();
         }
         if (createCustomerRequest.getPhone() == null || createCustomerRequest.getPhone().isEmpty()){
-            throw new ResourceNotFoundException("PHONE NUMBER MUST BE PROVIDED");
+            throw new MissingParameterException("PHONE NUMBER MUST BE PROVIDED");
         }
-        if (searchUser(createCustomerRequest.getPhone(),createCustomerRequest.getDateOfBirth(),createCustomerRequest.getEmail())) {
-            throw new CustomerFailedException(ResponseConstants.CUSTOMER_EXIST_MESSAGE);
-        }
+        //Todo: Customer validation for cases where a parent opens an account for a minor
+        //Check will be a combination of customer's phone number and dob
+
         customerRequestData.setXapiServiceCode("STC029");
         customerRequestData.setChannelCode("AGENCY");
         customerRequestData.setChannelId(17L);
@@ -144,8 +159,8 @@ public class CreateBankAccountService {
 
         //Contact Details
         List<CustomerContactInformation> contacts = new ArrayList<>();
-        CustomerContactInformation custContact = new CustomerContactInformation();
         if (createCustomerRequest.getPhone() != null && !createCustomerRequest.getPhone().isEmpty()) {
+            CustomerContactInformation custContact = new CustomerContactInformation();
             custContact.setContactDetails(createCustomerRequest.getPhone());
             custContact.setContactMode("CM100");
             custContact.setContactModeCategoryCode("CM100");
@@ -153,17 +168,17 @@ public class CreateBankAccountService {
             custContact.setCustomerShortName(createCustomerRequest.getFirstName());
             custContact.setStatus("S");
             contacts.add(custContact);
-        } else {
-            custContact.setCustomerShortName(createCustomerRequest.getFirstName());
-            custContact.setContactDetails(createCustomerRequest.getEmail());
-            custContact.setContactMode("CM101");
-            custContact.setContactModeCategoryCode("CM101");
-            custContact.setContactModeTypeId(201L);
-            custContact.setStatus("A");
-            contacts.add(custContact);
         }
-
-//        customerRequestData.getContacts().add(custContact);
+        if (createCustomerRequest.getEmail() != null && !createCustomerRequest.getEmail().isEmpty()){
+            CustomerContactInformation emailContact = new CustomerContactInformation();
+            emailContact.setCustomerShortName(createCustomerRequest.getFirstName());
+            emailContact.setContactDetails(createCustomerRequest.getEmail());
+            emailContact.setContactMode("CM101");
+            emailContact.setContactModeCategoryCode("CM101");
+            emailContact.setContactModeTypeId(201L);
+            emailContact.setStatus("A");
+            contacts.add(emailContact);
+        }
         customerRequestData.getContacts().addAll(contacts);
         customerRequestData.setAddressCity(createCustomerRequest.getCity());
         customerRequestData.setAddressCountryId(682L);
@@ -232,8 +247,7 @@ public class CreateBankAccountService {
         customerRequestData.setTitleCd("T114");
         customerRequestData.setTitleId(347L);
 
-        
-//
+//        IMAGE DETAILS
 //         List<CustomerImageInformation> images = new ArrayList<>();
 //         CustomerImageInformation custImage = new CustomerImageInformation();
 //
@@ -317,42 +331,27 @@ public class CreateBankAccountService {
         }
     }
 
-    private void saveCustomerRecord(CreateCustomerRequest customerRequest, String customerName, String generatedAccountNumber) {
-        try {
-            jdbcTemplate.update(SAVE_REGISTRATION_DETAILS,customerRequest.getUserName(),customerName,customerRequest.getEmail(),
-                    customerRequest.getPhone(),customerRequest.getDateOfBirth(),
-                    generatedAccountNumber);
-        } catch (DataAccessException e) {
-            log.error("Error Saving record To DB");
-            log.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-    private boolean searchUser(String phoneNumber, String dateOfBirth, String email) {
-        List<User> users = jdbcTemplate.query(SELECT_USER_BY_PHONE_NUMBER_EMAIL_DOB,
-                new Object[]{phoneNumber, dateOfBirth, email},
-                new CustomUserRowMapper());
-        return !users.isEmpty();
-    }
-    public boolean fetchUserByPhone(String phoneNumber) {
-        List<User> users = jdbcTemplate.query(
-                SELECT_USER_BY_PHONE_NUMBER, new Object[]{phoneNumber}, new CustomUserRowMapper());
-        return !users.isEmpty();
-    }
+//    private void saveCustomerRecord(CreateCustomerRequest customerRequest, String customerName, String generatedAccountNumber) {
+//        try {
+//            jdbcTemplate.update(SAVE_REGISTRATION_DETAILS,customerRequest.getUserName(),customerName,customerRequest.getEmail(),
+//                    customerRequest.getPhone(),customerRequest.getDateOfBirth(),
+//                    generatedAccountNumber);
+//        } catch (DataAccessException e) {
+//            log.error("Error Saving record To DB");
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e.getMessage());
+//        }
+//    }
 
-    private static  byte[] imageToBase64(String imagePath) throws IOException {
+    private static byte[] imageToBase64(String imagePath) throws IOException {
         FileInputStream imageInputStream = null;
         try {
-            // Read image file as bytes
             File imageFile = new File(imagePath);
             imageInputStream = new FileInputStream(imageFile);
             byte[] imageBytes = new byte[(int) imageFile.length()];
             imageInputStream.read(imageBytes);
-
-            // Convert bytes to base64 string
             String base64String = Base64.getEncoder().encodeToString(imageBytes);
-            //Converts to Binary Image
-           return Base64.getDecoder().decode(base64String);
+            return Base64.getDecoder().decode(base64String);
         } finally {
             if (imageInputStream != null) {
                 imageInputStream.close();

@@ -18,14 +18,22 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ApiResponse> handleTransactionNotFoundException(TransactionNotFoundException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public final ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
     }
-//    @ExceptionHandler(UsernameNotFoundException.class)
-//    public final ResponseEntity<ApiResponse> handleUsernameNotFoundException(UsernameNotFoundException exception){
-//        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
-//    }
+
+    @ExceptionHandler(MissingParameterException.class)
+    public final ResponseEntity<ApiResponse> handleResourceNotFoundException(MissingParameterException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccountExistException.class)
+    public final ResponseEntity<ApiResponse> handleResourceNotFoundException(AccountExistException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(CustomerFailedException.class)
     public final ResponseEntity<ApiResponse> handleCustomerFailedException(CustomerFailedException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);

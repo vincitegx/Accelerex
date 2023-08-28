@@ -10,10 +10,8 @@ import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
 import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
 import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
 import com.neptunesoftware.accelerex.data.fundstransfer.*;
-import com.neptunesoftware.accelerex.exception.AccountNotExistException;
-import com.neptunesoftware.accelerex.exception.AccountServiceException;
-import com.neptunesoftware.accelerex.exception.BalanceEnquiryException;
-import com.neptunesoftware.accelerex.exception.FundTransferException;
+import com.neptunesoftware.accelerex.exception.*;
+import com.neptunesoftware.accelerex.user.User;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import com.neptunesoftware.accelerex.utils.ResponseConstants;
 import jakarta.xml.bind.JAXBElement;
@@ -35,32 +33,43 @@ import static com.neptunesoftware.accelerex.utils.Cypher.deCypher;
 @RequiredArgsConstructor
 @Log4j2
 public class AccountServices  {
-
     private final AccountRepository accountRepository;
     private final BalanceEnquiryService balanceEnquiryService;
     private final AccelerexCredentials accelerexCredentials;
     private static final String ACCOUNT_JAXB_PACKAGE = "com.neptunesoftware.accelerex.data.account";
 //    private static final String FUND_TRANSFER_JAXB_PACKAGE =  "com.neptunesoftware.accelerex.data.fundstransfer";
-    
+
     public ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request) {
-        if (!accountRepository.findAccountByPhoneAndAccountNumber(request.getMobileNo(), request.getAccountNo())) {
-             throw new AccountNotExistException("Account Does Not Exist");
+        if (request.getAccountNo() == null || request.getAccountNo().isEmpty()) {
+            throw new ResourceNotFoundException("ACCOUNT NUMBER NOT PROVIDED");
         }
-        //Todo: Otp to verify account by sending a verification code to phone number linked to the account.
-        String otp = generateOTP();
-        accountRepository.linkExistingAccountToAgentProfile(request);
+        if (request.getUserName() == null || request.getUserName().isEmpty()) {
+            throw new ResourceNotFoundException("USERNAME NOT PROVIDED");
+        }
+        User user = accountRepository.findByAccountNumber(request.getAccountNo());
+        if (user.getAccountNumber() != null) {
+            log.info("ACCOUNT_NUMBER {} PHONE_NUMBER {}", user.getAccountNumber(), user.getPhoneNumber());
+            //Todo: Otp to verify account by sending a verification code to phone number linked to the account.
+            if (accountRepository.findByUserName(request.getUserName())) {
+                log.info("USERNAME ALREADY EXIST");
+                throw new AccountExistException("PROFILE ALREADY EXIST");
+            }
+            accountRepository.linkExistingAccountToAgentProfile(user,request.getUserName());
+            log.info("RECORD SAVED TO DB");
+        }
         return new ApiResponse<>(ResponseConstants.SUCCESS_CODE, "Linked Successfully",
-                new LinkBankAccountResponse(request.getUserName(),request.getAccountNo(),
-                        request.getAccountName(),request.getMobileNo(),request.getEmail()));
+                new LinkBankAccountResponse(request.getUserName(), user.getAccountNumber(), user.getFullName(),
+                        request.getMobileNo(), request.getEmail()));
     }
+
     public BalanceResponse intraBankBalanceEnquiry(String accountNumber) {
         BalanceResponse response = balanceEnquiryService.balanceEnquiry(accountNumber);
-            log.info("Available Balance {}", response.getAvailableBalance());
+            log.info("AVAILABLE BALANCE {}", response.getAvailableBalance());
             return new BalanceResponse(response.getAccountNo(), response.getAccountName(), response.getAvailableBalance(),response.getResponseCode(),response.getMessage());
         }
     public NameEnquiryResponse IntraBankNameEnquiry(String accountNumber) {
         BalanceResponse response = balanceEnquiryService.balanceEnquiry(accountNumber);
-        log.info("AccountName {}",response.getAccountName());
+        log.info("ACCOUNT NAME {}",response.getAccountName());
         return NameEnquiryResponse.builder().accountName(response.getAccountName()).accountNumber(response.getAccountNo()).build();
     }
 
@@ -99,7 +108,6 @@ public class AccountServices  {
         validateTransferRequest(request.getSourceAccount(),request.getBeneficiaryAccountNo(),request.getAmount());
         InterBankTransferByAccountResponse apiResponse;
         try {
-
         WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerTransferAndNameEnquiry());
         InterBankTransferByAcctRequestData requestData =  buildRequestDataForInterBankTransfer(request);
         InterBankTransferByAccount interBankTransferByAccount =  new InterBankTransferByAccount();
@@ -144,7 +152,7 @@ public class AccountServices  {
         } catch (Exception e) {
             throw new AccountServiceException("Error Fetching Details");
         }
-        log.info("AccountName is {}", accountName);
+        log.info("ACCOUNT-NAME {}", accountName);
         return  true;
     }
 
@@ -174,12 +182,6 @@ public class AccountServices  {
         return date.format(formatter);
     }
 
-//    private boolean verifySmsToken(String accountNumber, String smsToken) {
-//        String token = accountRepository.findTokenByAccountNumber(accountNumber);
-//        if (!(token.equals(smsToken))) throw new AccountServiceException("Incorrect token" + " for account: " + accountNumber);
-//        return true;
-//    }
-
     private void validateGlTrn(String accountNo, BigDecimal amount) {
         balanceEnquiryService.isAccountSufficient(accountNo,amount);
     }
@@ -191,7 +193,6 @@ public class AccountServices  {
     private boolean validateAccount(String accountNumber) {
       return   existedByAccount(accountNumber);
     }
-
     private Marshaller marshallerTransferAndNameEnquiry() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         // this package must match the package in the <generatePackage> specified in
@@ -207,11 +208,9 @@ public class AccountServices  {
         balEnqRequest.setTargetAccountNumber(accountNumber);
         return balEnqRequest;
     }
-
     public String generateOTP() {
         return RandomStringUtils.randomNumeric(4);
     }
-
 
     private NameInquiryRequestData buildRequestForNameInquiry(String accountNumber) {
         NameInquiryRequestData nameInquiryRequestData = new NameInquiryRequestData();
@@ -237,7 +236,6 @@ public class AccountServices  {
         interBankTransferByAcctRequestData.setTxnCurrencyCode(interBankTransferRequest.getCurrencyCode());
         return interBankTransferByAcctRequestData;
     }
-
     private void validateTransferRequest(String senderAccountNumber, String receiverAccountNumber, BigDecimal amount) {
 
         if (!validateAccount(senderAccountNumber)) {

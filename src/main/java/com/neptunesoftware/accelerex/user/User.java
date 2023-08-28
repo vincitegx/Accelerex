@@ -36,7 +36,6 @@ public class User implements UserDetails {
     private String authority;
     private String bvn;
     private String accountNumber;
-    //private String accountId
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
@@ -78,7 +77,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return emailAddress;
+        return userName;
     }
 
     @Override

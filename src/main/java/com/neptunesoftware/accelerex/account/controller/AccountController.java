@@ -24,7 +24,6 @@ public class AccountController {
 
     @PostMapping("linkBankAccountToAgent")
     @ResponseStatus(HttpStatus.CREATED)
-    @Hidden
        public ApiResponse<LinkBankAccountResponse> linkingBankAccountToExistingProfile(@RequestBody LinkBankAccountRequest request) {
            return accountServices.linkBankAccountToAgent(request);
        }

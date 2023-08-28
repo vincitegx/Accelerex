@@ -2,9 +2,10 @@ package com.neptunesoftware.accelerex.customer.controller;
 
 import com.neptunesoftware.accelerex.account.mapper.CustomUserRowMapper;
 import com.neptunesoftware.accelerex.customer.request.CreateCustomerRequest;
-import com.neptunesoftware.accelerex.customer.response.CreateCustomerResponse;
+import com.neptunesoftware.accelerex.customer.response.CreateAccountResponse;
 import com.neptunesoftware.accelerex.customer.service.CreateBankAccountService;
 import com.neptunesoftware.accelerex.user.User;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,16 +26,15 @@ public class CreateCustomerAccountController {
     private final CreateBankAccountService customerAccountService;
     private final JdbcTemplate jdbcTemplate;
     @PostMapping("create")
-    public ResponseEntity<CreateCustomerResponse> createCustomer(@RequestBody CreateCustomerRequest request) {
+    public ResponseEntity<CreateAccountResponse> createCustomer(@RequestBody CreateCustomerRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(customerAccountService.createCustomer(request));
     }
     @GetMapping("/findUser")
     @ResponseStatus(HttpStatus.OK)
+    @Hidden
     public User findUser(@RequestParam String accountNumber) {
        User user = jdbcTemplate.queryForObject(FIND_AGENT_DETAILS_WITH_ACCOUNT_NUMBER, new CustomUserRowMapper(),accountNumber);
         assert user != null;
-        log.info(user.getPhoneNumber());
         return  user;
-//        return jdbcTemplate.queryForObject(FIND_AGENT_DETAILS_WITH_ACCOUNT_NUMBER, new Object[]{accountNumber}, new CustomUserRowMapper());
     }
 }

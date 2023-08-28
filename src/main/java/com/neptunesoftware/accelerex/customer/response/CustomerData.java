@@ -9,7 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateAccountResponse {
-    private String responseCode;
-    private CustomerData customerData;
+public class CustomerData {
+    private String userName;
+    private String accountName;
+    private String accountNumber;
+    private String phoneNumber;
+    private String emailAddress;
+    private String dateOfBirth;
 }
