@@ -1,3 +1,4 @@
+
 package com.neptunesoftware.accelerex.config;
 
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,16 @@ public class SecurityConfig {
     private final JWTFilter jwtAuthFilter;
     private final PasswordEncoderConfig passwordEncoderConfig;
     private final CustomUserDetailService userDetailsService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(
+                        .requestMatchers(
                                 "/api/v3/users/**",
+                                "api/v1/customer/**",
+                                "api/v3/accounts/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -37,9 +41,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html"
-                                ).permitAll()
-                                .anyRequest().authenticated()
-                        )
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(passwordEncoderConfig))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -60,3 +64,4 @@ public class SecurityConfig {
         return authProvider;
     }
 }
+

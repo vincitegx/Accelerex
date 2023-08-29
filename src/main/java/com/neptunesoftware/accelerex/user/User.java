@@ -21,8 +21,9 @@ public class User implements UserDetails {
     @JsonIgnore
     private Integer id;
     private String fullName;
-
+    private String userName;
     private String emailAddress;
+    private String dataOfBirth;
     @JsonIgnore
     private String password;
     private String phoneNumber;
@@ -35,7 +36,6 @@ public class User implements UserDetails {
     private String authority;
     private String bvn;
     private String accountNumber;
-    //private String accountId;
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
 
@@ -48,13 +48,13 @@ public class User implements UserDetails {
                 DATE_TIME_FORMATTER);
         this.updatedAt = createdAt;
         this.isNotBlocked = isNotBlocked;
-        this.phoneNumber= phoneNumber;
+        this.phoneNumber = phoneNumber;
     }
 
     /**
      * This constructor is for test purpose. Id must always be auto generated
      */
-    public User(Integer id,String fullName, String emailAddress, String password, boolean isNotBlocked) {
+    public User(Integer id, String fullName, String emailAddress, String password, boolean isNotBlocked) {
         this.id = id;
         this.fullName = fullName;
         this.emailAddress = emailAddress;
@@ -77,7 +77,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return emailAddress;
+        return userName;
     }
 
     @Override

@@ -1,36 +1,26 @@
 package com.neptunesoftware.accelerex.user;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.neptunesoftware.accelerex.account.Account;
-import com.neptunesoftware.accelerex.account.AccountServices;
+import com.neptunesoftware.accelerex.account.service.AccountServices;
 import com.neptunesoftware.accelerex.config.JWTService;
-import com.neptunesoftware.accelerex.config.JwtProvider;
 import com.neptunesoftware.accelerex.config.PasswordEncoderConfig;
-import com.neptunesoftware.accelerex.exception.*;
+import com.neptunesoftware.accelerex.exception.InvalidAuthenticationException;
+import com.neptunesoftware.accelerex.exception.ResourceNotFoundException;
+import com.neptunesoftware.accelerex.exception.UserNotFoundException;
 import com.neptunesoftware.accelerex.user.repo.UserRepository;
-import com.neptunesoftware.accelerex.user.requests.ChangePasswordRequest;
 import com.neptunesoftware.accelerex.user.requests.LoginRequest;
 import com.neptunesoftware.accelerex.user.requests.UserAuthenticationRequests;
-import com.neptunesoftware.accelerex.user.requests.UserRegistrationRequest;
 import com.neptunesoftware.accelerex.user.response.JwtAuthResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Log4j2
@@ -105,7 +95,7 @@ public class UserService {
 //        updateUser(existingUser);
 //    }
 
-//    public User getUserById(int userId){
+    //    public User getUserById(int userId){
 //        Optional<User> existingUser = userRepository.findById(userId);
 //        if(existingUser.isEmpty()){
 //            throw new ResourceNotFoundException("user not found");

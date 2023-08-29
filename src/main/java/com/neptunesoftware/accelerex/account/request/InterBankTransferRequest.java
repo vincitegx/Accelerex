@@ -2,6 +2,8 @@ package com.neptunesoftware.accelerex.account.request;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class InterBankTransferRequest {
     private String externalRefNo;
@@ -10,7 +12,7 @@ public class InterBankTransferRequest {
     private String beneficiaryBankCode;
     private String beneficiaryAccountNo;
     private String beneficiaryName;
-    private String amount;
+    private BigDecimal amount;
     private String currencyCode;
     private String sourceAccount;
     private String sourceAccountName;

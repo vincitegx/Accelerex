@@ -10,6 +10,7 @@ package com.neptunesoftware.accelerex.data.fundstransfer;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 
@@ -36,6 +37,7 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlType(name = "externalAccountNameInquiry", propOrder = {
     "arg0"
 })
+@XmlRootElement
 public class ExternalAccountNameInquiry {
 
     protected NameInquiryRequestData arg0;

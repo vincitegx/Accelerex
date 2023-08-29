@@ -1,3 +1,4 @@
+
 package com.neptunesoftware.accelerex.config;
 
 import lombok.AllArgsConstructor;
@@ -20,3 +21,4 @@ public class CustomUserDetailService {
         return new InMemoryUserDetailsManager(user);
     }
 }
+

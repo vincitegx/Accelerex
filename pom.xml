@@ -113,6 +113,21 @@
 			<artifactId>jaxb-api</artifactId>
 			<version>2.2.11</version>
 		</dependency>
+
+		<!-- JAXB API -->
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+
+		<!-- JAXB Runtime Implementation -->
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
@@ -144,7 +159,7 @@
 <!--					</execution>-->
 <!--				</executions>-->
 <!--				<configuration>-->
-<!--					<generatePackage>com.neptunesoftware.accelerex.data.account</generatePackage>-->
+<!--					<generatePackage>com.neptunesoftware.accelerex.data.transaction</generatePackage>-->
 <!--					<generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
 <!--					<schemaDirectory>${project.basedir}/src/main/resources/wsdl</schemaDirectory>-->
 <!--					<schemaIncludes>-->
@@ -168,7 +183,7 @@
 <!--					</execution>-->
 <!--				</executions>-->
 <!--				<configuration>-->
-<!--					<generatePackage>com.neptunesoftware.accelerex.data.FundTransfer</generatePackage>-->
+<!--					<generatePackage>com.neptunesoftware.accelerex.data.transaction</generatePackage>-->
 <!--					<generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
 <!--					<schemaDirectory>${project.basedir}/src/main/resources/wsdl</schemaDirectory>-->
 <!--					<schemaIncludes>-->
