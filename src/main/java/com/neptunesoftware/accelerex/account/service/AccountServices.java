@@ -10,6 +10,9 @@ import com.neptunesoftware.accelerex.data.account.BalanceEnquiryRequestData;
 import com.neptunesoftware.accelerex.data.account.Balanceenquiry;
 import com.neptunesoftware.accelerex.data.account.BalanceenquiryResponse;
 import com.neptunesoftware.accelerex.data.fundstransfer.*;
+import com.neptunesoftware.accelerex.data.transaction.PostDepositToGLAccountTransfer;
+import com.neptunesoftware.accelerex.data.transaction.PostDepositToGLAccountTransferResponse;
+import com.neptunesoftware.accelerex.data.transaction.XAPIBaseTxnRequestData;
 import com.neptunesoftware.accelerex.exception.*;
 import com.neptunesoftware.accelerex.user.User;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
@@ -26,6 +29,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 import static com.neptunesoftware.accelerex.utils.Cypher.deCypher;
 
@@ -37,6 +41,7 @@ public class AccountServices  {
     private final BalanceEnquiryService balanceEnquiryService;
     private final AccelerexCredentials accelerexCredentials;
     private static final String ACCOUNT_JAXB_PACKAGE = "com.neptunesoftware.accelerex.data.account";
+    private static final String TRANSACTION_JAXB_PACKAGE = "com.neptunesoftware.accelerex.data.transaction";
 //    private static final String FUND_TRANSFER_JAXB_PACKAGE =  "com.neptunesoftware.accelerex.data.fundstransfer";
 
     public ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request) {
@@ -157,24 +162,77 @@ public class AccountServices  {
     }
 
     public DepositToGLResponse depositToGL(DepositToGlRequest request) {
-        String processingDate =  formatDate(LocalDate.now());
-        validateGlTrn(request.getSourceAccountNumber(),request.getAmount());
-//        XAPIBaseTxnRequestData txnRequestData = createRequestData(request,processingDate);
-//        PostDepositToGLAccountTransfer depositToGLAccountTransfer = new PostDepositToGLAccountTransfer();
-//        depositToGLAccountTransfer.setArg0(txnRequestData);
-//
-//        log.info("Initiating deposit to GL of amount {}", request.getAmount());
-//
-//        JAXBElement response;
-//        try {
-//            response = (JAXBElement) this.webServiceTemplate.marshalSendAndReceive(
-//                    TXN_PROCESS_WEBSERVICE, depositToGLAccountTransfer);
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//            throw new FundTransferException("An error occurred while performing deposit to GL operation");
-//        }
-//        return (PostDepositToGLAccountTransferResponse) response.getValue();
-        return null;
+        validateGlTrn(request.getSourceAccountNumber(), request.getAmount());
+        log.info("Initiating DepositToGL Transfer with amount {}", request.getAmount());
+        String responseCode;
+        String transactionAmount;
+        String accountNumber;
+        String transactionReference;
+        String retrievalReference;
+        String transactionCurrencyCode;
+        String txnJournalId;
+        try {
+            XAPIBaseTxnRequestData txnRequestData = createRequestData(request);
+            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerTransaction());
+            PostDepositToGLAccountTransfer depositToGLAccountTransfer = new PostDepositToGLAccountTransfer();
+            depositToGLAccountTransfer.setArg0(txnRequestData);
+            PostDepositToGLAccountTransferResponse webServiceResponse;
+
+            JAXBElement response = (JAXBElement) webServiceTemplate.marshalSendAndReceive(
+                    accelerexCredentials.getTransactionWsdl(), depositToGLAccountTransfer);
+            webServiceResponse = (PostDepositToGLAccountTransferResponse) response.getValue();
+                if(!Objects.equals(webServiceResponse.getReturn().getResponseCode(), "00")){
+                    throw new TransferException("FAILED TO DEPOSIT TO GL ACCOUNT");
+                }
+                responseCode =  webServiceResponse.getReturn().getResponseCode();
+                transactionAmount = String.valueOf(webServiceResponse.getReturn().getTransactionAmount());
+                accountNumber = webServiceResponse.getReturn().getPrimaryAccountNumber();
+                transactionReference = webServiceResponse.getReturn().getTxnReference();
+                transactionCurrencyCode = webServiceResponse.getReturn().getTransactionCurrencyCode();
+                txnJournalId = String.valueOf(webServiceResponse.getReturn().getTxnJournalId());
+                retrievalReference = webServiceResponse.getReturn().getRetrievalReferenceNumber();
+                log.info("TRANSACTION-REF {} ACCOUNT-NUMBER {} TRANSACTION-AMOUNT {}",transactionReference,accountNumber,transactionAmount);
+        } catch (Exception e) {
+            throw new TransferException(e.getMessage());
+        }
+        return DepositToGLResponse.builder()
+                .responseCode(responseCode)
+                .depositToGlResponseData(DepositToGlResponseData.builder()
+                        .transactionReference(transactionReference)
+                        .transactionAmount(transactionAmount)
+                        .accountNumber(accountNumber)
+                        .retrievalReference(retrievalReference)
+                        .transactionCurrencyCode(transactionCurrencyCode)
+                        .txnJournalId(txnJournalId)
+                        .build())
+                .build();
+    }
+    private XAPIBaseTxnRequestData createRequestData(DepositToGlRequest request){
+        XAPIBaseTxnRequestData transactionData = new XAPIBaseTxnRequestData();
+        transactionData.setXAPIServiceCode("TXN025");
+        transactionData.setAmount(request.getAmount());
+        transactionData.setChannelCode(accelerexCredentials.getChannelCode());
+        transactionData.setChannelId(Long.valueOf(accelerexCredentials.getChannelId()));
+        transactionData.setCurrBUId(-99L);
+        transactionData.setLocalCcyId(566L);
+        transactionData.setReference("SEP909090123");
+        transactionData.setResponse("0");
+        transactionData.setReversalIndicator("N");
+        transactionData.setTransmissionTime(123456789L);
+        transactionData.setUserId(-99L);
+        transactionData.setUserLoginId("SYSTEM");
+        transactionData.setUserRoleId(-99L);
+        transactionData.setValidXapiRequest(true);
+        transactionData.setAcctNo(request.getSourceAccountNumber());
+        transactionData.setContraAcctNo("1-01-01-001-1-30-03-01");
+        transactionData.setContraGLAccountNumber("");
+        transactionData.setOrgBusinessUnitId(-99L);
+        transactionData.setTxnAmount(request.getAmount());
+        transactionData.setTxnCurrencyCode("NGN");
+        transactionData.setTxnDate("11-12-2021");
+        transactionData.setTxnDescription("UPGRADE TEST");
+        transactionData.setValueDate("11-12-2021");
+        return transactionData;
     }
 
     private static String formatDate(LocalDate date) {
@@ -272,6 +330,11 @@ public class AccountServices  {
     private Marshaller marshallerB() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         marshaller.setPackagesToScan(ACCOUNT_JAXB_PACKAGE);
+        return marshaller;
+    }
+    private Marshaller marshallerTransaction() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setPackagesToScan(TRANSACTION_JAXB_PACKAGE);
         return marshaller;
     }
 }

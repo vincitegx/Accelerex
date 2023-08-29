@@ -23,6 +23,11 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException exception){
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(TransferException.class)
+    public final ResponseEntity<ApiResponse> handleResourceNotFoundException(TransferException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
 
     @ExceptionHandler(MissingParameterException.class)
     public final ResponseEntity<ApiResponse> handleResourceNotFoundException(MissingParameterException exception){

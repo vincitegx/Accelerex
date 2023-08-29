@@ -13,7 +13,6 @@ public class DepositToGlRequest {
     private String beneficiaryAccountNumber;
     private String beneficiaryName;
     private String beneficiaryBankID;
-
     private BigDecimal amount;
 
     private String transactionFee;
@@ -22,7 +21,7 @@ public class DepositToGlRequest {
 
     private String narration;
     @JsonIgnore
-    private String referenceNo;
+    private String transactionReferenceNo;
     private String totalTransactionAmount;
     private String bankName;
 

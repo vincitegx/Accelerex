@@ -7,9 +7,9 @@ import com.neptunesoftware.accelerex.account.response.*;
 import com.neptunesoftware.accelerex.account.service.AccountServices;
 import com.neptunesoftware.accelerex.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v3/accounts")
-@Log4j2
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Account")
 public class AccountController {
        private final AccountServices accountServices;
@@ -45,19 +45,12 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.interBankTransfer(request));
     }
 
-//    @PostMapping("accountInfo")
-//    @ResponseStatus(HttpStatus.OK)
-//    public AccountInfoResponseDto accountInfo(@RequestBody InfoRequest request) {
-//        return accountInfoService.getAccountInformation(request);
-//    }
-
     @PostMapping("depositToGLAccount")
-    @Hidden
     public ResponseEntity<DepositToGLResponse> depositToGL(@RequestBody DepositToGlRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.depositToGL(request));
     }
     @GetMapping("accountExist/{accountNumber}")
-//    @Hidden
+    @Hidden
     public ResponseEntity<Boolean>  accountExist(@PathVariable("accountNumber") final String accountNumber) {
         return ResponseEntity.status(HttpStatus.OK).body(accountServices.existedByAccount(accountNumber));
     }

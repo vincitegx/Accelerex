@@ -45,9 +45,8 @@ public class BalanceEnquiryService {
             responseCode = balanceenquiryResponse.getReturn().getResponseCode();
             accountName = balanceenquiryResponse.getReturn().getTargetAccountName();
             accountNo = balanceenquiryResponse.getReturn().getTargetAccountNumber();
-            log.info(responseCode);
             if (!responseCode.equals("00")) {
-                throw new BalanceEnquiryException(balanceenquiryResponse.getReturn().getResponseCode(),"Account Not Found");
+                throw new BalanceEnquiryException(balanceenquiryResponse.getReturn().getResponseCode(),"INVALID ACCOUNT NUMBER");
             } else {
                 response.setAvailableBalance(availableBalance);
                 response.setAccountName(accountName);
@@ -61,29 +60,23 @@ public class BalanceEnquiryService {
         return response;
     }
     private BalanceEnquiryRequestData buildRequest(String accountNumber) {
-
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
         balEnqRequest.setChannelCode(String.valueOf(1));
         balEnqRequest.setTargetAccountNumber(accountNumber);
         return balEnqRequest;
     }
-    private Marshaller marshaller() {
-        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        // this package must match the package in the <generatePackage> specified in
-        // pom.xml
-        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.account");
-        return marshaller;
-    }
+
     public boolean isAccountSufficient(String accountNumber, BigDecimal amount) {
-        validateAccount(accountNumber);
         BalanceResponse response = balanceEnquiry(accountNumber);
         boolean b = response.getAvailableBalance().compareTo(String.valueOf(amount)) >= 0;
         if (!b) {
-            throw new BalanceEnquiryException("Account has insufficient balance");
+            throw new BalanceEnquiryException("INSUFFICIENT ACCOUNT");
         }
         return true;
     }
-    private void validateAccount(String accountNumber) {
-        balanceEnquiry(accountNumber);
+    private Marshaller marshaller() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.account");
+        return marshaller;
     }
 }
