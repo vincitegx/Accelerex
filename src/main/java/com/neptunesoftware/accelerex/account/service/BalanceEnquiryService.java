@@ -66,6 +66,12 @@ public class BalanceEnquiryService {
         return balEnqRequest;
     }
 
+    private Marshaller marshaller() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.account");
+        return marshaller;
+    }
+
     public boolean isAccountSufficient(String accountNumber, BigDecimal amount) {
         BalanceResponse response = balanceEnquiry(accountNumber);
         boolean b = response.getAvailableBalance().compareTo(String.valueOf(amount)) >= 0;
@@ -74,9 +80,5 @@ public class BalanceEnquiryService {
         }
         return true;
     }
-    private Marshaller marshaller() {
-        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setPackagesToScan("com.neptunesoftware.accelerex.data.account");
-        return marshaller;
-    }
+
 }
