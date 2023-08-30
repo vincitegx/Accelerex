@@ -141,8 +141,6 @@ public class CreateBankAccountService {
         if (createCustomerRequest.getPhone() == null || createCustomerRequest.getPhone().isEmpty()){
             throw new MissingParameterException("PHONE NUMBER MUST BE PROVIDED");
         }
-        //Todo: Customer validation for cases where a parent opens an account for a minor
-        //Check will be a combination of customer's phone number and dob
 
         customerRequestData.setXapiServiceCode("STC029");
         customerRequestData.setChannelCode("AGENCY");
@@ -249,12 +247,9 @@ public class CreateBankAccountService {
 
 //        IMAGE DETAILS
 //         List<CustomerImageInformation> images = new ArrayList<>();
-//         CustomerImageInformation custImage = new CustomerImageInformation();
-//
-//        byte[] image;
 //        if (createCustomerRequest.getImage() != null && !createCustomerRequest.getImage().isEmpty()){
-//            image = java.util.Base64.getEncoder().encodeToString(createCustomerRequest.getImage().getBytes()).getBytes();
-//            image = imageToBase64("C:\\Windows\\System32\\cmd.exe");
+//            CustomerImageInformation custImage = new CustomerImageInformation();
+//            byte[]  image = imageToBase64("C:\\Windows\\System32\\cmd.exe");
 //             custImage.setBinaryImage(image);
 //             custImage.setImageTypeCode("PHO");
 //             custImage.setImageId(711L);
@@ -263,12 +258,14 @@ public class CreateBankAccountService {
 //             images.add(custImage);
 //         }
 //        if (createCustomerRequest.getSignature() != null && !createCustomerRequest.getSignature().isEmpty()) {
-//            image = java.util.Base64.getEncoder().encodeToString(createCustomerRequest.getSignature().getBytes()).getBytes();
-//            custImage.setImageTypeCode("SIG");
-//            custImage.setBinaryImage(image);
-//         images.add(custImage);
+//            CustomerImageInformation custSignature = new CustomerImageInformation();
+//            byte[]  signature = imageToBase64("C:\\Windows\\System32\\cmd.exe");
+//            custSignature.setImageTypeCode("SIG");
+//            custSignature.setImageType("JPEG");
+//            custSignature.setBinaryImage(signature);
+//         images.add(custSignature);
 //         }
-//         customerRequestData.getImages().contains(images);
+//         customerRequestData.getImages().addAll(images);
         return customerRequestData;
     }
 

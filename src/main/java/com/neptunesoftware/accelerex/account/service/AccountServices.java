@@ -20,15 +20,12 @@ import com.neptunesoftware.accelerex.utils.ResponseConstants;
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import static com.neptunesoftware.accelerex.utils.Cypher.deCypher;
@@ -42,7 +39,6 @@ public class AccountServices  {
     private final AccelerexCredentials accelerexCredentials;
     private static final String ACCOUNT_JAXB_PACKAGE = "com.neptunesoftware.accelerex.data.account";
     private static final String TRANSACTION_JAXB_PACKAGE = "com.neptunesoftware.accelerex.data.transaction";
-//    private static final String FUND_TRANSFER_JAXB_PACKAGE =  "com.neptunesoftware.accelerex.data.fundstransfer";
 
     public ApiResponse<LinkBankAccountResponse> linkBankAccountToAgent(LinkBankAccountRequest request) {
         if (request.getAccountNo() == null || request.getAccountNo().isEmpty()) {
@@ -66,7 +62,6 @@ public class AccountServices  {
                 new LinkBankAccountResponse(request.getUserName(), user.getAccountNumber(), user.getFullName(),
                         request.getMobileNo(), request.getEmail()));
     }
-
     public BalanceResponse intraBankBalanceEnquiry(String accountNumber) {
         BalanceResponse response = balanceEnquiryService.balanceEnquiry(accountNumber);
             log.info("AVAILABLE BALANCE {}", response.getAvailableBalance());
@@ -107,7 +102,6 @@ public class AccountServices  {
         
         return responseData;
     }
-    
     public InterBankTransferResponse interBankTransfer(InterBankTransferRequest request) {
         InterBankTransferResponse interBankTransferResponse;
         validateTransferRequest(request.getSourceAccount(),request.getBeneficiaryAccountNo(),request.getAmount());
@@ -235,17 +229,8 @@ public class AccountServices  {
         return transactionData;
     }
 
-    private static String formatDate(LocalDate date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return date.format(formatter);
-    }
-
     private void validateGlTrn(String accountNo, BigDecimal amount) {
         balanceEnquiryService.isAccountSufficient(accountNo,amount);
-    }
-    private boolean validateBankAccount(String accountNumber) {
-      String dbAccountNumber = balanceEnquiryService.balanceEnquiry(accountNumber).getAccountNo();
-        return dbAccountNumber.equals(accountNumber);
     }
 
     private boolean validateAccount(String accountNumber) {
@@ -253,21 +238,15 @@ public class AccountServices  {
     }
     private Marshaller marshallerTransferAndNameEnquiry() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        // this package must match the package in the <generatePackage> specified in
-        // pom.xml
         marshaller.setPackagesToScan(accelerexCredentials.getFundTransferWsdl());
         return marshaller;
     }
 
     private BalanceEnquiryRequestData buildRequest(String accountNumber) {
-
         BalanceEnquiryRequestData balEnqRequest = new BalanceEnquiryRequestData();
         balEnqRequest.setChannelCode(String.valueOf(1));
         balEnqRequest.setTargetAccountNumber(accountNumber);
         return balEnqRequest;
-    }
-    public String generateOTP() {
-        return RandomStringUtils.randomNumeric(4);
     }
 
     private NameInquiryRequestData buildRequestForNameInquiry(String accountNumber) {
