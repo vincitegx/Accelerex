@@ -50,7 +50,7 @@ public class AccountServices  {
         User user = accountRepository.findByAccountNumber(request.getAccountNo());
         if (user.getAccountNumber() != null) {
             log.info("ACCOUNT_NUMBER {} PHONE_NUMBER {}", user.getAccountNumber(), user.getPhoneNumber());
-            //Todo: Otp to verify account by sending a verification code to phone number linked to the account.
+
             if (accountRepository.findByUserName(request.getUserName())) {
                 log.info("USERNAME ALREADY EXIST");
                 throw new AccountExistException("PROFILE ALREADY EXIST");
@@ -89,7 +89,7 @@ public class AccountServices  {
             response = (JAXBElement)webServiceTemplate.marshalSendAndReceive(accelerexCredentials.getFundTransferWsdl(),nameEnquiryRequestData);
 
             webServiceResponse = (NameInquiryResponseData) response.getValue();
-            log.info("Account Name {}",webServiceResponse.getAccountName());
+            log.info("AccountName {}",webServiceResponse.getAccountName());
 
             responseData = interBankNameEnquiryResponseMapper(webServiceResponse);
 
@@ -97,8 +97,6 @@ public class AccountServices  {
 
             throw new AccountNotExistException("An error querying AccountNumber: " + accountNumber);
         }
-
-        log.info("Account name is: {}", responseData.getAccountName());
         
         return responseData;
     }
@@ -132,7 +130,7 @@ public class AccountServices  {
 
         try {
             BalanceEnquiryRequestData balEnqRequest = buildRequest(accountNumber);
-            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerB());
+            WebServiceTemplate webServiceTemplate = new WebServiceTemplate(marshallerAccount());
             Balanceenquiry balanceenquiry = new Balanceenquiry();
             balanceenquiry.setArg0(balEnqRequest);
 
@@ -155,7 +153,7 @@ public class AccountServices  {
         return  true;
     }
 
-    public DepositToGLResponse depositToGL(DepositToGlRequest request) {
+    public DepositToGLResponse depositToGLTransfer(DepositToGlRequest request) {
         validateGlTrn(request.getSourceAccountNumber(), request.getAmount());
         log.info("Initiating DepositToGL Transfer with amount {}", request.getAmount());
         String responseCode;
@@ -288,7 +286,6 @@ public class AccountServices  {
             throw new FundTransferException("Sender and Receiver account cannot be the same");
         }
     }
-
     private ExternalTransferNameEnquiryResponse interBankNameEnquiryResponseMapper(NameInquiryResponseData nameInquiryResponseData ) {
         ExternalTransferNameEnquiryResponse response = new ExternalTransferNameEnquiryResponse();
         response.setAccountName(nameInquiryResponseData.getAccountName());
@@ -306,7 +303,7 @@ public class AccountServices  {
         interBankTransferResponse.setNIBSS_SessionId(String.valueOf(System.currentTimeMillis()));
         return interBankTransferResponse;
     }
-    private Marshaller marshallerB() {
+    private Marshaller marshallerAccount() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         marshaller.setPackagesToScan(ACCOUNT_JAXB_PACKAGE);
         return marshaller;

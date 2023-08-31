@@ -24,14 +24,11 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import static com.neptunesoftware.accelerex.account.sql.SqlQueries.UPDATE_CUSTOMER_STATUS;
@@ -74,7 +71,7 @@ public class CreateBankAccountService {
 
         assert accountResponse != null;
         return CreateAccountResponse.builder()
-                .responseCode("00")
+                .responseCode("OO")
                 .customerData(CustomerData.builder()
                         .accountName(customerName)
                         .accountNumber(accountResponse.getAccountNo())
@@ -328,31 +325,19 @@ public class CreateBankAccountService {
         }
     }
 
-//    private void saveCustomerRecord(CreateCustomerRequest customerRequest, String customerName, String generatedAccountNumber) {
+//    private static byte[] imageToBase64(String imagePath) throws IOException {
+//        FileInputStream imageInputStream = null;
 //        try {
-//            jdbcTemplate.update(SAVE_REGISTRATION_DETAILS,customerRequest.getUserName(),customerName,customerRequest.getEmail(),
-//                    customerRequest.getPhone(),customerRequest.getDateOfBirth(),
-//                    generatedAccountNumber);
-//        } catch (DataAccessException e) {
-//            log.error("Error Saving record To DB");
-//            log.error(e.getMessage());
-//            throw new RuntimeException(e.getMessage());
+//            File imageFile = new File(imagePath);
+//            imageInputStream = new FileInputStream(imageFile);
+//            byte[] imageBytes = new byte[(int) imageFile.length()];
+//            imageInputStream.read(imageBytes);
+//            String base64String = Base64.getEncoder().encodeToString(imageBytes);
+//            return Base64.getDecoder().decode(base64String);
+//        } finally {
+//            if (imageInputStream != null) {
+//                imageInputStream.close();
+//            }
 //        }
 //    }
-
-    private static byte[] imageToBase64(String imagePath) throws IOException {
-        FileInputStream imageInputStream = null;
-        try {
-            File imageFile = new File(imagePath);
-            imageInputStream = new FileInputStream(imageFile);
-            byte[] imageBytes = new byte[(int) imageFile.length()];
-            imageInputStream.read(imageBytes);
-            String base64String = Base64.getEncoder().encodeToString(imageBytes);
-            return Base64.getDecoder().decode(base64String);
-        } finally {
-            if (imageInputStream != null) {
-                imageInputStream.close();
-            }
-        }
-    }
 }
